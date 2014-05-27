@@ -1,0 +1,396 @@
+###############################################################################
+#                                                                             #
+# IAR ANSI C/C++ Compiler V6.40.1.53790/W32 for ARM     14/Jun/2013  13:57:31 #
+# Copyright 1999-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    Cpu mode     =  arm                                                      #
+#    Endian       =  little                                                   #
+#    Source file  =  G:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Driver\adc. #
+#                    c                                                        #
+#    Command line =  "G:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Driver\adc #
+#                    .c" -lcN "G:\SVN Dir\PQ\iSAM Test                        #
+#                    Bench\Bridge_Host_OS\APP\FLASH\List\" -lb "G:\SVN        #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\"   #
+#                    -o "G:\SVN Dir\PQ\iSAM Test                              #
+#                    Bench\Bridge_Host_OS\APP\FLASH\Obj\" --no_cse            #
+#                    --no_unroll --no_inline --no_code_motion --no_tbaa       #
+#                    --no_clustering --no_scheduling --debug --endian=little  #
+#                    --cpu=ARM7TDMI -e --fpu=None --dlib_config "D:\Program   #
+#                    Files\IAR Systems\Embedded Workbench                     #
+#                    6.4\arm\INC\c\DLib_Config_Normal.h" -I "G:\SVN           #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\" -I "G:\SVN   #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\ #
+#                    IAR\" -I "G:\SVN Dir\PQ\iSAM Test                        #
+#                    Bench\Bridge_Host_OS\APP\..\BSP\" -I "G:\SVN             #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\Driver\"    #
+#                    -I "G:\SVN Dir\PQ\iSAM Test                              #
+#                    Bench\Bridge_Host_OS\APP\..\Noah\" -I "G:\SVN            #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\Shell\" -I  #
+#                    "G:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uCO #
+#                    S-II\Source\" -I "G:\SVN Dir\PQ\iSAM Test                #
+#                    Bench\Bridge_Host_OS\APP\..\uC-CPU\" -I "G:\SVN          #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uC-LIB\"    #
+#                    -I "G:\SVN Dir\PQ\iSAM Test                              #
+#                    Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "G:\SVN  #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uCOS-II\Por #
+#                    ts\ARM\Generic\IAR\" -I "G:\SVN Dir\PQ\iSAM Test         #
+#                    Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communicatio #
+#                    n\Generic\RS-232\Source\" -I "G:\SVN Dir\PQ\iSAM Test    #
+#                    Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communicatio #
+#                    n\Generic\RS-232\Ports\Atmel\AT91SAM7X\" -I "G:\SVN      #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uC-Probe\Ta #
+#                    rget\Communication\Generic\Source\" -I "G:\SVN           #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uC-Probe\Ta #
+#                    rget\Plugins\uCOS-II\" -I "G:\SVN Dir\PQ\iSAM Test       #
+#                    Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Demos\Intro\ #
+#                    Source\" --interwork --cpu_mode arm -On --use_c++_inline #
+#    List file    =  G:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\L #
+#                    ist\adc.lst                                              #
+#    Object file  =  G:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\O #
+#                    bj\adc.o                                                 #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+G:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Driver\adc.c
+      1          /* ----------------------------------------------------------------------------
+      2           *         ATMEL Microcontroller Software Support 
+      3           * ----------------------------------------------------------------------------
+      4           * Copyright (c) 2008, Atmel Corporation
+      5           *
+      6           * All rights reserved.
+      7           *
+      8           * Redistribution and use in source and binary forms, with or without
+      9           * modification, are permitted provided that the following conditions are met:
+     10           *
+     11           * - Redistributions of source code must retain the above copyright notice,
+     12           * this list of conditions and the disclaimer below.
+     13           *
+     14           * Atmel's name may not be used to endorse or promote products derived from
+     15           * this software without specific prior written permission.
+     16           *
+     17           * DISCLAIMER: THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR
+     18           * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+     19           * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT ARE
+     20           * DISCLAIMED. IN NO EVENT SHALL ATMEL BE LIABLE FOR ANY DIRECT, INDIRECT,
+     21           * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+     22           * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
+     23           * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+     24           * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+     25           * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+     26           * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+     27           * ----------------------------------------------------------------------------
+     28           */
+     29          
+     30          //------------------------------------------------------------------------------
+     31          //         Headers
+     32          //------------------------------------------------------------------------------
+     33          
+     34          #include    <at91sam7a3.h>
+     35          #include <adc.h>
+     36          #include <pio.h>
+     37          #include <bsp.h>
+     38          
+     39          
+     40          //-----------------------------------------------------------------------------
+     41          /// Initialize the ADC controller
+     42          /// \param pAdc Pointer to an AT91S_ADC instance.
+     43          /// \param trgEn trigger mode, software or Hardware
+     44          /// \param trgSel hardware trigger selection
+     45          /// \param sleepMode sleep mode selection
+     46          /// \param resolution resolution selection 8 bits or 10 bits
+     47          /// \param mckClock value of MCK in Hz
+     48          /// \param adcClock value of the ADC clock in Hz
+     49          /// \param startupTime value of the start up time (in us) (see datasheet)
+     50          /// \param sampleAndHoldTime (in ns)
+     51          //-----------------------------------------------------------------------------
+     52          void ADC_Initialize (AT91S_ADC *pAdc,
+     53                               unsigned char idAdc,
+     54                               unsigned char trgEn,
+     55                               unsigned char trgSel,
+     56                               unsigned char sleepMode,
+     57                               unsigned char resolution,        
+     58                               unsigned int mckClock,
+     59                               unsigned int adcClock,
+     60                               unsigned int startupTime,
+     61                               unsigned int sampleAndHoldTime)
+     62          {
+     63              unsigned int prescal;
+     64              unsigned int startup;
+     65              unsigned int shtim;
+     66          
+     67              //ASSERT(startupTime<=ADC_STARTUP_TIME_MAX, "ADC Bad startupTime\n\r");
+     68              //ASSERT(sampleAndHoldTime>=ADC_TRACK_HOLD_TIME_MIN, "ADC Bad sampleAndHoldTime\n\r");
+     69          
+     70              // Example:
+     71              // 5 MHz operation, 20us startup time, 600ns track and hold time
+     72              // PRESCAL: Prescaler Rate Selection ADCClock = MCK / ( (PRESCAL+1) * 2 )
+     73              // PRESCAL = [MCK / (ADCClock * 2)] -1 = [48/(5*2)]-1 = 3,8
+     74              // PRESCAL =  4 -> 48/((4+1)*2) = 48/10 = 4.8MHz
+     75              // 48/((3+1)*2) = 48/8 = 6MHz
+     76              // Startup Time = (STARTUP+1) * 8 / ADCClock
+     77              // STARTUP = [(Startup Time * ADCClock)/8]-1 = [(20 10e-6 * 5000000)/8]-1 = 11,5
+     78              // STARTUP = 11 -> (11+1)*8/48000000 = 96/4800000 = 20us
+     79              //
+     80              // Sample & Hold Time = (SHTIM) / ADCClock
+     81              // SHTIM = (HoldTime * ADCClock) = (600 10e-9 * 5000000) = 3
+     82              // SHTIM   =  3 -> (3)/4800000 = 1/1600000 = 625ns
+     83              prescal = (mckClock / (2*adcClock)) - 1;
+     84              startup = ((adcClock/1000000) * startupTime / 8) - 1;
+     85              shtim = (((adcClock/1000000) * sampleAndHoldTime)/1000);
+     86          
+     87              //ASSERT( (prescal<0x3F), "ADC Bad PRESCAL\n\r");
+     88              //ASSERT(startup<0x7F, "ADC Bad STARTUP\n\r");
+     89              //ASSERT(shtim<0xF, "ADC Bad SampleAndHoldTime\n\r");
+     90          
+     91              //trace_LOG(trace_DEBUG,"adcClock:%d MasterClock:%d\n\r", (mckClock/((prescal+1)*2)), mckClock);
+     92              //trace_LOG(trace_DEBUG,"prescal:0x%X startup:0x%X shtim:0x%X\n\r", prescal, startup, shtim);
+     93              
+     94              //if( adcClock != (mckClock/((prescal+1)*2)) ) {
+     95              //     trace_LOG(trace_WARNING,"User and calculated adcClocks are different : user=%d calc=%d\n\r", 
+     96              //       adcClock, (mckClock/((prescal+1)*2)));
+     97              //}
+     98          
+     99              // Enable peripheral clock    
+    100              AT91C_BASE_PMC->PMC_PCER = 1 << idAdc;    
+    101              
+    102              // Reset the controller
+    103              ADC_SoftReset(pAdc);
+    104          
+    105              // Write to the MR register
+    106              ADC_CfgModeReg( pAdc,
+    107                              ( trgEn & AT91C_ADC_TRGEN)
+    108                            | ( trgSel & AT91C_ADC_TRGSEL)
+    109                            | ( resolution & AT91C_ADC_LOWRES)            
+    110                            | ( sleepMode & AT91C_ADC_SLEEP)
+    111                            | ( (prescal<<8) & AT91C_ADC_PRESCAL) 
+    112                            | ( (startup<<16) & AT91C_ADC_STARTUP) 
+    113                            | ( (shtim<<24) & AT91C_ADC_SHTIM) );
+    114              
+    115          }
+    116          
+    117          
+    118          
+    119          //-----------------------------------------------------------------------------
+    120          /// Enable Channel
+    121          /// \param pAdc Pointer to an AT91S_ADC instance.
+    122          /// \param channel channel to enable
+    123          //-----------------------------------------------------------------------------
+    124          //void ADC_EnableChannel(AT91S_ADC *pAdc, unsigned int channel)
+    125          //{
+    126          //    ASSERT(channel < 8, "ADC Channel not exist");
+    127          //
+    128          //    // Write to the CHER register
+    129          //    pAdc->ADC_CHER = (1 << channel);
+    130          //}
+    131          
+    132          //-----------------------------------------------------------------------------
+    133          /// Disable Channel
+    134          /// \param pAdc Pointer to an AT91S_ADC instance.
+    135          /// \param channel channel to disable
+    136          //-----------------------------------------------------------------------------
+    137          //void ADC_DisableChannel (AT91S_ADC *pAdc, unsigned int channel)
+    138          //{
+    139          //    ASSERT(channel < 8, "ADC Channel not exist");
+    140          //
+    141          //    // Write to the CHDR register
+    142          //    pAdc->ADC_CHDR = (1 << channel);
+    143          //}
+    144          
+    145          //-----------------------------------------------------------------------------
+    146          /// Return chanel status
+    147          /// \param pAdc Pointer to an AT91S_ADC instance.
+    148          /// \return ADC Channel Status Register
+    149          //-----------------------------------------------------------------------------
+    150          //unsigned int ADC_GetChannelStatus(AT91S_ADC *pAdc)
+    151          //{
+    152          //    return pAdc->ADC_CHSR;    
+    153          //}
+    154          
+    155          //-----------------------------------------------------------------------------
+    156          /// Software request for a analog to digital conversion 
+    157          /// \param pAdc Pointer to an AT91S_ADC instance.
+    158          //-----------------------------------------------------------------------------
+    159          //void ADC_StartConversion(AT91S_ADC *pAdc)
+    160          //{
+    161          //    pAdc->ADC_CR = AT91C_ADC_START;    
+    162          //}
+    163          
+    164          //-----------------------------------------------------------------------------
+    165          /// Software reset
+    166          /// \param pAdc Pointer to an AT91S_ADC instance.
+    167          //-----------------------------------------------------------------------------
+    168          //void ADC_SoftReset(AT91S_ADC *pAdc)
+    169          //{
+    170          //    pAdc->ADC_CR = AT91C_ADC_SWRST;    
+    171          //}
+    172          
+    173          //-----------------------------------------------------------------------------
+    174          /// Return the Last Converted Data
+    175          /// \param pAdc Pointer to an AT91S_ADC instance.
+    176          /// \return Last Converted Data
+    177          //-----------------------------------------------------------------------------
+    178          //unsigned int ADC_GetLastConvertedData(AT91S_ADC *pAdc)
+    179          //{
+    180          //    return pAdc->ADC_LCDR;    
+    181          //}
+    182          
+    183          //-----------------------------------------------------------------------------
+    184          /// Return the Channel Converted Data
+    185          /// \param pAdc Pointer to an AT91S_ADC instance.
+    186          /// \param channel channel to get converted value
+    187          /// \return Channel converted data of the specified channel
+    188          //-----------------------------------------------------------------------------
+    189          unsigned int ADC_GetConvertedData(AT91S_ADC *pAdc, unsigned int channel)
+    190          {
+    191              unsigned int data=0;
+    192              
+    193              //ASSERT(channel < 8, "ADC channel not exist");
+    194              
+    195              switch(channel) {
+    196                  case 0: data = pAdc->ADC_CDR0; break;
+    197                  case 1: data = pAdc->ADC_CDR1; break;
+    198                  case 2: data = pAdc->ADC_CDR2; break;
+    199                  case 3: data = pAdc->ADC_CDR3; break;
+    200                  //#ifdef AT91C_ADC_CDR4
+    201                  case 4: data = pAdc->ADC_CDR4; break;
+    202                  //#endif
+    203                  #ifdef AT91C_ADC_CDR5
+    204                  case 5: data = pAdc->ADC_CDR5; break;
+    205                  #endif
+    206                  #ifdef AT91C_ADC_CDR6
+    207                  case 6: data = pAdc->ADC_CDR6; break;
+    208                  #endif
+    209                  #ifdef AT91C_ADC_CDR7
+    210                  case 7: data = pAdc->ADC_CDR7; break;    
+    211                  #endif
+    212              }
+    213              return data;    
+    214          }
+    215          
+    216          //-----------------------------------------------------------------------------
+    217          /// Enable ADC interrupt
+    218          /// \param pAdc Pointer to an AT91S_ADC instance.
+    219          /// \param flag IT to be enabled
+    220          //-----------------------------------------------------------------------------
+    221          //void ADC_EnableIt(AT91S_ADC *pAdc, unsigned int flag)
+    222          //{
+    223          //    ASSERT((flag&0xFFF00000)== 0, "ADC bad interrupt IER");
+    224          //
+    225          //    // Write to the IER register
+    226          //    pAdc->ADC_IER = flag;
+    227          //}
+    228          
+    229          //-----------------------------------------------------------------------------
+    230          /// Enable ADC Data Ready interrupt
+    231          /// \param pAdc Pointer to an AT91S_ADC instance.
+    232          //-----------------------------------------------------------------------------
+    233          
+    234          //void ADC_EnableDataReadyIt(AT91S_ADC *pAdc)
+    235          //{
+    236          //    pAdc->ADC_IER = AT91C_ADC_DRDY;
+    237          //}
+    238          
+    239          //-----------------------------------------------------------------------------
+    240          /// Disable ADC interrupt
+    241          /// \param pAdc Pointer to an AT91S_ADC instance.
+    242          /// \param flag IT to be disabled
+    243          //-----------------------------------------------------------------------------
+    244          //void ADC_DisableIt(AT91S_ADC *pAdc, unsigned int flag)
+    245          //{
+    246          //    ASSERT((flag&0xFFF00000)== 0, "ADC bad interrupt IDR");
+    247          //
+    248          //    // Write to the IDR register
+    249          //    pAdc->ADC_IDR = flag;
+    250          //}
+    251          
+    252          //-----------------------------------------------------------------------------
+    253          /// Return ADC Interrupt Status
+    254          /// \param pAdc Pointer to an AT91S_ADC instance.
+    255          /// \return ADC Stats register
+    256          //-----------------------------------------------------------------------------
+    257          //unsigned int ADC_GetStatus(AT91S_ADC *pAdc)
+    258          //{
+    259          //    return pAdc->ADC_SR;
+    260          //}
+    261          
+    262          //-----------------------------------------------------------------------------
+    263          /// Return ADC Interrupt Mask Status
+    264          /// \param pAdc Pointer to an AT91S_ADC instance.
+    265          /// \return ADC Interrupt Mask Register
+    266          //-----------------------------------------------------------------------------
+    267          //unsigned int ADC_GetInterruptMaskStatus(AT91S_ADC *pAdc)
+    268          //{
+    269          //    return pAdc->ADC_IMR;
+    270          //}
+    271          
+    272          //-----------------------------------------------------------------------------
+    273          /// Test if ADC Interrupt is Masked 
+    274          /// \param pAdc Pointer to an AT91S_ADC instance.
+    275          /// \param flag flag to be tested
+    276          /// \return 1 if interrupt is masked, otherwise 0
+    277          //-----------------------------------------------------------------------------
+    278          //unsigned int ADC_IsInterruptMasked(AT91S_ADC *pAdc, unsigned int flag)
+    279          //{
+    280          //    return (ADC_GetInterruptMaskStatus(pAdc) & flag);
+    281          //}
+    282          
+    283          //-----------------------------------------------------------------------------
+    284          /// Test if ADC Status is Set
+    285          /// \param pAdc Pointer to an AT91S_ADC instance.
+    286          /// \param flag flag to be tested
+    287          /// \return 1 if the staus is set; 0 otherwise
+    288          //-----------------------------------------------------------------------------
+    289          //unsigned int ADC_IsStatusSet(AT91S_ADC *pAdc, unsigned int flag)
+    290          //{
+    291          //    return (ADC_GetStatus(pAdc) & flag);
+    292          //}
+    293          
+    294          
+    295          //-----------------------------------------------------------------------------
+    296          /// Test if ADC channel interrupt Status is Set
+    297          /// \param adc_sr Value of SR register
+    298          /// \param channel Channel to be tested
+    299          /// \return 1 if interrupt status is set, otherwise 0
+    300          //-----------------------------------------------------------------------------
+    301          //unsigned char ADC_IsChannelInterruptStatusSet(unsigned int adc_sr, 
+    302          //                                              unsigned int channel)
+    303          //{
+    304          //    unsigned char status;
+    305              
+    306          //    if((adc_sr & (1<<channel)) == (1<<channel)) {
+    307          //        status = 1;
+    308          //    }
+    309          //    else {
+    310          //        status = 0;
+    311          //    }
+    312          //    return status;
+    313          //}
+    314          
+    315          
+    316          
+    317          
+
+   Maximum stack usage in bytes:
+
+   .cstack Function
+   ------- --------
+        0  ADC_GetConvertedData
+       56  ADC_Initialize
+             56 -> __aeabi_uidiv
+
+
+   Section sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+      96  ADC_GetConvertedData
+     264  ADC_Initialize
+
+ 
+ 360 bytes in section .text
+ 
+ 360 bytes of CODE memory
+
+Errors: none
+Warnings: none

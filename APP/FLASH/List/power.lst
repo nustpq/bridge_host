@@ -1,0 +1,247 @@
+###############################################################################
+#                                                                             #
+# IAR ANSI C/C++ Compiler V6.40.1.53790/W32 for ARM     14/Jun/2013  14:09:28 #
+# Copyright 1999-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    Cpu mode     =  arm                                                      #
+#    Endian       =  little                                                   #
+#    Source file  =  G:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Driver\powe #
+#                    r.c                                                      #
+#    Command line =  "G:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Driver\pow #
+#                    er.c" -lcN "G:\SVN Dir\PQ\iSAM Test                      #
+#                    Bench\Bridge_Host_OS\APP\FLASH\List\" -lb "G:\SVN        #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\"   #
+#                    -o "G:\SVN Dir\PQ\iSAM Test                              #
+#                    Bench\Bridge_Host_OS\APP\FLASH\Obj\" --no_cse            #
+#                    --no_unroll --no_inline --no_code_motion --no_tbaa       #
+#                    --no_clustering --no_scheduling --debug --endian=little  #
+#                    --cpu=ARM7TDMI -e --fpu=None --dlib_config "D:\Program   #
+#                    Files\IAR Systems\Embedded Workbench                     #
+#                    6.4\arm\INC\c\DLib_Config_Normal.h" -I "G:\SVN           #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\" -I "G:\SVN   #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\ #
+#                    IAR\" -I "G:\SVN Dir\PQ\iSAM Test                        #
+#                    Bench\Bridge_Host_OS\APP\..\BSP\" -I "G:\SVN             #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\Driver\"    #
+#                    -I "G:\SVN Dir\PQ\iSAM Test                              #
+#                    Bench\Bridge_Host_OS\APP\..\Noah\" -I "G:\SVN            #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\Shell\" -I  #
+#                    "G:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uCO #
+#                    S-II\Source\" -I "G:\SVN Dir\PQ\iSAM Test                #
+#                    Bench\Bridge_Host_OS\APP\..\uC-CPU\" -I "G:\SVN          #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uC-LIB\"    #
+#                    -I "G:\SVN Dir\PQ\iSAM Test                              #
+#                    Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "G:\SVN  #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uCOS-II\Por #
+#                    ts\ARM\Generic\IAR\" -I "G:\SVN Dir\PQ\iSAM Test         #
+#                    Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communicatio #
+#                    n\Generic\RS-232\Source\" -I "G:\SVN Dir\PQ\iSAM Test    #
+#                    Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communicatio #
+#                    n\Generic\RS-232\Ports\Atmel\AT91SAM7X\" -I "G:\SVN      #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uC-Probe\Ta #
+#                    rget\Communication\Generic\Source\" -I "G:\SVN           #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uC-Probe\Ta #
+#                    rget\Plugins\uCOS-II\" -I "G:\SVN Dir\PQ\iSAM Test       #
+#                    Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Demos\Intro\ #
+#                    Source\" --interwork --cpu_mode arm -On --use_c++_inline #
+#    List file    =  G:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\L #
+#                    ist\power.lst                                            #
+#    Object file  =  G:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\O #
+#                    bj\power.o                                               #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+G:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Driver\power.c
+      1          #include <stdio.h>
+      2          #include <string.h>
+      3          #include <usart.h>
+      4          #include <pio.h>
+      5          #include "power.h"
+      6          
+      7          
+      8          
+      9          CPU_INT08U combuf[PDC_LEN];
+     10          
+     11          static Pin pinsPowerCtr[] = { PWR_CTRL1,    PWR_CTRL2,   PWR_CTRL3 };
+     12          
+     13          
+     14          
+     15          #define POWER_SUPPLY_CMD_DELAY_MS   50 //50ms delay
+     16          
+     17          CPU_INT08U CTR_PowerAdj( void *pdata )
+     18          {  
+     19           
+     20          	    POWERADJ  *PowerAdj = (POWERADJ *)pdata ;
+     21                  PIO_Clear( &pinsControls[0] );//choose USRT0 to power supply   
+     22                  
+     23                  if( (PowerAdj->Ch > 3) || (PowerAdj->Ch < 1) )  {		
+     24                    return (POWER_MODULE_NOT_EXIST);   
+     25                  }        
+     26               
+     27                  memset(combuf, 0, PDC_LEN); //clear buf
+     28                  USART_SendStr(SIGNAL_POWER_UART,"*IDN?\r\n");
+     29                  if( USART_Read_Timeout(SIGNAL_POWER_UART,combuf,PDC_LEN,1000) != 0 )  {           
+     30                    return (POWER_MODULE_ERR + 0x10); 
+     31                  }        
+     32                  if( (unsigned char *)strstr((const char*)combuf,"IT6322") == NULL ) {     
+     33                    return (POWER_MODULE_ERR + 0x20);
+     34                  }
+     35                  OSTimeDly( POWER_SUPPLY_CMD_DELAY_MS );
+     36                  sprintf((char *)combuf,"INST:NSEL %d\r\n",PowerAdj->Ch); 		
+     37                  USART_SendStr(SIGNAL_POWER_UART, combuf);  
+     38                  OSTimeDly( POWER_SUPPLY_CMD_DELAY_MS );
+     39                  
+     40                  //check power ack 
+     41                  memset(combuf, 0, PDC_LEN);
+     42                  USART_SendStr(SIGNAL_POWER_UART,"INST:NSEL?\r\n");        
+     43                  if( USART_Read_Timeout(SIGNAL_POWER_UART,combuf,PDC_LEN,1000) != 0 )  {           
+     44                      return (POWER_MODULE_ERR + 0x30); 
+     45                    
+     46                  }       
+     47                  if(  combuf[1] != PowerAdj->Ch + 0x30 )  {
+     48                      return (POWER_MODULE_ERR + 0x40);
+     49                          
+     50                  }            
+     51           
+     52                  OSTimeDly( POWER_SUPPLY_CMD_DELAY_MS );
+     53                 
+     54          	    sprintf((char *)combuf,"VOLT %dmV\r\n",PowerAdj->Voltage);     
+     55                  USART_SendStr(SIGNAL_POWER_UART, combuf);
+     56                  OSTimeDly( POWER_SUPPLY_CMD_DELAY_MS );
+     57                  sprintf((char *)combuf,"CURR 100mA\r\n");	
+     58                  USART_SendStr(SIGNAL_POWER_UART, combuf);  
+     59                  OSTimeDly( POWER_SUPPLY_CMD_DELAY_MS );
+     60                  sprintf((char *)combuf,"OUTP %d\r\n",1);
+     61            	    USART_SendStr(SIGNAL_POWER_UART, combuf);
+     62                  
+     63                  OSTimeDly(200);
+     64                  //printf("\r\n>>Set power OK!");  
+     65                  
+     66                  return 0 ;
+     67          }
+     68          
+     69          
+     70          
+     71          
+     72          
+     73          /********************** Power On/Off Control****************************************/
+     74          
+     75          #if( false )   // use power supply inner on off commands------------------------
+     76          
+     77          static CPU_INT08U doPowerControl( CPU_INT08U channel,  CPU_INT08U onoff )  
+     78          {
+     79              PIO_Clear( &pinsControls[0] );//choose USRT0 to power supply  
+     80              
+     81              sprintf(combuf,"INST:NSEL %d\r\n",channel); 		
+     82              USART_SendStr(SIGNAL_POWER_UART, combuf);
+     83              OSTimeDly( POWER_SUPPLY_CMD_DELAY_MS );
+     84              //check power ack
+     85              USART_SendStr(SIGNAL_POWER_UART,"INST:NSEL?\r\n");
+     86              if( USART_Read_Timeout(SIGNAL_POWER_UART,combuf,PDC_LEN,1000) != 0 ) {
+     87                
+     88                      return (POWER_MODULE_ERR + 0x70);  
+     89              }
+     90              if(  combuf[0] != channel + 0x30 ) {
+     91                
+     92                      return (POWER_MODULE_ERR + 0x80); 
+     93              } 
+     94              OSTimeDly( POWER_SUPPLY_CMD_DELAY_MS );
+     95              sprintf(combuf,"OUTP %d\r\n",onoff);
+     96              USART_SendStr(SIGNAL_POWER_UART, combuf); 
+     97              return 0 ;
+     98          }
+     99          
+    100          
+    101          CPU_INT08U CTR_PowerCtr( void *pdata )
+    102          {
+    103              unsigned char result;
+    104              POWERCTR  *PowerCtr = (POWERCTR  *)pdata ; 
+    105              
+    106              if(PowerCtr->define & 0xf0){
+    107                
+    108                  return (POWER_MODULE_NOT_EXIST);
+    109              }    
+    110              
+    111              if (PowerCtr->define & 0x02) {
+    112                
+    113                  result = doPowerControl(1, PowerCtr->Ctr & 0x02 );
+    114                  if(  result != 0 )
+    115                      return result;
+    116                   
+    117              }
+    118              if(PowerCtr->define & 0x04){
+    119               
+    120                  result = doPowerControl(2, PowerCtr->Ctr & 0x04 );
+    121                  if(  result != 0 )
+    122                      return result;
+    123              }
+    124              if(PowerCtr->define & 0x08){
+    125           
+    126                  result = doPowerControl(3, PowerCtr->Ctr & 0x08 );
+    127                  if(  result != 0 )
+    128                      return result;
+    129              }    
+    130             
+    131                     
+    132              return(0) ;
+    133          }
+    134          
+    135          #else  //use on board MOS switcher on off control-------------------------------
+    136          
+    137          CPU_INT08U CTR_PowerCtr( void *pdata )
+    138          {   
+    139          
+    140              POWERCTR  *PowerCtr = (POWERCTR  *)pdata ; 
+    141              
+    142              if(PowerCtr->define & 0xf0){
+    143                
+    144                  return (POWER_MODULE_NOT_EXIST);
+    145              }      
+    146              if (PowerCtr->define & 0x02) {
+    147                 
+    148                  if (PowerCtr->Ctr & 0x02){
+    149                    
+    150                     PIO_Clear(&pinsPowerCtr[0]);                   
+    151                  }
+    152                  else{
+    153                    
+    154                     PIO_Set(&pinsPowerCtr[0]);         
+    155                  }
+    156                  
+    157              }    
+    158              if (PowerCtr->define & 0x04) {
+    159                 
+    160                  if (PowerCtr->Ctr & 0x04){
+    161                    
+    162                     PIO_Clear(&pinsPowerCtr[1]);	
+    163                  }
+    164                  else{
+    165                    
+    166                     PIO_Set(&pinsPowerCtr[1]);
+    167                  }
+    168          
+    169              }    
+    170              if (PowerCtr->define & 0x08) {
+    171                 
+    172                  if (PowerCtr->Ctr & 0x08){
+    173                    
+    174                     PIO_Clear(&pinsPowerCtr[2]);                     
+    175                  }
+    176                  else{
+    177                    
+    178                     PIO_Set(&pinsPowerCtr[2]);
+    179                  }
+    180              } 
+    181                         
+    182              return(0) ;   
+    183          }
+    184          
+    185          
+    186          
+    187          #endif
+    188          
+    189          
+
+Errors: 5
+Warnings: none

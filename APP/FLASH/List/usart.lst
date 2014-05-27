@@ -1,0 +1,374 @@
+###############################################################################
+#                                                                             #
+# IAR ANSI C/C++ Compiler V5.40.0.51500/W32 for ARM     11/Nov/2011  10:18:53 #
+# Copyright (C) 1999-2009 IAR Systems AB.                                     #
+#                                                                             #
+#    Cpu mode     =  arm                                                      #
+#    Endian       =  little                                                   #
+#    Source file  =  L:\SII_UCOS\Micrium_SAM7X256\Software\Driver\usart.c     #
+#    Command line =  L:\SII_UCOS\Micrium_SAM7X256\Software\Driver\usart.c     #
+#                    -lcN L:\SII_UCOS\Micrium_SAM7X256\Software\APP\FLASH\Lis #
+#                    t\ -lb L:\SII_UCOS\Micrium_SAM7X256\Software\APP\FLASH\L #
+#                    ist\ -o L:\SII_UCOS\Micrium_SAM7X256\Software\APP\FLASH\ #
+#                    Obj\ --no_cse --no_unroll --no_inline --no_code_motion   #
+#                    --no_tbaa --no_clustering --no_scheduling --debug        #
+#                    --endian=little --cpu=ARM7TDMI -e --fpu=None             #
+#                    --dlib_config "D:\Program Files\IAR Systems\Embedded     #
+#                    Workbench 5.4ARM\arm\INC\DLib_Config_Normal.h" -I        #
+#                    L:\SII_UCOS\Micrium_SAM7X256\Software\APP\ -I            #
+#                    L:\SII_UCOS\Micrium_SAM7X256\Software\APP\..\uC-CPU\ARM\ #
+#                    IAR\ -I L:\SII_UCOS\Micrium_SAM7X256\Software\APP\..\BSP #
+#                    \ -I L:\SII_UCOS\Micrium_SAM7X256\Software\APP\..\DRIVER #
+#                    \ -I L:\SII_UCOS\Micrium_SAM7X256\Software\APP\..\uCOS-I #
+#                    I\Source\ -I L:\SII_UCOS\Micrium_SAM7X256\Software\APP\. #
+#                    .\uC-CPU\ -I L:\SII_UCOS\Micrium_SAM7X256\Software\APP\. #
+#                    .\uC-LIB\ -I L:\SII_UCOS\Micrium_SAM7X256\Software\APP\. #
+#                    .\uC-CPU\ARM\IAR\ -I L:\SII_UCOS\Micrium_SAM7X256\Softwa #
+#                    re\APP\..\uCOS-II\Ports\ARM\Generic\IAR\ -I              #
+#                    L:\SII_UCOS\Micrium_SAM7X256\Software\APP\..\uC-Probe\Ta #
+#                    rget\Communication\Generic\RS-232\Source\ -I             #
+#                    L:\SII_UCOS\Micrium_SAM7X256\Software\APP\..\uC-Probe\Ta #
+#                    rget\Communication\Generic\RS-232\Ports\Atmel\AT91SAM7X\ #
+#                     -I L:\SII_UCOS\Micrium_SAM7X256\Software\APP\..\uC-Prob #
+#                    e\Target\Communication\Generic\Source\ -I                #
+#                    L:\SII_UCOS\Micrium_SAM7X256\Software\APP\..\uC-Probe\Ta #
+#                    rget\Plugins\uCOS-II\ -I L:\SII_UCOS\Micrium_SAM7X256\So #
+#                    ftware\APP\..\uC-Probe\Target\Demos\Intro\Source\ -I     #
+#                    "D:\Program Files\IAR Systems\Embedded Workbench         #
+#                    5.4ARM\arm\INC\" --interwork --cpu_mode arm -On          #
+#    List file    =  L:\SII_UCOS\Micrium_SAM7X256\Software\APP\FLASH\List\usa #
+#                    rt.lst                                                   #
+#    Object file  =  L:\SII_UCOS\Micrium_SAM7X256\Software\APP\FLASH\Obj\usar #
+#                    t.o                                                      #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+L:\SII_UCOS\Micrium_SAM7X256\Software\Driver\usart.c
+      1          /* ----------------------------------------------------------------------------
+      2           *         ATMEL Microcontroller Software Support 
+      3           * ----------------------------------------------------------------------------
+      4           * Copyright (c) 2008, Atmel Corporation
+      5           *
+      6           * All rights reserved.
+      7           *
+      8           * Redistribution and use in source and binary forms, with or without
+      9           * modification, are permitted provided that the following conditions are met:
+     10           *
+     11           * - Redistributions of source code must retain the above copyright notice,
+     12           * this list of conditions and the disclaimer below.
+     13           *
+     14           * Atmel's name may not be used to endorse or promote products derived from
+     15           * this software without specific prior written permission.
+     16           *
+     17           * DISCLAIMER: THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR
+     18           * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+     19           * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT ARE
+     20           * DISCLAIMED. IN NO EVENT SHALL ATMEL BE LIABLE FOR ANY DIRECT, INDIRECT,
+     21           * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+     22           * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
+     23           * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+     24           * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+     25           * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+     26           * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+     27           * ----------------------------------------------------------------------------
+     28           */
+     29          
+     30          //------------------------------------------------------------------------------
+     31          //         Headers
+     32          //------------------------------------------------------------------------------
+     33          
+     34          #include "usart.h"
+     35          //#include <utility/trace.h>
+     36          //#include <utility/assert.h>
+     37          
+     38          //------------------------------------------------------------------------------
+     39          //         Exported functions
+     40          //------------------------------------------------------------------------------
+     41          //------------------------------------------------------------------------------
+     42          /// Configures an USART peripheral with the specified parameters.
+     43          /// \param usart  Pointer to the USART peripheral to configure.
+     44          /// \param mode  Desired value for the USART mode register (see the datasheet).
+     45          /// \param baudrate  Baudrate at which the USART should operate (in Hz).
+     46          /// \param masterClock  Frequency of the system master clock (in Hz).
+     47          //------------------------------------------------------------------------------
+     48          void USART_Configure(AT91S_USART *usart,
+     49                                      unsigned int mode,
+     50                                      unsigned int baudrate,
+     51                                      unsigned int masterClock)
+     52          {
+     53              // Reset and disable receiver & transmitter
+     54              usart->US_CR = AT91C_US_RSTRX | AT91C_US_RSTTX
+     55                             | AT91C_US_RXDIS | AT91C_US_TXDIS;
+     56          
+     57              // Configure mode
+     58              usart->US_MR = mode;
+     59          
+     60              // Configure baudrate
+     61              // Asynchronous, no oversampling
+     62              if (((mode & AT91C_US_SYNC) == 0)
+     63                  && ((mode & AT91C_US_OVER) == 0)) {
+     64              
+     65                  usart->US_BRGR = (masterClock / baudrate) / 16;
+     66              }
+     67              // TODO other modes
+     68          }
+     69          
+     70          //------------------------------------------------------------------------------
+     71          /// Enables or disables the transmitter of an USART peripheral.
+     72          /// \param usart  Pointer to an USART peripheral
+     73          /// \param enabled  If true, the transmitter is enabled; otherwise it is
+     74          ///                 disabled.
+     75          //------------------------------------------------------------------------------
+     76          void USART_SetTransmitterEnabled(AT91S_USART *usart,
+     77                                                  unsigned char enabled)
+     78          {
+     79              if (enabled) {
+     80          
+     81                  usart->US_CR = AT91C_US_TXEN;
+     82              }
+     83              else {
+     84          
+     85                  usart->US_CR = AT91C_US_TXDIS;
+     86              }
+     87          }
+     88          
+     89          //------------------------------------------------------------------------------
+     90          /// Enables or disables the receiver of an USART peripheral
+     91          /// \param usart  Pointer to an USART peripheral
+     92          /// \param enabled  If true, the receiver is enabled; otherwise it is disabled.
+     93          //------------------------------------------------------------------------------
+     94          void USART_SetReceiverEnabled(AT91S_USART *usart,
+     95                                               unsigned char enabled)
+     96          {
+     97              if (enabled) {
+     98          
+     99                  usart->US_CR = AT91C_US_RXEN;
+    100              }
+    101              else {
+    102          
+    103                  usart->US_CR = AT91C_US_RXDIS;
+    104              }
+    105          }
+    106          
+    107          //------------------------------------------------------------------------------
+    108          /// Sends one packet of data through the specified USART peripheral. This
+    109          /// function operates synchronously, so it only returns when the data has been
+    110          /// actually sent.
+    111          /// \param usart  Pointer to an USART peripheral.
+    112          /// \param data  Data to send including 9nth bit and sync field if necessary (in
+    113          ///              the same format as the US_THR register in the datasheet).
+    114          /// \param timeOut  Time out value (0 = no timeout).
+    115          //------------------------------------------------------------------------------
+    116          void USART_Write(
+    117              AT91S_USART *usart,
+    118              CPU_INT16U data,
+    119              volatile CPU_INT32U timeOut)
+    120          {
+    121            
+    122           
+    123              if (timeOut == 0) {
+    124          
+    125                  while ((usart->US_CSR & AT91C_US_TXEMPTY) == 0);
+    126              }
+    127              else {
+    128          
+    129                  while ((usart->US_CSR & AT91C_US_TXEMPTY) == 0) {
+    130          
+    131                      if (timeOut == 0) {
+    132                         // TRACE_ERROR("USART_Write: Timed out.\n\r"); clg 20100609
+    133                          //trace_LOG(trace_ERROR, "-E- USART_Read: Timed out.\n\r");
+    134                          return;
+    135                      }
+    136                      timeOut--;
+    137                  }
+    138              }
+    139          
+    140              usart->US_THR = data;
+    141          }
+    142          
+    143          //------------------------------------------------------------------------------
+    144          /// Sends the contents of a data buffer through the specified USART peripheral.
+    145          /// This function returns immediately (1 if the buffer has been queued, 0
+    146          /// otherwise); poll the ENDTX and TXBUFE bits of the USART status register
+    147          /// to check for the transfer completion.
+    148          /// \param usart  Pointer to an USART peripheral.
+    149          /// \param buffer  Pointer to the data buffer to send.
+    150          /// \param size  Size of the data buffer (in bytes).
+    151          //------------------------------------------------------------------------------
+    152          unsigned char USART_WriteBuffer(
+    153              AT91S_USART *usart,
+    154              void *buffer,
+    155              unsigned int size)
+    156          {
+    157              // Check if the first PDC bank is free
+    158              if ((usart->US_TCR == 0) && (usart->US_TNCR == 0)) {
+    159          
+    160                  usart->US_TPR = (unsigned int) buffer;
+    161                  usart->US_TCR = size;
+    162                  usart->US_PTCR = AT91C_PDC_TXTEN; //start PDC
+    163          
+    164                  return 1;
+    165              }
+    166              // Check if the second PDC bank is free
+    167              else if (usart->US_TNCR == 0) {
+    168          
+    169                  usart->US_TNPR = (unsigned int) buffer;
+    170                  usart->US_TNCR = size;
+    171          
+    172                  return 1;
+    173              }
+    174              else {
+    175          
+    176                  return 0;
+    177              }
+    178          }
+    179          
+    180          //------------------------------------------------------------------------------
+    181          /// Reads and return a packet of data on the specified USART peripheral. This
+    182          /// function operates asynchronously, so it waits until some data has been
+    183          /// received.
+    184          /// \param usart  Pointer to an USART peripheral.
+    185          /// \param timeOut  Time out value (0 -> no timeout).
+    186          //------------------------------------------------------------------------------
+    187          unsigned short USART_Read(
+    188              AT91S_USART *usart,
+    189              volatile unsigned int timeOut)
+    190          {
+    191              if (timeOut == 0) {
+    192          
+    193                  while ((usart->US_CSR & AT91C_US_RXRDY) == 0);
+    194              }
+    195              else {
+    196          
+    197                  while ((usart->US_CSR & AT91C_US_RXRDY) == 0) {
+    198          
+    199                      if (timeOut == 0) {
+    200          
+    201                         // TRACE_ERROR("USART_Read: Timed out.\n\r");  clg 20100609
+    202                         // trace_LOG(trace_ERROR, "-E- USART_Read: Timed out.\n\r");
+    203                          return 0;
+    204                      }
+    205                      timeOut--;
+    206                  }
+    207              }
+    208          
+    209              return usart->US_RHR;
+    210          }
+    211          
+    212          //------------------------------------------------------------------------------
+    213          /// Reads data from an USART peripheral, filling the provided buffer until it
+    214          /// becomes full. This function returns immediately with 1 if the buffer has
+    215          /// been queued for transmission; otherwise 0.
+    216          /// \param usart  Pointer to an USART peripheral.
+    217          /// \param buffer  Pointer to the buffer where the received data will be stored.
+    218          /// \param size  Size of the data buffer (in bytes).
+    219          //------------------------------------------------------------------------------
+    220          unsigned char USART_ReadBuffer(AT91S_USART *usart,
+    221                                                void *buffer,
+    222                                                unsigned int size)
+    223          {
+    224              // Check if the first PDC bank is free
+    225              if ((usart->US_RCR == 0) && (usart->US_RNCR == 0)) {
+    226          
+    227                  usart->US_RPR = (unsigned int) buffer;
+    228                  usart->US_RCR = size;
+    229                  usart->US_PTCR = AT91C_PDC_RXTEN;
+    230          
+    231                  return 1;
+    232              }
+    233              // Check if the second PDC bank is free
+    234              else if (usart->US_RNCR == 0) {
+    235          
+    236                  usart->US_RNPR = (unsigned int) buffer;
+    237                  usart->US_RNCR = size;
+    238          
+    239                  return 1;
+    240              }
+    241              else {
+    242          
+    243                  return 0;
+    244              }
+    245          }
+    246          
+    247          //------------------------------------------------------------------------------
+    248          /// Returns 1 if some data has been received and can be read from an USART;
+    249          /// otherwise returns 0.
+    250          /// \param usart  Pointer to an AT91S_USART instance.
+    251          //------------------------------------------------------------------------------
+    252          unsigned char USART_IsDataAvailable(AT91S_USART *usart)
+    253          {
+    254              if ((usart->US_CSR & AT91C_US_RXRDY) != 0) {
+    255          
+    256                  return 1;
+    257              }
+    258              else {
+    259          
+    260                  return 0;
+    261              }
+    262          }
+    263          
+    264          //------------------------------------------------------------------------------
+    265          /// Sets the filter value for the IRDA demodulator.
+    266          /// \param pUsart  Pointer to an AT91S_USART instance.
+    267          /// \param filter  Filter value.
+    268          //------------------------------------------------------------------------------
+    269          void USART_SetIrdaFilter(AT91S_USART *pUsart, unsigned char filter)
+    270          {
+    271              //SANITY_CHECK(pUsart);
+    272          
+    273              pUsart->US_IF = filter;
+    274          }
+    275          
+    276          
+    277          
+    278          
+    279          
+    280          void UART_SendStr( AT91S_USART *usart, unsigned char * pdata )
+    281          {
+    282            
+    283            while(*pdata)
+    284            {  
+    285               USART_Write(usart,*pdata++,0);
+    286            } 
+    287            
+    288          }
+
+   Maximum stack usage in bytes:
+
+     Function                    .cstack
+     --------                    -------
+     UART_SendStr                    16
+     USART_Configure                 20
+     USART_IsDataAvailable            0
+     USART_Read                       4
+     USART_ReadBuffer                 0
+     USART_SetIrdaFilter              0
+     USART_SetReceiverEnabled         0
+     USART_SetTransmitterEnabled      0
+     USART_Write                      4
+     USART_WriteBuffer                0
+
+
+   Section sizes:
+
+     Function/Label              Bytes
+     --------------              -----
+     USART_Configure               76
+     USART_SetTransmitterEnabled   36
+     USART_SetReceiverEnabled      36
+     USART_Write                   96
+     USART_WriteBuffer             88
+     USART_Read                   104
+     USART_ReadBuffer              88
+     USART_IsDataAvailable         32
+     USART_SetIrdaFilter           16
+     UART_SendStr                  64
+
+ 
+ 636 bytes in section .text
+ 
+ 636 bytes of CODE memory
+
+Errors: none
+Warnings: none

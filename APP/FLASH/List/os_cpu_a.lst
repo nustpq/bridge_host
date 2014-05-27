@@ -1,0 +1,1554 @@
+###############################################################################
+#                                                                             #
+#     IAR Assembler V7.10.3.6832/W32 for ARM 22/May/2014  14:14:52            #
+#     Copyright 1999-2014 IAR Systems AB.                                     #
+#                                                                             #
+#           Source file   =  E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\uCOS-II\Ports\ARM\Generic\IAR\os_cpu_a.asm#
+#           List file     =  E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\os_cpu_a.lst#
+#           Object file   =  E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\Obj\os_cpu_a.o#
+#           Command line  =  E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\uCOS-II\Ports\ARM\Generic\IAR\os_cpu_a.asm #
+#                            -OE:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\Obj\ #
+#                            -s+ -M<> -w+ -r                                  #
+#                            -LE:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\ #
+#                            -t8 --cpu ARM7TDMI --fpu None                    #
+#                                                                             #
+###############################################################################
+
+    1                           ;
+    2                           ;*********************************************
+                                ***********************************************
+                                ************
+    3                           ;                                             
+                                  uC/OS-II
+    4                           ;                                         The
+                                 Real-Time Kernel
+    5                           ;
+    6                           ;
+    7                           ;                             (c) Copyright
+                                 1992-2007, Micrium, Weston, FL
+    8                           ;                                          All
+                                 Rights Reserved
+    9                           ;
+   10                           ;                                          
+                                 Generic ARM Port
+   11                           ;
+   12                           ; File      : OS_CPU_A.ASM
+   13                           ; Version   : V2.89
+   14                           ; By        : Jean J. Labrosse
+   15                           ;             Jean-Denis Hatier
+   16                           ;
+   17                           ; For       : ARM7 or ARM9
+   18                           ; Mode      : ARM or Thumb
+   19                           ; Toolchain : IAR's EWARM V4.11a and
+                                 higher
+   20                           ;*********************************************
+                                ***********************************************
+                                ************
+   21                           ;
+   22                           
+   23                           ;*********************************************
+                                ***********************************************
+                                ************
+   24                           ;                                          
+                                 PUBLIC FUNCTIONS
+   25                           ;*********************************************
+                                ***********************************************
+                                ************
+   26                                                                         
+                                                  ; External references.
+   27                               EXTERN  OSRunning
+   28                               EXTERN  OSPrioCur
+   29                               EXTERN  OSPrioHighRdy
+   30                               EXTERN  OSTCBCur
+   31                               EXTERN  OSTCBHighRdy
+   32                               EXTERN  OSIntNesting
+   33                               EXTERN  OSIntExit
+   34                               EXTERN  OSTaskSwHook
+   35                           
+   36                               EXTERN  OS_CPU_ExceptStkBase
+   37                               EXTERN  OS_CPU_ExceptStkPtr
+   38                                                                         
+                                                  ; Functions declared in this
+                                 file.
+   39                               PUBLIC  OS_CPU_SR_Save
+   40                               PUBLIC  OS_CPU_SR_Restore
+   41                               PUBLIC  OSStartHighRdy
+   42                               PUBLIC  OSCtxSw
+   43                               PUBLIC  OSIntCtxSw
+   44                           
+   45                                                                         
+                                                  ; Functions related to
+                                 exception handling.
+   46                               PUBLIC  OS_CPU_ARM_ExceptUndefInstrHndlr
+   47                               PUBLIC  OS_CPU_ARM_ExceptSwiHndlr
+   48                               PUBLIC  OS_CPU_ARM_ExceptPrefetchAbortHndl
+                                r
+   49                               PUBLIC  OS_CPU_ARM_ExceptDataAbortHndlr
+   50                               PUBLIC  OS_CPU_ARM_ExceptAddrAbortHndlr
+   51                               PUBLIC  OS_CPU_ARM_ExceptIrqHndlr
+   52                               PUBLIC  OS_CPU_ARM_ExceptFiqHndlr
+   53                           
+   54                                                                         
+                                                  ; Functions related to
+                                 interrupt enabling/disabling.
+   55                               PUBLIC  OS_CPU_SR_INT_Dis
+   56                               PUBLIC  OS_CPU_SR_INT_En
+   57                               PUBLIC  OS_CPU_SR_FIQ_Dis
+   58                               PUBLIC  OS_CPU_SR_FIQ_En
+   59                               PUBLIC  OS_CPU_SR_IRQ_Dis
+   60                               PUBLIC  OS_CPU_SR_IRQ_En
+   61                           
+   62                               EXTERN  OS_CPU_ExceptHndlr
+   63                           
+   64                           ;*********************************************
+                                ***********************************************
+                                ************
+   65                           ;                                             
+                                   EQUATES
+   66                           ;*********************************************
+                                ***********************************************
+                                ************
+   67                           
+   68                           OS_CPU_ARM_CONTROL_INT_DIS        EQU  0xC0   
+                                                  ; Disable both FIQ and
+                                 IRQ.
+   69                           OS_CPU_ARM_CONTROL_FIQ_DIS        EQU  0x40   
+                                                  ; Disable FIQ.
+   70                           OS_CPU_ARM_CONTROL_IRQ_DIS        EQU  0x80   
+                                                  ; Disable IRQ.
+   71                           OS_CPU_ARM_CONTROL_THUMB          EQU  0x20   
+                                                  ; Set THUMB mode.
+   72                           OS_CPU_ARM_CONTROL_ARM            EQU  0x00   
+                                                  ; Set ARM mode.
+   73                           
+   74                           OS_CPU_ARM_MODE_MASK              EQU 
+                                 0x1F
+   75                           OS_CPU_ARM_MODE_USR               EQU 
+                                 0x10
+   76                           OS_CPU_ARM_MODE_FIQ               EQU 
+                                 0x11
+   77                           OS_CPU_ARM_MODE_IRQ               EQU 
+                                 0x12
+   78                           OS_CPU_ARM_MODE_SVC               EQU 
+                                 0x13
+   79                           OS_CPU_ARM_MODE_ABT               EQU 
+                                 0x17
+   80                           OS_CPU_ARM_MODE_UND               EQU 
+                                 0x1B
+   81                           OS_CPU_ARM_MODE_SYS               EQU 
+                                 0x1F
+   82                           
+   83                           OS_CPU_ARM_EXCEPT_RESET           EQU 
+                                 0x00
+   84                           OS_CPU_ARM_EXCEPT_UNDEF_INSTR     EQU 
+                                 0x01
+   85                           OS_CPU_ARM_EXCEPT_SWI             EQU 
+                                 0x02
+   86                           OS_CPU_ARM_EXCEPT_PREFETCH_ABORT  EQU 
+                                 0x03
+   87                           OS_CPU_ARM_EXCEPT_DATA_ABORT      EQU 
+                                 0x04
+   88                           OS_CPU_ARM_EXCEPT_ADDR_ABORT      EQU 
+                                 0x05
+   89                           OS_CPU_ARM_EXCEPT_IRQ             EQU 
+                                 0x06
+   90                           OS_CPU_ARM_EXCEPT_FIQ             EQU 
+                                 0x07
+   91                           
+   92                           ;*********************************************
+                                ***********************************************
+                                ************
+   93                           ;                                      CODE
+                                 GENERATION DIRECTIVES
+   94                           ;*********************************************
+                                ***********************************************
+                                ************
+   95                           
+   96                               RSEG CODE:CODE:NOROOT(2)
+   97                               CODE32
+   98                           
+   99                           ;*********************************************
+                                ***********************************************
+                                ************
+  100                           ;                                  CRITICAL
+                                 SECTION METHOD 3 FUNCTIONS
+  101                           ;
+  102                           ; Description: Disable/Enable interrupts by
+                                 preserving the state of interrupts.  Generally
+                                 speaking you
+  103                           ;              would store the state of the
+                                 interrupt disable flag in the local variable
+                                 'cpu_sr' and then
+  104                           ;              disable interrupts.  'cpu_sr'
+                                 is allocated in all of uC/OS-II's functions
+                                 that need to
+  105                           ;              disable interrupts.  You would
+                                 restore the interrupt disable state by copying
+                                 back 'cpu_sr'
+  106                           ;              into the CPU's status
+                                 register.
+  107                           ;
+  108                           ; Prototypes : OS_CPU_SR  OS_CPU_SR_Save   
+                                 (void);
+  109                           ;              void       OS_CPU_SR_Restore
+                                 (OS_CPU_SR  os_cpu_sr);
+  110                           ;
+  111                           ;
+  112                           ; Note(s)    : (1) These functions are used in
+                                 general like this:
+  113                           ;
+  114                           ;                 void Task (void  *p_arg)
+  115                           ;                 {
+  116                           ;                                             
+                                                  /* Allocate storage for CPU
+                                 status register.            */
+  117                           ;                 #if (OS_CRITICAL_METHOD ==
+                                 3)
+  118                           ;                      OS_CPU_SR  os_cpu_sr;
+  119                           ;                 #endif
+  120                           ;
+  121                           ;                          :
+  122                           ;                          :
+  123                           ;                      OS_ENTER_CRITICAL();   
+                                                  /* os_cpu_sr = OS_CPU_SR_Save
+                                ();                        */
+  124                           ;                          :
+  125                           ;                          :
+  126                           ;                      OS_EXIT_CRITICAL();    
+                                                  /* OS_CPU_SR_Restore(cpu_sr);
+                                                           */
+  127                           ;                          :
+  128                           ;                          :
+  129                           ;                 }
+  130                           ;*********************************************
+                                ***********************************************
+                                ************
+  131                           
+  132                           OS_CPU_SR_Save
+  133    00000000 00000FE1          MRS     R0, CPSR
+  134    00000004 C01080E3          ORR     R1, R0, #OS_CPU_ARM_CONTROL_INT_DIS
+                                                             ; Set IRQ and FIQ
+                                             bits in CPSR to disable all
+                                             interrupts.
+  135    00000008 01F021E1          MSR     CPSR_c, R1
+  136    0000000C 1EFF2FE1          BX      LR                                 
+                                                             ; Disabled, return
+                                             the original CPSR contents in
+                                             R0.
+  137                           
+  138                           
+  139                           OS_CPU_SR_Restore
+  140    00000010 00F021E1          MSR     CPSR_c, R0
+  141    00000014 1EFF2FE1          BX      LR
+  142                           
+  143                           
+  144                           ;*********************************************
+                                ***********************************************
+                                ************
+  145                           ;                                          
+                                 START MULTITASKING
+  146                           ;                                       void
+                                 OSStartHighRdy(void)
+  147                           ;
+  148                           ; Note(s) : 1) OSStartHighRdy() MUST:
+  149                           ;              a) Call OSTaskSwHook()
+                                 then,
+  150                           ;              b) Set OSRunning to TRUE,
+  151                           ;              c) Switch to the highest
+                                 priority task.
+  152                           ;*********************************************
+                                ***********************************************
+                                ************
+  153                           
+  154                           OSStartHighRdy
+  155                                                                         
+                                                  ; Change to SVC mode.
+  156    00000018 D3F021E3          MSR     CPSR_c, #(OS_CPU_ARM_CONTROL_INT_DI
+                                            S | OS_CPU_ARM_MODE_SVC)
+  157                           
+  158    0000001C C8039FE5          LDR     R0, =OSTaskSwHook                  
+                                                             ; OSTaskSwHook();
+  159    00000020 0FE0A0E1          MOV     LR, PC
+  160    00000024 10FF2FE1          BX      R0
+  161                           
+  162    00000028 C0039FE5          LDR     R0, =OSRunning                     
+                                                             ; OSRunning =
+                                             TRUE;
+  163    0000002C 0110A0E3          MOV     R1, #1
+  164    00000030 0010C0E5          STRB    R1, [R0]
+  165                           
+  166                                                                         
+                                                  ; SWITCH TO HIGHEST PRIORITY
+                                 TASK:
+  167    00000034 B8039FE5          LDR     R0, =OSTCBHighRdy                  
+                                                             ;    Get highest
+                                             priority task TCB address,
+  168    00000038 000090E5          LDR     R0, [R0]                           
+                                                             ;    Get stack
+                                             pointer,
+  169    0000003C 00D090E5          LDR     SP, [R0]                           
+                                                             ;    Switch to the
+                                             new stack,
+  170                           
+  171    00000040 04009DE4          LDR     R0, [SP], #4                       
+                                                             ;    Pop new
+                                             task's CPSR,
+  172    00000044 00F06FE1          MSR     SPSR_cxsf, R0
+  173                           
+  174    00000048 FFDFFDE8          LDMFD   SP!, {R0-R12, LR, PC}^             
+                                                             ;    Pop new
+                                             task's context.
+  175                           
+  176                           
+  177                           ;*********************************************
+                                ***********************************************
+                                ************
+  178                           ;                         PERFORM A CONTEXT
+                                 SWITCH (From task level) - OSCtxSw()
+  179                           ;
+  180                           ; Note(s) : 1) OSCtxSw() is called in SVC mode
+                                 with BOTH FIQ and IRQ interrupts DISABLED.
+  181                           ;
+  182                           ;           2) The pseudo-code for OSCtxSw()
+                                 is:
+  183                           ;              a) Save the current task's
+                                 context onto the current task's stack,
+  184                           ;              b) OSTCBCur->OSTCBStkPtr =
+                                 SP;
+  185                           ;              c) OSTaskSwHook();
+  186                           ;              d) OSPrioCur             =
+                                 OSPrioHighRdy;
+  187                           ;              e) OSTCBCur              =
+                                 OSTCBHighRdy;
+  188                           ;              f) SP                    =
+                                 OSTCBHighRdy->OSTCBStkPtr;
+  189                           ;              g) Restore the new task's
+                                 context from the new task's stack,
+  190                           ;              h) Return to new task's
+                                 code.
+  191                           ;
+  192                           ;           3) Upon entry:
+  193                           ;              OSTCBCur      points to the
+                                 OS_TCB of the task to suspend,
+  194                           ;              OSTCBHighRdy  points to the
+                                 OS_TCB of the task to resume.
+  195                           ;*********************************************
+                                ***********************************************
+                                ************
+  196                           
+  197                           OSCtxSw
+  198                                                                         
+                                                  ; SAVE CURRENT TASK'S
+                                 CONTEXT:
+  199    0000004C 00402DE9          STMFD   SP!, {LR}                          
+                                                             ;     Push return
+                                             address,
+  200    00000050 00402DE9          STMFD   SP!, {LR}
+  201    00000054 FF1F2DE9          STMFD   SP!, {R0-R12}                      
+                                                             ;     Push
+                                             registers,
+  202    00000058 00000FE1          MRS     R0, CPSR                           
+                                                             ;     Push current
+                                             CPSR,
+  203    0000005C 01001EE3          TST     LR, #1                             
+                                                             ;     See if
+                                             called from Thumb mode,
+  204    00000060 20008013          ORRNE   R0, R0, #OS_CPU_ARM_CONTROL_THUMB  
+                                                             ;     If yes, set
+                                             the T-bit.
+  205    00000064 01002DE9          STMFD   SP!, {R0}
+  206                           
+  207    00000068 88039FE5          LDR     R0, =OSTCBCur                      
+                                                             ; OSTCBCur->OSTCBS
+                                            tkPtr = SP;
+  208    0000006C 001090E5          LDR     R1, [R0]
+  209    00000070 00D081E5          STR     SP, [R1]
+  210                           
+  211    00000074 70039FE5          LDR     R0, =OSTaskSwHook                  
+                                                             ; OSTaskSwHook();
+  212    00000078 0FE0A0E1          MOV     LR, PC
+  213    0000007C 10FF2FE1          BX      R0
+  214                           
+  215    00000080 74039FE5          LDR     R0, =OSPrioCur                     
+                                                             ; OSPrioCur =
+                                             OSPrioHighRdy;
+  216    00000084 74139FE5          LDR     R1, =OSPrioHighRdy
+  217    00000088 0020D1E5          LDRB    R2, [R1]
+  218    0000008C 0020C0E5          STRB    R2, [R0]
+  219                           
+  220    00000090 60039FE5          LDR     R0, =OSTCBCur                      
+                                                             ; OSTCBCur  =
+                                             OSTCBHighRdy;
+  221    00000094 58139FE5          LDR     R1, =OSTCBHighRdy
+  222    00000098 002091E5          LDR     R2, [R1]
+  223    0000009C 002080E5          STR     R2, [R0]
+  224                           
+  225    000000A0 00D092E5          LDR     SP, [R2]                           
+                                                             ; SP = OSTCBHighRd
+                                            y->OSTCBStkPtr;
+  226                           
+  227                                                                         
+                                                  ; RESTORE NEW TASK'S
+                                 CONTEXT:
+  228    000000A4 0100BDE8          LDMFD   SP!, {R0}                          
+                                                             ;    Pop new
+                                             task's CPSR,
+  229    000000A8 00F06FE1          MSR     SPSR_cxsf, R0
+  230                           
+  231    000000AC FFDFFDE8          LDMFD   SP!, {R0-R12, LR, PC}^             
+                                                             ;    Pop new
+                                             task's context.
+  232                           
+  233                           ;*********************************************
+                                ***********************************************
+                                ************
+  234                           ;                     PERFORM A CONTEXT SWITCH
+                                 (From interrupt level) - OSIntCtxSw()
+  235                           ;
+  236                           ; Note(s) : 1) OSIntCtxSw() is called in SVC
+                                 mode with BOTH FIQ and IRQ interrupts
+                                 DISABLED.
+  237                           ;
+  238                           ;           2) The pseudo-code for OSCtxSw()
+                                 is:
+  239                           ;              a) OSTaskSwHook();
+  240                           ;              b) OSPrioCur             =
+                                 OSPrioHighRdy;
+  241                           ;              c) OSTCBCur              =
+                                 OSTCBHighRdy;
+  242                           ;              d) SP                    =
+                                 OSTCBHighRdy->OSTCBStkPtr;
+  243                           ;              e) Restore the new task's
+                                 context from the new task's stack,
+  244                           ;              f) Return to new task's
+                                 code.
+  245                           ;
+  246                           ;           3) Upon entry:
+  247                           ;              OSTCBCur      points to the
+                                 OS_TCB of the task to suspend,
+  248                           ;              OSTCBHighRdy  points to the
+                                 OS_TCB of the task to resume.
+  249                           ;*********************************************
+                                ***********************************************
+                                ************
+  250                           
+  251                           OSIntCtxSw
+  252    000000B0 34039FE5          LDR     R0, =OSTaskSwHook                  
+                                                             ; OSTaskSwHook();
+  253    000000B4 0FE0A0E1          MOV     LR, PC
+  254    000000B8 10FF2FE1          BX      R0
+  255                           
+  256    000000BC 38039FE5          LDR     R0, =OSPrioCur                     
+                                                             ; OSPrioCur =
+                                             OSPrioHighRdy;
+  257    000000C0 38139FE5          LDR     R1, =OSPrioHighRdy
+  258    000000C4 0020D1E5          LDRB    R2, [R1]
+  259    000000C8 0020C0E5          STRB    R2, [R0]
+  260                           
+  261    000000CC 24039FE5          LDR     R0, =OSTCBCur                      
+                                                             ; OSTCBCur  =
+                                             OSTCBHighRdy;
+  262    000000D0 1C139FE5          LDR     R1, =OSTCBHighRdy
+  263    000000D4 002091E5          LDR     R2, [R1]
+  264    000000D8 002080E5          STR     R2, [R0]
+  265                           
+  266    000000DC 00D092E5          LDR     SP, [R2]                           
+                                                             ; SP = OSTCBHighRd
+                                            y->OSTCBStkPtr;
+  267                           
+  268                                                                         
+                                                  ; RESTORE NEW TASK'S
+                                 CONTEXT:
+  269    000000E0 0100BDE8          LDMFD   SP!, {R0}                          
+                                                             ;    Pop new
+                                             task's CPSR,
+  270    000000E4 00F06FE1          MSR     SPSR_cxsf, R0
+  271                           
+  272    000000E8 FFDFFDE8          LDMFD   SP!, {R0-R12, LR, PC}^             
+                                                             ;    Pop new
+                                             task's context.
+  273                           
+  274                           ;*********************************************
+                                ***********************************************
+                                ************
+  275                           ;*********************************************
+                                ***********************************************
+                                ************
+  276                           ;                                       
+                                 EXCEPTION HANDLERS
+  277                           ;*********************************************
+                                ***********************************************
+                                ************
+  278                           ;*********************************************
+                                ***********************************************
+                                ************
+  279                           
+  280                           ;*********************************************
+                                ***********************************************
+                                ************
+  281                           ;                                UNDEFINED
+                                 INSTRUCTION EXCEPTION HANDLER
+  282                           ;
+  283                           ; Register Usage:  R0     Exception Type
+  284                           ;                  R1
+  285                           ;                  R2     Return PC
+  286                           ;*********************************************
+                                ***********************************************
+                                ************
+  287                           
+  288                           OS_CPU_ARM_ExceptUndefInstrHndlr
+  289                                                                         
+                                                  ; LR offset to return from
+                                 this exception:  0.
+  290    000000EC FF5F2DE9          STMFD   SP!, {R0-R12, LR}                  
+                                                             ; Push working
+                                             registers.
+  291    000000F0 0E20A0E1          MOV     R2, LR                             
+                                                             ; Save link
+                                             register.
+  292    000000F4 0100A0E3          MOV     R0, #OS_CPU_ARM_EXCEPT_UNDEF_INSTR 
+                                                             ; Set exception ID
+                                             to OS_CPU_ARM_EXCEPT_UNDEF_INSTR.
+  293    000000F8 170000EA          B            OS_CPU_ARM_ExceptHndlr        
+                                                                   ; Branch to
+                                                   global exception handler.
+  294                           
+  295                           ;*********************************************
+                                ***********************************************
+                                ************
+  296                           ;                                 SOFTWARE
+                                 INTERRUPT EXCEPTION HANDLER
+  297                           ;
+  298                           ; Register Usage:  R0     Exception Type
+  299                           ;                  R1
+  300                           ;                  R2     Return PC
+  301                           ;*********************************************
+                                ***********************************************
+                                ************
+  302                           
+  303                           OS_CPU_ARM_ExceptSwiHndlr
+  304                                                                         
+                                                  ; LR offset to return from
+                                 this exception:  0.
+  305    000000FC FF5F2DE9          STMFD   SP!, {R0-R12, LR}                  
+                                                             ; Push working
+                                             registers.
+  306    00000100 0E20A0E1          MOV     R2, LR                             
+                                                             ; Save link
+                                             register.
+  307    00000104 0200A0E3          MOV     R0, #OS_CPU_ARM_EXCEPT_SWI         
+                                                             ; Set exception ID
+                                             to OS_CPU_ARM_EXCEPT_SWI.
+  308    00000108 130000EA          B            OS_CPU_ARM_ExceptHndlr        
+                                                                   ; Branch to
+                                                   global exception handler.
+  309                           
+  310                           ;*********************************************
+                                ***********************************************
+                                ************
+  311                           ;                                   PREFETCH
+                                 ABORT EXCEPTION HANDLER
+  312                           ;
+  313                           ; Register Usage:  R0     Exception Type
+  314                           ;                  R1
+  315                           ;                  R2     Return PC
+  316                           ;*********************************************
+                                ***********************************************
+                                ************
+  317                           
+  318                           OS_CPU_ARM_ExceptPrefetchAbortHndlr
+  319    0000010C 04E04EE2          SUB     LR, LR, #4                         
+                                                             ; LR offset to
+                                             return from this exception:
+                                             -4.
+  320    00000110 FF5F2DE9          STMFD   SP!, {R0-R12, LR}                  
+                                                             ; Push working
+                                             registers.
+  321    00000114 0E20A0E1          MOV     R2, LR                             
+                                                             ; Save link
+                                             register.
+  322    00000118 0300A0E3          MOV     R0, #OS_CPU_ARM_EXCEPT_PREFETCH_ABO
+                                            RT               ; Set exception ID
+                                             to OS_CPU_ARM_EXCEPT_PREFETCH_ABOR
+                                            T.
+  323    0000011C 0E0000EA          B            OS_CPU_ARM_ExceptHndlr        
+                                                                   ; Branch to
+                                                   global exception handler.
+  324                           
+  325                           ;*********************************************
+                                ***********************************************
+                                ************
+  326                           ;                                     DATA
+                                 ABORT EXCEPTION HANDLER
+  327                           ;
+  328                           ; Register Usage:  R0     Exception Type
+  329                           ;                  R1
+  330                           ;                  R2     Return PC
+  331                           ;*********************************************
+                                ***********************************************
+                                ************
+  332                           
+  333                           OS_CPU_ARM_ExceptDataAbortHndlr
+  334    00000120 08E04EE2          SUB     LR, LR, #8                         
+                                                             ; LR offset to
+                                             return from this exception:
+                                             -8.
+  335    00000124 FF5F2DE9          STMFD   SP!, {R0-R12, LR}                  
+                                                             ; Push working
+                                             registers.
+  336    00000128 0E20A0E1          MOV     R2, LR                             
+                                                             ; Save link
+                                             register.
+  337    0000012C 0400A0E3          MOV     R0, #OS_CPU_ARM_EXCEPT_DATA_ABORT  
+                                                             ; Set exception ID
+                                             to OS_CPU_ARM_EXCEPT_DATA_ABORT.
+  338    00000130 090000EA          B            OS_CPU_ARM_ExceptHndlr        
+                                                                   ; Branch to
+                                                   global exception handler.
+  339                           
+  340                           ;*********************************************
+                                ***********************************************
+                                ************
+  341                           ;                                    ADDRESS
+                                 ABORT EXCEPTION HANDLER
+  342                           ;
+  343                           ; Register Usage:  R0     Exception Type
+  344                           ;                  R1
+  345                           ;                  R2     Return PC
+  346                           ;*********************************************
+                                ***********************************************
+                                ************
+  347                           
+  348                           OS_CPU_ARM_ExceptAddrAbortHndlr
+  349    00000134 08E04EE2          SUB     LR, LR, #8                         
+                                                             ; LR offset to
+                                             return from this exception:
+                                             -8.
+  350    00000138 FF5F2DE9          STMFD   SP!, {R0-R12, LR}                  
+                                                             ; Push working
+                                             registers.
+  351    0000013C 0E20A0E1          MOV     R2, LR                             
+                                                             ; Save link
+                                             register.
+  352    00000140 0500A0E3          MOV     R0, #OS_CPU_ARM_EXCEPT_ADDR_ABORT  
+                                                             ; Set exception ID
+                                             to OS_CPU_ARM_EXCEPT_ADDR_ABORT.
+  353    00000144 040000EA          B            OS_CPU_ARM_ExceptHndlr        
+                                                                   ; Branch to
+                                                   global exception handler.
+  354                           
+  355                           ;*********************************************
+                                ***********************************************
+                                ************
+  356                           ;                               FAST INTERRUPT
+                                 REQUEST EXCEPTION HANDLER
+  357                           ;
+  358                           ; Register Usage:  R0     Exception Type
+  359                           ;                  R1
+  360                           ;                  R2     Return PC
+  361                           ;*********************************************
+                                ***********************************************
+                                ************
+  362                           
+  363                           OS_CPU_ARM_ExceptFiqHndlr
+  364    00000148 04E04EE2          SUB     LR, LR, #4                         
+                                                             ; LR offset to
+                                             return from this exception:
+                                             -4.
+  365    0000014C FF5F2DE9          STMFD   SP!, {R0-R12, LR}                  
+                                                             ; Push working
+                                             registers.
+  366    00000150 0E20A0E1          MOV     R2, LR                             
+                                                             ; Save link
+                                             register.
+  367    00000154 0700A0E3          MOV     R0, #OS_CPU_ARM_EXCEPT_FIQ         
+                                                             ; Set exception ID
+                                             to OS_CPU_ARM_EXCEPT_FIQ.
+  368    00000158 FFFFFFEA          B            OS_CPU_ARM_ExceptHndlr        
+                                                                   ; Branch to
+                                                   global exception handler.
+  369                           
+  370                           ;*********************************************
+                                ***********************************************
+                                ************
+  371                           ;*********************************************
+                                ***********************************************
+                                ************
+  372                           ;                                       GLOBAL
+                                 EXCEPTION HANDLER
+  373                           ;*********************************************
+                                ***********************************************
+                                ************
+  374                           ;*********************************************
+                                ***********************************************
+                                ************
+  375                           
+  376                           ;*********************************************
+                                ***********************************************
+                                ************
+  377                           ;                                       GLOBAL
+                                 EXCEPTION HANDLER
+  378                           ;
+  379                           ; Register Usage:  R0     Exception Type
+  380                           ;                  R1     Exception's
+                                 SPSR
+  381                           ;                  R2     Return PC
+  382                           ;                  R3     Old CPU mode
+  383                           ;
+  384                           ; Note(s)       : 1) An exception can occur in
+                                 four different circumstances; in each of
+                                 these, the
+  385                           ;                    SVC stack pointer will
+                                 point to a different entity :
+  386                           ;
+  387                           ;                    a) CONDITION: An
+                                 exception occurs before the OS has been fully
+                                 initialized.
+  388                           ;                       SVC STACK: Should
+                                 point to a stack initialized by the applicatio
+                                n's startup code.
+  389                           ;
+  390                           ;                    b) CONDITION: An
+                                 exception interrupts a task.
+  391                           ;                       SVC STACK: Should
+                                 point to task stack.
+  392                           ;
+  393                           ;                    c) CONDITION: An
+                                 exception interrupts another exception, or an
+                                 IRQ before it
+  394                           ;                                  switches to
+                                 the exception stack.
+  395                           ;                       SVC STACK: Should
+                                 point to location in an exception-mode
+                                 stack.
+  396                           ;
+  397                           ;                    d) CONDITION: An
+                                 exception interrupts an an IRQ after it
+                                 switches to the exception
+  398                           ;                                  stack,
+                                 'OS_CPU_ExceptStk[]'.
+  399                           ;                       SVC STACK: Should
+                                 point to location in an exception stack,
+                                 'OS_CPU_ExceptStk[]'.
+  400                           ;*********************************************
+                                ***********************************************
+                                ************
+  401                           
+  402                           OS_CPU_ARM_ExceptHndlr
+  403    0000015C 00104FE1          MRS     R1, SPSR                           
+                                                             ; Save CPSR (i.e.
+                                             exception's SPSR).
+  404                           
+  405                                                                         
+                                                  ; DETERMINE IF WE INTERRUPTED
+                                 A TASK/IRQ OR ANOTHER LOWER PRIORITY
+                                 EXCEPTION:
+  406                                                                         
+                                                  ;   SPSR.Mode = SVC          
+                                      :  task or IRQ handled in SVC mode,
+  407                                                                         
+                                                  ;   SPSR.Mode = FIQ, IRQ,
+                                 ABT, UND :  other exceptions,
+  408                                                                         
+                                                  ;   SPSR.Mode = USR          
+                                      : *unsupported state*.
+  409    00000160 1F3001E2          AND     R3, R1, #OS_CPU_ARM_MODE_MASK
+  410    00000164 130053E3          CMP     R3,     #OS_CPU_ARM_MODE_SVC
+  411    00000168 2100001A          BNE     OS_CPU_ARM_ExceptHndlr_BrkExcept
+  412                           
+  413                           ;*********************************************
+                                ***********************************************
+                                ************
+  414                           ;                                  EXCEPTION
+                                 HANDLER: TASK INTERRUPTED
+  415                           ;
+  416                           ; Register Usage:  R0     Exception Type
+  417                           ;                  R1     Exception's
+                                 SPSR
+  418                           ;                  R2     Return PC
+  419                           ;                  R3     Exception's
+                                 CPSR
+  420                           ;                  R4     Exception's
+                                 SP
+  421                           ;*********************************************
+                                ***********************************************
+                                ************
+  422                           
+  423                           OS_CPU_ARM_ExceptHndlr_BrkTask
+  424    0000016C 00300FE1          MRS     R3, CPSR                           
+                                                             ; Save exception's
+                                             CPSR.
+  425    00000170 0D40A0E1          MOV     R4, SP                             
+                                                             ; Save exception's
+                                             stack pointer.
+  426                           
+  427                                                                         
+                                                  ; Change to SVC mode &
+                                 disable interruptions.
+  428    00000174 D3F021E3          MSR     CPSR_c, #(OS_CPU_ARM_CONTROL_INT_DI
+                                            S | OS_CPU_ARM_MODE_SVC)
+  429                           
+  430                                                                         
+                                                  ; SAVE TASK'S CONTEXT ONTO
+                                 TASK'S STACK:
+  431    00000178 04002DE9          STMFD   SP!, {R2}                          
+                                                             ;   Push task's
+                                             PC,
+  432    0000017C 00402DE9          STMFD   SP!, {LR}                          
+                                                             ;   Push task's
+                                             LR,
+  433    00000180 E01F2DE9          STMFD   SP!, {R5-R12}                      
+                                                             ;   Push task's
+                                             R12-R5,
+  434    00000184 E003B4E8          LDMFD   R4!, {R5-R9}                       
+                                                             ;   Move task's
+                                             R4-R0 from exception stack to
+                                             task's stack.
+  435    00000188 E0032DE9          STMFD   SP!, {R5-R9}
+  436    0000018C 02002DE9          STMFD   SP!, {R1}                          
+                                                             ;   Push task's
+                                             CPSR (i.e. exception SPSR).
+  437                           
+  438                                                                         
+                                                  ; if (OSRunning == 1)
+  439    00000190 58129FE5          LDR     R1, =OSRunning
+  440    00000194 0010D1E5          LDRB    R1, [R1]
+  441    00000198 010051E3          CMP     R1, #1
+  442    0000019C 0800001A          BNE     OS_CPU_ARM_ExceptHndlr_BrkTask_1
+  443                           
+  444                                                                         
+                                                  ; HANDLE NESTING COUNTER:
+  445    000001A0 5C129FE5          LDR     R1, =OSIntNesting                  
+                                                             ;   OSIntNesting++
+                                            ;
+  446    000001A4 0020D1E5          LDRB    R2, [R1]
+  447    000001A8 012082E2          ADD     R2, R2, #1
+  448    000001AC 0020C1E5          STRB    R2, [R1]
+  449                           
+  450    000001B0 010052E3          CMP     R2, #1                             
+                                                             ;   if (OSIntNesti
+                                            ng > 1)
+  451    000001B4 2400001A          BNE     OS_CPU_ARM_ExceptHndlr_BrkIRQ      
+                                                              ;       IRQ has
+                                              been interrupted.
+  452                           
+  453    000001B8 38129FE5          LDR     R1, =OSTCBCur                      
+                                                             ;   OSTCBCur->OSTC
+                                            BStkPtr = SP;
+  454    000001BC 002091E5          LDR     R2, [R1]
+  455    000001C0 00D082E5          STR     SP, [R2]
+  456                           
+  457                           OS_CPU_ARM_ExceptHndlr_BrkTask_1
+  458    000001C4 03F02FE1          MSR     CPSR_cxsf, R3                      
+                                                             ; RESTORE
+                                             INTERRUPTED MODE.
+  459                           
+  460                                                                         
+                                                  ; EXECUTE EXCEPTION
+                                 HANDLER:
+  461    000001C8 38129FE5          LDR     R1, =OS_CPU_ExceptHndlr            
+                                                             ; OS_CPU_ExceptHnd
+                                            lr(except_type = R0);
+  462    000001CC 0FE0A0E1          MOV     LR, PC
+  463    000001D0 11FF2FE1          BX      R1
+  464                           
+  465                                                                         
+                                                  ; Adjust exception stack
+                                 pointer.  This is needed because
+  466                                                                         
+                                                  ; exception stack is not used
+                                 when restoring task context.
+  467    000001D4 38D08DE2          ADD     SP, SP, #(14 * 4)
+  468                           
+  469                                                                         
+                                                  ; Change to SVC mode &
+                                 disable interruptions.
+  470    000001D8 D3F021E3          MSR     CPSR_c, #(OS_CPU_ARM_CONTROL_INT_DI
+                                            S | OS_CPU_ARM_MODE_SVC)
+  471                           
+  472                                                                         
+                                                  ; Call OSIntExit().  This
+                                 call MAY never return if a ready
+  473                                                                         
+                                                  ; task with higher priority
+                                 than the interrupted one is
+  474                                                                         
+                                                  ; found.
+  475    000001DC 28029FE5          LDR     R0, =OSIntExit
+  476    000001E0 0FE0A0E1          MOV     LR, PC
+  477    000001E4 10FF2FE1          BX      R0
+  478                           
+  479                                                                         
+                                                  ; RESTORE NEW TASK'S
+                                 CONTEXT:
+  480    000001E8 0100BDE8          LDMFD   SP!, {R0}                          
+                                                             ;    Pop new
+                                             task's CPSR,
+  481    000001EC 00F06FE1          MSR     SPSR_cxsf, R0
+  482                           
+  483    000001F0 FFDFFDE8          LDMFD   SP!, {R0-R12, LR, PC}^             
+                                                             ;    Pop new
+                                             task's context.
+  484                           
+  485                           ;*********************************************
+                                ***********************************************
+                                ************
+  486                           ;                               EXCEPTION
+                                 HANDLER: EXCEPTION INTERRUPTED
+  487                           ;
+  488                           ; Register Usage:  R0     Exception Type
+  489                           ;                  R1
+  490                           ;                  R2
+  491                           ;                  R3
+  492                           ;*********************************************
+                                ***********************************************
+                                ************
+  493                           
+  494                           OS_CPU_ARM_ExceptHndlr_BrkExcept
+  495    000001F4 02002DE9          STMFD   SP!, {R1}                          
+                                                             ; Push exception's
+                                             SPSR.
+  496                           
+  497    000001F8 00300FE1          MRS     R3, CPSR                           
+                                                             ; Push exception's
+                                             CPSR.
+  498    000001FC 08002DE9          STMFD   SP!, {R3}
+  499                           
+  500                                                                         
+                                                  ; Change to SVC mode &
+                                 disable interruptions.
+  501    00000200 D3F021E3          MSR     CPSR_c, #(OS_CPU_ARM_CONTROL_INT_DI
+                                            S | OS_CPU_ARM_MODE_SVC)
+  502                           
+  503                                                                         
+                                                  ; HANDLE NESTING COUNTER:
+  504    00000204 F8219FE5          LDR     R2, =OSIntNesting                  
+                                                             ;   OSIntNesting++
+                                            ;
+  505    00000208 0040D2E5          LDRB    R4, [R2]
+  506    0000020C 014084E2          ADD     R4, R4, #1
+  507    00000210 0040C2E5          STRB    R4, [R2]
+  508                           
+  509    00000214 03F02FE1          MSR     CPSR_cxsf, R3                      
+                                                             ; RESTORE
+                                             INTERRUPTED MODE.
+  510                           
+  511                                                                         
+                                                  ; EXECUTE EXCEPTION
+                                 HANDLER:
+  512    00000218 E8219FE5          LDR     R2, =OS_CPU_ExceptHndlr            
+                                                             ; OS_CPU_ExceptHnd
+                                            lr(except_type = R0);
+  513    0000021C 0FE0A0E1          MOV     LR, PC
+  514    00000220 12FF2FE1          BX      R2
+  515                           
+  516                                                                         
+                                                  ; Change to SVC mode &
+                                 disable interruptions.
+  517    00000224 D3F021E3          MSR     CPSR_c, #(OS_CPU_ARM_CONTROL_INT_DI
+                                            S | OS_CPU_ARM_MODE_SVC)
+  518                           
+  519                                                                         
+                                                  ; HANDLE NESTING COUNTER:
+  520    00000228 D4219FE5          LDR     R2, =OSIntNesting                  
+                                                             ;   OSIntNesting--
+                                            ;
+  521    0000022C 0040D2E5          LDRB    R4, [R2]
+  522    00000230 014044E2          SUB     R4, R4, #1
+  523    00000234 0040C2E5          STRB    R4, [R2]
+  524                           
+  525    00000238 0800BDE8          LDMFD   SP!, {R3}
+  526    0000023C 03F02FE1          MSR     CPSR_cxsf, R3                      
+                                                             ; RESTORE
+                                             INTERRUPTED MODE.
+  527                           
+  528                                                                         
+                                                  ; RESTORE INTERRUPTED
+                                 EXCEPTIONS' CONTEXT:
+  529    00000240 0100BDE8          LDMFD   SP!, {R0}                          
+                                                             ;    Pop
+                                             exception's CPSR,
+  530    00000244 00F06FE1          MSR     SPSR_cxsf, R0
+  531                           
+  532    00000248 FF9FFDE8          LDMFD   SP!, {R0-R12, PC}^                 
+                                                             ;   Pull working
+                                             registers and return from
+                                             exception.
+  533                           
+  534                           ;*********************************************
+                                ***********************************************
+                                ************
+  535                           ;                                   EXCEPTION
+                                 HANDLER: IRQ INTERRUPTED
+  536                           ;
+  537                           ; Register Usage:  R0     Exception Type
+  538                           ;                  R1
+  539                           ;                  R2
+  540                           ;                  R3
+  541                           ;*********************************************
+                                ***********************************************
+                                ************
+  542                           
+  543                           OS_CPU_ARM_ExceptHndlr_BrkIRQ
+  544    0000024C 03F02FE1          MSR     CPSR_cxsf, R3                      
+                                                             ; RESTORE
+                                             INTERRUPTED MODE.
+  545                           
+  546                                                                         
+                                                  ; EXECUTE EXCEPTION
+                                 HANDLER:
+  547    00000250 B0119FE5          LDR     R1, =OS_CPU_ExceptHndlr            
+                                                             ; OS_CPU_ExceptHnd
+                                            lr(except_type = R0);
+  548    00000254 0FE0A0E1          MOV     LR, PC
+  549    00000258 11FF2FE1          BX      R1
+  550                           
+  551                                                                         
+                                                  ; Adjust exception stack
+                                 pointer.  This is needed because
+  552                                                                         
+                                                  ; exception stack is not used
+                                 when restoring IRQ context.
+  553    0000025C 38D08DE2          ADD     SP, SP, #(14 * 4)
+  554                           
+  555                                                                         
+                                                  ; Change to SVC mode &
+                                 disable interruptions.
+  556    00000260 D3F021E3          MSR     CPSR_c, #(OS_CPU_ARM_CONTROL_INT_DI
+                                            S | OS_CPU_ARM_MODE_SVC)
+  557                           
+  558                                                                         
+                                                  ; HANDLE NESTING COUNTER:
+  559    00000264 98219FE5          LDR     R2, =OSIntNesting                  
+                                                             ;   OSIntNesting--
+                                            ;
+  560    00000268 0040D2E5          LDRB    R4, [R2]
+  561    0000026C 014044E2          SUB     R4, R4, #1
+  562    00000270 0040C2E5          STRB    R4, [R2]
+  563                           
+  564                                                                         
+                                                  ; RESTORE IRQ'S CONTEXT:
+  565    00000274 0100BDE8          LDMFD   SP!, {R0}                          
+                                                             ;    Pop IRQ's
+                                             CPSR,
+  566    00000278 00F06FE1          MSR     SPSR_cxsf, R0
+  567                           
+  568    0000027C FFDFFDE8          LDMFD   SP!, {R0-R12, LR, PC}^             
+                                                             ;    Pop IRQ's
+                                             context.
+  569                           
+  570                           ;*********************************************
+                                ***********************************************
+                                ************
+  571                           ;*********************************************
+                                ***********************************************
+                                ************
+  572                           ;                                             
+                                 IRQ HANDLER
+  573                           ;*********************************************
+                                ***********************************************
+                                ************
+  574                           ;*********************************************
+                                ***********************************************
+                                ************
+  575                           
+  576                           ;*********************************************
+                                ***********************************************
+                                ************
+  577                           ;                                  INTERRUPT
+                                 REQUEST EXCEPTION HANDLER
+  578                           ;
+  579                           ; Register Usage:  R0     Exception Type
+  580                           ;                  R1     Exception's
+                                 SPSR
+  581                           ;                  R2     Return PC
+  582                           ;                  R3     Exception's
+                                 SP
+  583                           ;
+  584                           ; Note(s)       : 1) An IRQ can occur in three
+                                 different circumstances; in each of these,
+                                 the
+  585                           ;                    SVC stack pointer will
+                                 point to a different entity :
+  586                           ;
+  587                           ;                    a) CONDITION: An
+                                 exception occurs before the OS has been fully
+                                 initialized.
+  588                           ;                       SVC STACK: Should
+                                 point to a stack initialized by the applicatio
+                                n's startup code.
+  589                           ;                       STK USAGE: Interrupted
+                                 context -- SVC stack.
+  590                           ;                                  Exception  
+                                         -- SVC stack.
+  591                           ;                                  Nested
+                                 exceptions   -- SVC stack.
+  592                           ;
+  593                           ;                    b) CONDITION: An IRQ
+                                 interrupts a task.
+  594                           ;                       SVC STACK: Should
+                                 point to task stack.
+  595                           ;                       STK USAGE: Interrupted
+                                 context -- Task stack.
+  596                           ;                                  Exception  
+                                         -- Exception stack 'OS_CPU_ExceptStk[]
+                                '.
+  597                           ;                                  Nested
+                                 exceptions   -- Exception stack 'OS_CPU_Except
+                                Stk[]'.
+  598                           ;
+  599                           ;                    c) CONDITION: An IRQ
+                                 interrupts another IRQ.
+  600                           ;                       SVC STACK: Should
+                                 point to location in exception stack,
+                                 'OS_CPU_ExceptStk[]'.
+  601                           ;                       STK USAGE: Interrupted
+                                 context -- Exception stack 'OS_CPU_ExceptStk[]
+                                '.
+  602                           ;                                  Exception  
+                                         -- Exception stack 'OS_CPU_ExceptStk[]
+                                '.
+  603                           ;                                  Nested
+                                 exceptions   -- Exception stack 'OS_CPU_Except
+                                Stk[]'.
+  604                           ;*********************************************
+                                ***********************************************
+                                ************
+  605                           
+  606                           OS_CPU_ARM_ExceptIrqHndlr
+  607    00000280 04E04EE2          SUB     LR, LR, #4                         
+                                                             ; LR offset to
+                                             return from this exception:
+                                             -4.
+  608    00000284 0F002DE9          STMFD   SP!, {R0-R3}                       
+                                                             ; Push working
+                                             registers.
+  609                           
+  610    00000288 0600A0E3          MOV     R0, #OS_CPU_ARM_EXCEPT_IRQ         
+                                                             ; Set exception ID
+                                             to OS_CPU_ARM_EXCEPT_IRQ.
+  611    0000028C 00104FE1          MRS     R1, SPSR                           
+                                                             ; Save CPSR (i.e.
+                                             exception's SPSR).
+  612    00000290 0E20A0E1          MOV     R2, LR                             
+                                                             ; Save link
+                                             register.
+  613    00000294 0D30A0E1          MOV     R3, SP                             
+                                                             ; Save exception's
+                                             stack pointer.
+  614                           
+  615                                                                         
+                                                  ; Change to SVC mode &
+                                 disable interruptions.
+  616    00000298 D3F021E3          MSR     CPSR_c, #(OS_CPU_ARM_CONTROL_INT_DI
+                                            S | OS_CPU_ARM_MODE_SVC)
+  617                           
+  618                                                                         
+                                                  ; SAVE CONTEXT ONTO SVC
+                                 STACK:
+  619    0000029C 04002DE9          STMFD   SP!, {R2}                          
+                                                             ;   Push task's
+                                             PC,
+  620    000002A0 00402DE9          STMFD   SP!, {LR}                          
+                                                             ;   Push task's
+                                             LR,
+  621    000002A4 F01F2DE9          STMFD   SP!, {R4-R12}                      
+                                                             ;   Push task's
+                                             R12-R4,
+  622    000002A8 E001B3E8          LDMFD   R3!, {R5-R8}                       
+                                                             ;   Move task's
+                                             R3-R0 from exception stack to
+                                             task's stack.
+  623    000002AC E0012DE9          STMFD   SP!, {R5-R8}
+  624    000002B0 02002DE9          STMFD   SP!, {R1}                          
+                                                             ;   Push task's
+                                             CPSR (i.e. exception SPSR).
+  625                           
+  626                                                                         
+                                                  ; if (OSRunning == 1)
+  627    000002B4 34319FE5          LDR     R3, =OSRunning
+  628    000002B8 0040D3E5          LDRB    R4, [R3]
+  629    000002BC 010054E3          CMP     R4, #1
+  630    000002C0 2800001A          BNE     OS_CPU_ARM_IRQHndlr_BreakNothing
+  631                           
+  632                                                                         
+                                                  ; HANDLE NESTING COUNTER:
+  633    000002C4 38319FE5          LDR     R3, =OSIntNesting                  
+                                                             ;   OSIntNesting++
+                                            ;
+  634    000002C8 0040D3E5          LDRB    R4, [R3]
+  635    000002CC 014084E2          ADD     R4, R4, #1
+  636    000002D0 0040C3E5          STRB    R4, [R3]
+  637                           
+  638    000002D4 010054E3          CMP     R4, #1                             
+                                                             ; if (OSIntNesting
+                                             == 1)
+  639    000002D8 1300001A          BNE     OS_CPU_ARM_IRQHndlr_BreakIRQ
+  640                           
+  641                           ;*********************************************
+                                ***********************************************
+                                ************
+  642                           ;                                      IRQ
+                                 HANDLER: TASK INTERRUPTED
+  643                           ;
+  644                           ; Register Usage:  R0     Exception Type
+  645                           ;                  R1
+  646                           ;                  R2
+  647                           ;                  R3
+  648                           ;*********************************************
+                                ***********************************************
+                                ************
+  649                           
+  650                           OS_CPU_ARM_IRQHndlr_BreakTask
+  651    000002DC 14319FE5          LDR     R3, =OSTCBCur                      
+                                                             ; OSTCBCur->OSTCBS
+                                            tkPtr = SP;
+  652    000002E0 004093E5          LDR     R4, [R3]
+  653    000002E4 00D084E5          STR     SP, [R4]
+  654                           
+  655    000002E8 20319FE5          LDR     R3, =OS_CPU_ExceptStkBase          
+                                                             ; Switch to
+                                             exception stack.
+  656    000002EC 00D093E5          LDR     SP, [R3]
+  657                           
+  658                                                                         
+                                                  ; EXECUTE EXCEPTION
+                                 HANDLER:
+  659    000002F0 10119FE5          LDR     R1, =OS_CPU_ExceptHndlr            
+                                                             ; OS_CPU_ExceptHnd
+                                            lr(except_type = R0)
+  660    000002F4 0FE0A0E1          MOV     LR, PC
+  661    000002F8 11FF2FE1          BX      R1
+  662                           
+  663                                                                         
+                                                  ; Change to IRQ mode &
+                                 disable interruptions.
+  664    000002FC D2F021E3          MSR     CPSR_c, #(OS_CPU_ARM_CONTROL_INT_DI
+                                            S | OS_CPU_ARM_MODE_IRQ)
+  665                           
+  666                                                                         
+                                                  ; Adjust exception stack
+                                 pointer.  This is needed because
+  667                                                                         
+                                                  ; exception stack is not used
+                                 when restoring task context.
+  668    00000300 10D08DE2          ADD     SP, SP, #(4 * 4)
+  669                           
+  670                           
+  671                                                                         
+                                                  ; Change to SVC mode &
+                                 disable interruptions.
+  672    00000304 D3F021E3          MSR     CPSR_c, #(OS_CPU_ARM_CONTROL_INT_DI
+                                            S | OS_CPU_ARM_MODE_SVC)
+  673                           
+  674                                                                         
+                                                  ; Call OSIntExit().  This
+                                 call MAY never return if a ready
+  675                                                                         
+                                                  ; task with higher priority
+                                 than the interrupted one is
+  676                                                                         
+                                                  ; found.
+  677    00000308 FC009FE5          LDR     R0, =OSIntExit
+  678    0000030C 0FE0A0E1          MOV     LR, PC
+  679    00000310 10FF2FE1          BX      R0
+  680                           
+  681    00000314 DC309FE5          LDR     R3, =OSTCBCur                      
+                                                             ; SP = OSTCBCur->O
+                                            STCBStkPtr;
+  682    00000318 004093E5          LDR     R4,  [R3]
+  683    0000031C 00D094E5          LDR     SP,  [R4]
+  684                                                                         
+                                                  ; RESTORE NEW TASK'S
+                                 CONTEXT:
+  685    00000320 0100BDE8          LDMFD   SP!, {R0}                          
+                                                             ;    Pop new
+                                             task's CPSR,
+  686    00000324 00F06FE1          MSR     SPSR_cxsf, R0
+  687                           
+  688    00000328 FFDFFDE8          LDMFD   SP!, {R0-R12, LR, PC}^             
+                                                             ;    Pop new
+                                             task's context.
+  689                           
+  690                           
+  691                           ;*********************************************
+                                ***********************************************
+                                ************
+  692                           ;                                      IRQ
+                                 HANDLER: IRQ INTERRUPTED
+  693                           ;
+  694                           ; Register Usage:  R0     Exception Type
+  695                           ;                  R1
+  696                           ;                  R2
+  697                           ;                  R3
+  698                           ;*********************************************
+                                ***********************************************
+                                ************
+  699                           
+  700                           OS_CPU_ARM_IRQHndlr_BreakIRQ
+  701    0000032C E0309FE5          LDR     R3, =OS_CPU_ExceptStkPtr           
+                                                             ; OS_CPU_ExceptStk
+                                            Ptr = SP;
+  702    00000330 00D083E5          STR     SP, [R3]
+  703                           
+  704                                                                         
+                                                  ; EXECUTE EXCEPTION
+                                 HANDLER:
+  705    00000334 CC309FE5          LDR     R3, =OS_CPU_ExceptHndlr            
+                                                             ; OS_CPU_ExceptHnd
+                                            lr(except_type = R0)
+  706    00000338 0FE0A0E1          MOV     LR, PC
+  707    0000033C 13FF2FE1          BX      R3
+  708                           
+  709                                                                         
+                                                  ; Change to IRQ mode &
+                                 disable interruptions.
+  710    00000340 D2F021E3          MSR     CPSR_c, #(OS_CPU_ARM_CONTROL_INT_DI
+                                            S | OS_CPU_ARM_MODE_IRQ)
+  711                           
+  712                                                                         
+                                                  ; Adjust exception stack
+                                 pointer.  This is needed because
+  713                                                                         
+                                                  ; exception stack is not used
+                                 when restoring task context.
+  714    00000344 10D08DE2          ADD     SP, SP, #(4 * 4)
+  715                           
+  716                                                                         
+                                                  ; Change to SVC mode &
+                                 disable interruptions.
+  717    00000348 D3F021E3          MSR     CPSR_c, #(OS_CPU_ARM_CONTROL_INT_DI
+                                            S | OS_CPU_ARM_MODE_SVC)
+  718                           
+  719                                                                         
+                                                  ; HANDLE NESTING COUNTER:
+  720    0000034C B0309FE5          LDR     R3, =OSIntNesting                  
+                                                             ;   OSIntNesting--
+                                            ;
+  721    00000350 0040D3E5          LDRB    R4, [R3]
+  722    00000354 014044E2          SUB     R4, R4, #1
+  723    00000358 0040C3E5          STRB    R4, [R3]
+  724                           
+  725                                                                         
+                                                  ; RESTORE OLD CONTEXT:
+  726    0000035C 0100BDE8          LDMFD   SP!, {R0}                          
+                                                             ;    Pop old
+                                             CPSR,
+  727    00000360 00F06FE1          MSR     SPSR_cxsf, R0
+  728                           
+  729    00000364 FFDFFDE8          LDMFD   SP!, {R0-R12, LR, PC}^             
+                                                             ;   Pull working
+                                             registers and return from
+                                             exception.
+  730                           
+  731                           ;*********************************************
+                                ***********************************************
+                                ************
+  732                           ;                                   IRQ
+                                 HANDLER: 'NOTHING' INTERRUPTED
+  733                           ;
+  734                           ; Register Usage:  R0     Exception Type
+  735                           ;                  R1
+  736                           ;                  R2
+  737                           ;                  R3
+  738                           ;*********************************************
+                                ***********************************************
+                                ************
+  739                           
+  740                           OS_CPU_ARM_IRQHndlr_BreakNothing
+  741                                                                         
+                                                  ; EXECUTE EXCEPTION
+                                 HANDLER:
+  742    00000368 98309FE5          LDR     R3, =OS_CPU_ExceptHndlr            
+                                                             ; OS_CPU_ExceptHnd
+                                            lr(except_type = R0)
+  743    0000036C 0FE0A0E1          MOV     LR, PC
+  744    00000370 13FF2FE1          BX      R3
+  745                           
+  746                                                                         
+                                                  ; Change to IRQ mode &
+                                 disable interruptions.
+  747    00000374 D2F021E3          MSR     CPSR_c, #(OS_CPU_ARM_CONTROL_INT_DI
+                                            S | OS_CPU_ARM_MODE_IRQ)
+  748                           
+  749                                                                         
+                                                  ; Adjust exception stack
+                                 pointer.  This is needed because
+  750                                                                         
+                                                  ; exception stack is not used
+                                 when restoring task context.
+  751    00000378 10D08DE2          ADD     SP, SP, #(4 * 4)
+  752                           
+  753                                                                         
+                                                  ; Change to SVC mode &
+                                 disable interruptions.
+  754    0000037C D3F021E3          MSR     CPSR_c, #(OS_CPU_ARM_CONTROL_INT_DI
+                                            S | OS_CPU_ARM_MODE_SVC)
+  755                           
+  756                                                                         
+                                                  ; RESTORE OLD CONTEXT:
+  757    00000380 0100BDE8          LDMFD   SP!, {R0}                          
+                                                             ;   Pop old
+                                             CPSR,
+  758    00000384 00F06FE1          MSR     SPSR_cxsf, R0
+  759                           
+  760    00000388 FFDFFDE8          LDMFD   SP!, {R0-R12, LR, PC}^             
+                                                             ;   Pull working
+                                             registers and return from
+                                             exception.
+  761                           
+  762                           ;*********************************************
+                                ***********************************************
+                                ************
+  763                           ;*********************************************
+                                ***********************************************
+                                ************
+  764                           ;                                 ENABLE &
+                                 DISABLE INTERRUPTS, IRQs, FIQs
+  765                           ;*********************************************
+                                ***********************************************
+                                ************
+  766                           ;*********************************************
+                                ***********************************************
+                                ************
+  767                           
+  768                           ;*********************************************
+                                ***********************************************
+                                ************
+  769                           ;                                       ENABLE
+                                 & DISABLE INTERRUPTS
+  770                           ;
+  771                           ; Note(s) : 1) OS_CPU_SR_INT_En() can be
+                                 called by OS_CPU_ExceptHndlr() AFTER the
+                                 external
+  772                           ;              interrupt source has been
+                                 cleared.  This function will enable IRQs and
+                                 FIQs so that
+  773                           ;              nesting can occur.
+  774                           ;
+  775                           ;           2) OS_CPU_ARM_INT_Dis() can be
+                                 called to disable IRQs and FIQs so that
+                                 nesting will not occur.
+  776                           ;*********************************************
+                                ***********************************************
+                                ************
+  777                           
+  778                           OS_CPU_SR_INT_En
+  779    0000038C 00000FE1          MRS     R0, CPSR
+  780    00000390 C000C0E3          BIC     R0, R0, #OS_CPU_ARM_CONTROL_INT_DIS
+                                                             ; Clear IRQ and
+                                             FIQ bits in CPSR to enable all
+                                             interrupts.
+  781    00000394 00F021E1          MSR     CPSR_c, R0
+  782    00000398 1EFF2FE1          BX      LR
+  783                           
+  784                           OS_CPU_SR_INT_Dis
+  785    0000039C 00000FE1          MRS     R0, CPSR
+  786    000003A0 C00080E3          ORR     R0, R0, #OS_CPU_ARM_CONTROL_INT_DIS
+                                                             ; Set IRQ and FIQ
+                                             bits in CPSR to disable all
+                                             interrupts.
+  787    000003A4 00F021E1          MSR     CPSR_c, R0
+  788    000003A8 1EFF2FE1          BX      LR
+  789                           
+  790                           ;*********************************************
+                                ***********************************************
+                                ************
+  791                           ;                                         
+                                 ENABLE & DISABLE IRQs
+  792                           ;
+  793                           ; Note(s) : 1) OS_CPU_SR_IRQ_En() can be
+                                 called by OS_CPU_ExceptHndlr() AFTER the
+                                 external
+  794                           ;              interrupt source has been
+                                 cleared.  This function will enable IRQs so
+                                 that IRQ nesting
+  795                           ;              can occur.
+  796                           ;
+  797                           ;           2) OS_CPU_ARM_IRQ_Dis() can be
+                                 called to disable IRQs so that IRQ nesting
+                                 will not occur.
+  798                           ;*********************************************
+                                ***********************************************
+                                ************
+  799                           
+  800                           OS_CPU_SR_IRQ_En
+  801    000003AC 00000FE1          MRS     R0, CPSR
+  802    000003B0 8000C0E3          BIC     R0, R0, #OS_CPU_ARM_CONTROL_IRQ_DIS
+                                                             ; Clear IRQ bit in
+                                             CPSR to enable IRQs.
+  803    000003B4 00F021E1          MSR     CPSR_c, R0
+  804    000003B8 1EFF2FE1          BX      LR
+  805                           
+  806                           OS_CPU_SR_IRQ_Dis
+  807    000003BC 00000FE1          MRS     R0, CPSR
+  808    000003C0 800080E3          ORR     R0, R0, #OS_CPU_ARM_CONTROL_IRQ_DIS
+                                                             ; Set IRQ bit in
+                                             CPSR to disable IRQs.
+  809    000003C4 00F021E1          MSR     CPSR_c, R0
+  810    000003C8 1EFF2FE1          BX      LR
+  811                           
+  812                           ;*********************************************
+                                ***********************************************
+                                ************
+  813                           ;                                         
+                                 ENABLE & DISABLE FIQs
+  814                           ;
+  815                           ; Note(s) : 1) OS_CPU_SR_FIQ_En() can be
+                                 called by OS_CPU_ExceptHndlr() AFTER the
+                                 external
+  816                           ;              interrupt source has been
+                                 cleared.  This function will enable FIQs so
+                                 that FIQ nesting
+  817                           ;              can occur.
+  818                           ;
+  819                           ;           2) OS_CPU_ARM_FIQ_Dis() can be
+                                 called to disable FIQs so that FIQ nesting
+                                 will not occur.
+  820                           ;*********************************************
+                                ***********************************************
+                                ************
+  821                           
+  822                           OS_CPU_SR_FIQ_En
+  823    000003CC 00000FE1          MRS     R0, CPSR
+  824    000003D0 4000C0E3          BIC     R0, R0, #OS_CPU_ARM_CONTROL_FIQ_DIS
+                                                             ; Clear FIQ bit in
+                                             CPSR to enable FIQs.
+  825    000003D4 00F021E1          MSR     CPSR_c, R0
+  826    000003D8 1EFF2FE1          BX      LR
+  827                           
+  828                           OS_CPU_SR_FIQ_Dis
+  829    000003DC 00000FE1          MRS     R0, CPSR
+  830    000003E0 400080E3          ORR     R0, R0, #OS_CPU_ARM_CONTROL_FIQ_DIS
+                                                             ; Set FIQ bit in
+                                             CPSR to disable FIQs.
+  831    000003E4 00F021E1          MSR     CPSR_c, R0
+  832    000003E8 1EFF2FE1          BX      LR
+  833                           
+  834                           
+  834.1                                  TABLE
+  834.2  000003EC ........              Reference on line 158,211,252
+  834.3  000003F0 ........              Reference on line 162,439,627
+  834.4  000003F4 ........              Reference on line 167,221,262
+  834.5  000003F8 ........              Reference on line 207,220,261,453,651,6
+                                        81
+  834.6  000003FC ........              Reference on line 215,256
+  834.7  00000400 ........              Reference on line 216,257
+  834.8  00000404 ........              Reference on line 445,504,520,559,633,7
+                                        20
+  834.9  00000408 ........              Reference on line 461,512,547,659,705,7
+                                        42
+  834.10 0000040C ........              Reference on line 475,677
+  834.11 00000410 ........              Reference on line 655
+  834.12 00000414 ........              Reference on line 701
+  835                               END
+##############################
+#           CRC:0            #
+#        Errors:   0         #
+#        Warnings: 0         #
+#        Bytes: 1048         #
+##############################
+
+
+
+

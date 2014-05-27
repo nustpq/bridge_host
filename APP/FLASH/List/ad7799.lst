@@ -1,0 +1,424 @@
+###############################################################################
+#                                                                             #
+# IAR ANSI C/C++ Compiler V6.40.1.53790/W32 for ARM     14/Jun/2013  13:57:38 #
+# Copyright 1999-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    Cpu mode     =  arm                                                      #
+#    Endian       =  little                                                   #
+#    Source file  =  G:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Driver\ad77 #
+#                    99.c                                                     #
+#    Command line =  "G:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Driver\ad7 #
+#                    799.c" -lcN "G:\SVN Dir\PQ\iSAM Test                     #
+#                    Bench\Bridge_Host_OS\APP\FLASH\List\" -lb "G:\SVN        #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\"   #
+#                    -o "G:\SVN Dir\PQ\iSAM Test                              #
+#                    Bench\Bridge_Host_OS\APP\FLASH\Obj\" --no_cse            #
+#                    --no_unroll --no_inline --no_code_motion --no_tbaa       #
+#                    --no_clustering --no_scheduling --debug --endian=little  #
+#                    --cpu=ARM7TDMI -e --fpu=None --dlib_config "D:\Program   #
+#                    Files\IAR Systems\Embedded Workbench                     #
+#                    6.4\arm\INC\c\DLib_Config_Normal.h" -I "G:\SVN           #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\" -I "G:\SVN   #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\ #
+#                    IAR\" -I "G:\SVN Dir\PQ\iSAM Test                        #
+#                    Bench\Bridge_Host_OS\APP\..\BSP\" -I "G:\SVN             #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\Driver\"    #
+#                    -I "G:\SVN Dir\PQ\iSAM Test                              #
+#                    Bench\Bridge_Host_OS\APP\..\Noah\" -I "G:\SVN            #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\Shell\" -I  #
+#                    "G:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uCO #
+#                    S-II\Source\" -I "G:\SVN Dir\PQ\iSAM Test                #
+#                    Bench\Bridge_Host_OS\APP\..\uC-CPU\" -I "G:\SVN          #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uC-LIB\"    #
+#                    -I "G:\SVN Dir\PQ\iSAM Test                              #
+#                    Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "G:\SVN  #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uCOS-II\Por #
+#                    ts\ARM\Generic\IAR\" -I "G:\SVN Dir\PQ\iSAM Test         #
+#                    Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communicatio #
+#                    n\Generic\RS-232\Source\" -I "G:\SVN Dir\PQ\iSAM Test    #
+#                    Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communicatio #
+#                    n\Generic\RS-232\Ports\Atmel\AT91SAM7X\" -I "G:\SVN      #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uC-Probe\Ta #
+#                    rget\Communication\Generic\Source\" -I "G:\SVN           #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uC-Probe\Ta #
+#                    rget\Plugins\uCOS-II\" -I "G:\SVN Dir\PQ\iSAM Test       #
+#                    Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Demos\Intro\ #
+#                    Source\" --interwork --cpu_mode arm -On --use_c++_inline #
+#    List file    =  G:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\L #
+#                    ist\ad7799.lst                                           #
+#    Object file  =  G:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\O #
+#                    bj\ad7799.o                                              #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+G:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Driver\ad7799.c
+      1          /*
+      2          *********************************************************************************************************
+      3          *                                           Atmel AT91SAM7A3
+      4          *                                                on the
+      5          *                                      iSAM Audio Bridge Board V1.0
+      6          *
+      7          *                          (c) Copyright 2003-2011; Fortemedia(Nanjing) Co., Ltd
+      8          *
+      9          *               All rights reserved.  Protected by international copyright laws.
+     10          *               Knowledge of the source code may NOT be used to develop a similar product.
+     11          *               Please help us continue to provide the Embedded community with the finest
+     12          *               software available.  Your honesty is greatly appreciated.
+     13          *********************************************************************************************************
+     14          */
+     15          /*
+     16          *********************************************************************************************************
+     17          *
+     18          *                                         On current measurement controls
+     19          *                                     Driver for ADC AD7799 on SPI interface
+     20          *                                          Atmel AT91SAM7A3
+     21          *                                                on the
+     22          *                                      iSAM Audio Bridge Board
+     23          *
+     24          * Filename      : ad7799.c
+     25          * Version       : V1.00
+     26          * Programmer(s) : PQ
+     27          *********************************************************************************************************
+     28          * Note(s)       :
+     29          *********************************************************************************************************
+     30          */
+     31          
+     32          #include <board.h>
+     33          #include <ucos_ii.h>
+     34          #include <pio.h>
+     35          #include <spi.h>
+     36          #include <gpio.h>
+     37          #include "ad7799.h"
+     38          #include "timer.h"
+     39           
+     40          
+     41          #define NPCS_AD7799   3 
+     42          
+     43          AT91PS_SPI spi_adc = AT91C_BASE_SPI0 ;
+     44          
+     45          
+     46          /*
+     47          *********************************************************************************************************
+     48          *                                           AD7799_CMD_Write()
+     49          *
+     50          * Description : Write cmd data to AD7799 registers via SPI interface.
+     51          *
+     52          * Argument(s) : data    Byte need write to AD7799
+     53          *
+     54          * Return(s)   : None.
+     55          * 
+     56          * Caller(s)   : 
+     57          *
+     58          * Note(s)     : None.
+     59          *********************************************************************************************************
+     60          */
+     61          static void AD7799_CMD_Write( unsigned char data )
+     62          {  
+     63            
+     64              SPI_Write( spi_adc, NPCS_AD7799, data );   
+     65              
+     66          }
+     67          
+     68          
+     69          /*
+     70          *********************************************************************************************************
+     71          *                                           AD7799_CMD_Read()
+     72          *
+     73          * Description : Read AD7799 registers via SPI interface.
+     74          *
+     75          * Argument(s) : None. 
+     76          *
+     77          * Return(s)   : Byte return from AD7799
+     78          * 
+     79          * Caller(s)   : 
+     80          *
+     81          * Note(s)     : None.
+     82          *********************************************************************************************************
+     83          */
+     84          static unsigned char AD7799_CMD_Read( void ) 
+     85          {  
+     86              unsigned char ReadData;    
+     87             
+     88              SPI_Write(spi_adc, NPCS_AD7799, 0x00);   
+     89              ReadData = SPI_Read(  spi_adc  );
+     90               
+     91              return ReadData;
+     92          }
+     93          
+     94          
+     95          /*
+     96          *********************************************************************************************************
+     97          *                                           Wait_For_RDY()
+     98          *
+     99          * Description : This function use to wait for the the previous operation is done and ADC is ready for next
+    100          *               operation.   500ms timeout.
+    101          *
+    102          * Argument(s) : None. 
+    103          *
+    104          * Return(s)   : 0  ADC is ready.
+    105          *               1  timeout and not ready 
+    106          * 
+    107          * Caller(s)   : 
+    108          *
+    109          * Note(s)     : None.
+    110          *********************************************************************************************************
+    111          */
+    112          static unsigned int Wait_For_RDY(void)
+    113          {
+    114              unsigned char status;
+    115              unsigned int counter = 0 ; 
+    116             
+    117              do{      
+    118                 AD7799_CMD_Write(0x40);
+    119                 status = AD7799_CMD_Read();
+    120                 counter++; 
+    121                 OSTimeDly(1);
+    122                 
+    123              }while ( (status & 0x80) && (counter < 500) );
+    124              
+    125              if(counter >= 500){        
+    126                  return 1;
+    127                  
+    128              }
+    129              
+    130              return 0;
+    131                
+    132          }
+    133          
+    134          
+    135          /*
+    136          *********************************************************************************************************
+    137          *                                           Init_AD7799()
+    138          *
+    139          * Description : Initialize AD7799 for ADC.
+    140          *
+    141          * Argument(s) : ADC_channel    Choose the ADC channel that need to operate. 
+    142          *
+    143          * Return(s)   :   =0     Init successfully
+    144          *                !=0     errors
+    145          *
+    146          * Caller(s)   : 
+    147          *
+    148          * Note(s)     : None.
+    149          *********************************************************************************************************
+    150          */
+    151          static unsigned int Init_AD7799( unsigned char ADC_channel )
+    152          {
+    153              unsigned int status = 0;    
+    154             
+    155              //SW reset
+    156              AD7799_CMD_Write(0xFF);
+    157              AD7799_CMD_Write(0xFF);
+    158              AD7799_CMD_Write(0xFF);
+    159              AD7799_CMD_Write(0xFF);
+    160              OSTimeDly(1); //from spec, need wait at least 500us after reset 
+    161              
+    162              //check status REG
+    163              AD7799_CMD_Write(0x40); 
+    164              status = AD7799_CMD_Read();  
+    165              //printf("\r\nstatus2 = 0x%X\r\n",status);
+    166              if(status != 0x89)  {
+    167                return 0x21;//error
+    168              }    
+    169            
+    170              AD7799_CMD_Write(0x10);
+    171              /* Writes to Communications Register Setting Next Operation as Write to
+    172                  CONFIGURATION Register*/      
+    173              AD7799_CMD_Write(0x30);  //pga gain=1, in-amp not used, ADC input range(2.5V)
+    174              AD7799_CMD_Write(0x20 + ADC_channel); //ref detection enabled, unbuffered mode   
+    175           
+    176              /***************** Internal  Calibration ****************/
+    177              AD7799_CMD_Write(0x08);
+    178              /* Writes to Communications Register Setting Next Operation as Write to
+    179                  Mode Register*/
+    180              AD7799_CMD_Write(0x80);
+    181              AD7799_CMD_Write(0x0F);
+    182              /* Writes to Mode Register Initiating Internal Zero-Scale Calibration*/
+    183              status = Wait_For_RDY();
+    184              if(status!=0) return status;
+    185              /* Wait for RDY pin to go low to indicate end of calibration cycle*/
+    186             
+    187              AD7799_CMD_Write(0x08);
+    188              /* Writes to Communications Register Setting Next Operation as Write to
+    189                  Mode Register*/
+    190              AD7799_CMD_Write(0xa0);
+    191              AD7799_CMD_Write(0x0f);
+    192              /* Writes to Mode Register Initiating Internal Full-Scale Calibration*/
+    193              status = Wait_For_RDY();
+    194              if(status!=0) return status;
+    195              /* Wait for RDY pin to go low to indicate end of calibration cycle*/
+    196              /*************************************************************/
+    197          
+    198              AD7799_CMD_Write(0x08);
+    199              /* Writes to Communications Register Setting Next Operation as Write to
+    200                  Mode Register*/
+    201              AD7799_CMD_Write(0x00);// Continuous-Conversion Mode
+    202              AD7799_CMD_Write(0x0F);
+    203              /* Mode Register[MD2(0),MD1(0),MD0(0),PSW(0),0(0),0(0),0(0),0(0),
+    204               (0),(0),0(0),0(0),FS3(1),FS2(1),FS1(1),FS0(1)]*/
+    205              /*Ä£Ê½0 Continuous-Conversion Mode.£¬Fadc=4.17HZ;*/
+    206              
+    207              return 0 ;
+    208              
+    209          }
+    210          
+    211          
+    212          /*
+    213          *********************************************************************************************************
+    214          *                                           AD7799_GetConvertedData()
+    215          *
+    216          * Description : Get AD7799 last convert data
+    217          *
+    218          * Argument(s) : None.
+    219          *
+    220          * Return(s)   :  A/D convertion result
+    221          * 
+    222          * Caller(s)   : 
+    223          *
+    224          * Note(s)     : None.
+    225          *********************************************************************************************************
+    226          */
+    227          static unsigned int AD7799_GetConvertedData( void )
+    228          {
+    229              unsigned int  ConverData ;
+    230              unsigned char status ; 
+    231              
+    232              status = Wait_For_RDY(); 
+    233              
+    234              if( status != 0 ) {
+    235                  return 0;
+    236              }
+    237              
+    238              AD7799_CMD_Write(0x58);
+    239              /* Writes to Communications Register Setting Next Operation as Continuous
+    240                  Read From Data Register*/            
+    241              ConverData=0;
+    242              ConverData=AD7799_CMD_Read();
+    243              ConverData<<=8;
+    244              ConverData+=AD7799_CMD_Read();
+    245              ConverData<<=8;
+    246              ConverData+=AD7799_CMD_Read();    
+    247                  
+    248              return( ConverData );
+    249          }
+    250          
+    251          
+    252          
+    253          
+    254          /*
+    255          *********************************************************************************************************
+    256          *                                           Init_ADC_Current()
+    257          *
+    258          * Description : Initialize the ADC for current measurement.
+    259          *
+    260          * Argument(s) : None.
+    261          *
+    262          * Return(s)   : None.
+    263          * 
+    264          * Caller(s)   : 
+    265          *
+    266          * Note(s)     : None.
+    267          *********************************************************************************************************
+    268          */
+    269          void Init_ADC_Current( void )
+    270          {  
+    271            
+    272            SPI_Initialize( spi_adc, NPCS_AD7799, 1000000, MCK ) ;   // Configure SPI 
+    273            
+    274            //Init_AD7799(0);
+    275            
+    276          }
+    277          
+    278          
+    279          
+    280          /*
+    281          *********************************************************************************************************
+    282          *                                           Get_Current()
+    283          *
+    284          * Description : Current measurement using AD7799
+    285          *
+    286          * Argument(s) : channel       Choose the ADC channel that need to operate. 
+    287          *                                 channel = 0 : AIN1 : PWR_IN2 : VDDC
+    288          *                                 channel = 1 : AIN2 : PWR_IN3 : VDDA
+    289          *                                 channel = 2 : AIN3 : PWR_IN1 : VDDIO
+    290          *
+    291          *               repeat_times   This number used to calculate a average test data
+    292          * 
+    293          *               *pData         Point to the address the data is stored
+    294          *
+    295          * Return(s)   :   =0     Init successfully
+    296          *                !=0     errors
+    297          *
+    298          * Caller(s)   : 
+    299          *
+    300          * Note(s)     : Auto measurement range switching...
+    301          *********************************************************************************************************
+    302          */
+    303          
+    304          #define MAX_REPEAT_TIMES   ( 50 )
+    305          #define RANGE_LIMIT        ( 19.8/2500 ) * 0xFFFFFF  //range switch point :  0.5mA * 0.36 ohm * 110 = 19.8 mV
+    306          
+    307          unsigned char Get_Current( unsigned char channel, unsigned char repeat_times, unsigned char *pData)
+    308          {
+    309              unsigned char status = 0;
+    310              unsigned int i, range_flag ;  
+    311              unsigned int total, average;
+    312              unsigned int adc_result[MAX_REPEAT_TIMES];
+    313              
+    314              if( channel > 2 ) { //channel is limited to 0 ~ 2 
+    315                return 0x22;//error
+    316                
+    317              }      
+    318              range_flag = 0x80000000 ; //0.33 Ohm, larger current range      
+    319              if( repeat_times > MAX_REPEAT_TIMES || repeat_times==0 ) {
+    320                return 0x23; //error
+    321                
+    322              } 
+    323              
+    324              OSTimeDly(100); //delay_ms(100);    ?????
+    325              status = Init_AD7799( channel );
+    326              if(status!=0) {
+    327                  return status; //init failed, return ;
+    328                  
+    329              }
+    330              
+    331              adc_result[0] = AD7799_GetConvertedData(); //first test data discard
+    332              adc_result[0] = AD7799_GetConvertedData(); 
+    333              
+    334              if(adc_result[0] < RANGE_LIMIT )  {
+    335                 range_flag = 0x00000000 ; //220 Ohm, small current range
+    336                 PIO_Set( &pinsControls[6+channel] );//switch to 220 Ohm : 0.1uA ~ 100uA range
+    337                 OSTimeDly(1000); //delay_ms(1000);
+    338                 adc_result[0] = AD7799_GetConvertedData();
+    339              }
+    340              //printf("adc_result[0] = 0x%8X\r\n",adc_result[0] );
+    341              total = adc_result[0];
+    342              for(i=1; i<repeat_times; i++) {
+    343                  adc_result[i] = AD7799_GetConvertedData();
+    344                  total += adc_result[i];
+    345                  //printf("adc_result[%d] = 0x%8X\r\n",i,adc_result[i] );
+    346              }
+    347              
+    348              // reset R to 0.33//220 after test
+    349               // OSTimeDlyHMSM(0,0,3,0); //delay_ms(100);    ?????
+    350              OSTimeDly(2000); //delay_ms(2000);   
+    351              if(range_flag == 0) {
+    352                  PIO_Clear( &pinsControls[6+ channel] );//switch to 0.33//220 Ohm : 0.1mA ~ 30mA range 
+    353                  
+    354              }
+    355              
+    356              average = total/repeat_times + range_flag;
+    357              *(pData++) = average>>0  & 0xFF;
+    358              *(pData++) = average>>8  & 0xFF;
+    359              *(pData++) = average>>16 & 0xFF;
+    360              *pData     = average>>24 & 0xFF;
+    361              
+    362              //printf("adc_data = 0x%8X\r\n",average );
+    363               
+    364              return status ;
+    365               
+    366          }
+
+Errors: 2
+Warnings: none

@@ -1,0 +1,936 @@
+###############################################################################
+#                                                                             #
+# IAR ANSI C/C++ Compiler V6.40.1.53790/W32 for ARM     26/Aug/2013  22:00:05 #
+# Copyright 1999-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    Cpu mode     =  arm                                                      #
+#    Endian       =  little                                                   #
+#    Source file  =  G:\Bridge_Host_OS\Noah\mem_api.c                         #
+#    Command line =  G:\Bridge_Host_OS\Noah\mem_api.c -lcN                    #
+#                    G:\Bridge_Host_OS\APP\FLASH\List\ -lb                    #
+#                    G:\Bridge_Host_OS\APP\FLASH\List\ -o                     #
+#                    G:\Bridge_Host_OS\APP\FLASH\Obj\ --no_cse --no_unroll    #
+#                    --no_inline --no_code_motion --no_tbaa --no_clustering   #
+#                    --no_scheduling --debug --endian=little --cpu=ARM7TDMI   #
+#                    -e --fpu=None --dlib_config "D:\Program Files (x86)\IAR  #
+#                    Systems\Embedded Workbench 6.4\arm\INC\c\DLib_Config_Nor #
+#                    mal.h" -I G:\Bridge_Host_OS\APP\ -I                      #
+#                    G:\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\ -I              #
+#                    G:\Bridge_Host_OS\APP\..\BSP\ -I                         #
+#                    G:\Bridge_Host_OS\APP\..\Driver\ -I                      #
+#                    G:\Bridge_Host_OS\APP\..\Noah\ -I                        #
+#                    G:\Bridge_Host_OS\APP\..\Shell\ -I                       #
+#                    G:\Bridge_Host_OS\APP\..\uCOS-II\Source\ -I              #
+#                    G:\Bridge_Host_OS\APP\..\uC-CPU\ -I                      #
+#                    G:\Bridge_Host_OS\APP\..\uC-LIB\ -I                      #
+#                    G:\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\ -I              #
+#                    G:\Bridge_Host_OS\APP\..\uCOS-II\Ports\ARM\Generic\IAR\  #
+#                    -I G:\Bridge_Host_OS\APP\..\uC-Probe\Target\Communicatio #
+#                    n\Generic\RS-232\Source\ -I                              #
+#                    G:\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\G #
+#                    eneric\RS-232\Ports\Atmel\AT91SAM7X\ -I                  #
+#                    G:\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\G #
+#                    eneric\Source\ -I G:\Bridge_Host_OS\APP\..\uC-Probe\Targ #
+#                    et\Plugins\uCOS-II\ -I G:\Bridge_Host_OS\APP\..\uC-Probe #
+#                    \Target\Demos\Intro\Source\ --interwork --cpu_mode arm   #
+#                    -On --use_c++_inline                                     #
+#    List file    =  G:\Bridge_Host_OS\APP\FLASH\List\mem_api.lst             #
+#    Object file  =  G:\Bridge_Host_OS\APP\FLASH\Obj\mem_api.o                #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+G:\Bridge_Host_OS\Noah\mem_api.c
+      1          #include <includes.h>
+      2          
+      3          MEM_CTR Mem_Ctr ;
+      4          
+      5          
+      6              
+      7          void Init_Noah_Mem_Ctr( void )
+      8          {
+      9              Mem_Ctr.Addr      = 0xC0 ;
+     10              Mem_Ctr.ReadMode  = LEGACY_READ_MODE ;  
+     11              Mem_Ctr.WriteMode = SINGLE_WRITE_MODE ;   
+     12              Mem_Ctr.EmMode    = 0 ;  
+     13              Mem_Ctr.BandRate  = 0 ;
+     14              
+     15          }
+     16          
+     17          const unsigned short CM_SECTION_DEFINE[][3] = 
+     18          {   
+     19            
+     20                {0x0000,  0x3000,   0x4000 }, //FM31~FM34
+     21                {0x038A,  0x3000,   0x3F00 }, //FM23
+     22                {0x1288,  0x3000,   0x3F80 }, //FM1288
+     23                {0x36D0,  0x2800,   0x3BFF }  //FM36
+     24          };
+     25          
+     26          
+     27          unsigned char Check_DSP_ID( void )
+     28          {    
+     29              unsigned char  state ;  
+     30              unsigned char  dsp_type_index ;
+     31              unsigned short rom_id ;
+     32              
+     33              rom_id = 0;
+     34          
+     35              state =  CM_Read( 0x2FFF,(unsigned char *)&rom_id );
+     36            
+     37              if(state == 0 ) {
+     38                
+     39                    if(rom_id == CM_SECTION_DEFINE[1][0]) {
+     40                          dsp_type_index = 1;
+     41                          
+     42                    } else if(rom_id == CM_SECTION_DEFINE[2][0]) {           
+     43                         dsp_type_index  = 2;
+     44                    
+     45                    } else if((rom_id>>8)== (CM_SECTION_DEFINE[3][0]>>8)) {    //FM36       
+     46                         dsp_type_index  = 3;    
+     47                         
+     48                    } else {
+     49                         dsp_type_index  = 0; 
+     50                         
+     51                    }       
+     52              }      
+     53              return  dsp_type_index ;       
+     54              
+     55          }
+     56          
+     57          
+     58          
+     59          
+     60          
+     61          
+     62          
+     63          /******************************************************************************
+     64          
+     65          ***********************   API port subroutines    *****************************
+     66          
+     67          ******************************************************************************/
+     68          
+     69          //DM
+     70          unsigned char DM_Read(unsigned short dm_addr,unsigned char *pdat)
+     71          {  
+     72              unsigned char ErrCode = 0;
+     73              unsigned char I2cState = 0xff ;
+     74              
+     75              *pdat = 0;
+     76              
+     77              if(Mem_Ctr.Addr >= 0x80)  { // I2C
+     78                          
+     79                  switch(Mem_Ctr.ReadMode)    {          
+     80                      case  FAST_READ_MODE :
+     81                          I2cState = DM_FastRead(Mem_Ctr.Addr,dm_addr, (unsigned char *)pdat) ;
+     82                          if(I2cState != SUCCESS)  {
+     83                              ErrCode = I2C_BUS_ERR ;                    
+     84                          }
+     85                      break ;
+     86                      
+     87                      case LEGACY_READ_MODE :
+     88                          I2cState = DM_LegacyRead(Mem_Ctr.Addr,dm_addr,  (unsigned char *)pdat) ;
+     89                          if(I2cState != SUCCESS)  {
+     90                              ErrCode = I2C_BUS_ERR ;
+     91                              
+     92                          }
+     93                      break ;
+     94                      
+     95                      case FAST_READ_RSTART_MODE :
+     96                          I2cState = DM_FastReadReStart(Mem_Ctr.Addr,dm_addr,  (unsigned char *)pdat) ;
+     97                          if(I2cState != SUCCESS)  {
+     98                              ErrCode = I2C_BUS_ERR ;
+     99                              
+    100                          }
+    101                      break ;
+    102                      
+    103                      case LEGACY_READ_RESTART_MODE :
+    104                          I2cState = DM_LegacyReadReStart(Mem_Ctr.Addr,dm_addr,  (unsigned char *)pdat) ;
+    105                          if(I2cState != SUCCESS)  {
+    106                              ErrCode = I2C_BUS_ERR ;
+    107                              
+    108                          }            
+    109                      break ;
+    110                      
+    111                      default :
+    112                          ErrCode = MODE_NOT_SOPORT ;
+    113                      break ;
+    114                      
+    115                  }
+    116                  
+    117                  
+    118              } else if( Mem_Ctr.Addr < 0x0F )  {// Uart
+    119                               
+    120                  switch(Mem_Ctr.ReadMode)  {
+    121                      case LEGACY_READ_MODE :
+    122                          ErrCode = DM_LegacyRead_uart(Mem_Ctr.Addr,dm_addr, (unsigned char *)pdat) ;
+    123                      break ;
+    124                      /*
+    125                      case MMX_READ_MODE :
+    126                          ErrCode = DM_LegacyRead_mmx(Mem_Ctr.Addr,dm_addr, pdat) ;
+    127                      break ;
+    128                      
+    129                      case MMX_REG_READ_MODE:
+    130                          *pdat = Read_mmxReg(dm_addr,1) ;
+    131                      break ;
+    132                      case MMX_XDATA_READ_MODE:
+    133                          *pdat = Read_mmxXdata(dm_addr,1) ;
+    134                      break ;
+    135                      
+    136                      case MMX_IDATA_READ_MODE:
+    137                          *pdat = Read_mmxIdata(dm_addr,1) ;
+    138                      break ;
+    139                      */
+    140                      default :
+    141                          ErrCode = MODE_NOT_SOPORT ;
+    142                      break ;
+    143                  }
+    144                  
+    145              } else {      
+    146                  ErrCode = DVC_ADDR_NOT_EXIT ;
+    147                  
+    148              }
+    149              
+    150              return( ErrCode ) ;
+    151              
+    152          }
+    153          
+    154          
+    155          
+    156          unsigned char DM_Write( unsigned short addr,unsigned short data )
+    157          {
+    158            
+    159              unsigned char ErrCode = 0;
+    160              unsigned char I2cState ;
+    161              
+    162              if( Mem_Ctr.Addr >= 0x80 ) {// I2C 
+    163                
+    164                  switch(Mem_Ctr.WriteMode)  {
+    165                      case  SINGLE_WRITE_MODE :
+    166                          I2cState = DM_SingleWrite(Mem_Ctr.Addr,addr,data) ;
+    167                          if(I2cState != SUCCESS)   {
+    168                              ErrCode = I2C_BUS_ERR ;
+    169                              
+    170                          } 
+    171                      break ;
+    172                      
+    173                      default :
+    174                          ErrCode = MODE_NOT_SOPORT ;
+    175                      break ;
+    176                  }
+    177                  
+    178              } else if(Mem_Ctr.Addr < 0x0F)  {// Uart
+    179                        
+    180                  switch(Mem_Ctr.WriteMode)  {
+    181                    
+    182                      case SINGLE_WRITE_MODE :
+    183                          DM_SingleWrite_uart(Mem_Ctr.Addr,addr,data) ;
+    184                      break ;
+    185                      /*
+    186                      case MMX_WRITE_MODE:
+    187                          ErrCode = DM_SingleWrite_mmx(Mem_Ctr.Addr,addr,data) ;
+    188                      break ;
+    189                      case MMX_REG_WRITE_MODE:
+    190                          Write_mmxReg(addr,(unsigned char)(data&0xff)) ;
+    191                      break ;
+    192                      case MMX_XDATA_WRITE_MODE :
+    193                          Write_mmxXdata(addr,(unsigned char)(data&0xff));   
+    194                      break ;
+    195                      case MMX_IDATA_WRITE_MODE :
+    196                          Write_mmxIdata(addr,(unsigned char)(data&0xff));   
+    197                      break ;
+    198                      */
+    199                      default :  
+    200                          ErrCode = MODE_NOT_SOPORT ;
+    201                          break ;
+    202                  }
+    203              }  else {
+    204                 ErrCode = DVC_ADDR_NOT_EXIT ;
+    205                 
+    206              }
+    207              
+    208              return( ErrCode ) ;    
+    209              
+    210          }
+    211          
+    212          
+    213          
+    214          //PM 
+    215          unsigned char PM_Read(unsigned short addr, unsigned char *pdat)  
+    216          {
+    217            
+    218              unsigned char I2cState = 0 ;
+    219              unsigned char ErrCode = 0 ;
+    220              
+    221              if( Mem_Ctr.Addr >= 0x80 ) {// I2C mode      
+    222             
+    223                  I2cState = PM_LegacyRead(Mem_Ctr.Addr,addr,pdat) ;  
+    224                  if(I2cState != SUCCESS) {
+    225                      ErrCode = I2C_BUS_ERR ;
+    226                      
+    227                  }
+    228                  
+    229              }  else if(Mem_Ctr.Addr < 0x0F)  {// Uart
+    230                        
+    231                  switch(Mem_Ctr.ReadMode)  {          
+    232                      case LEGACY_READ_MODE : 
+    233                           PM_LegacyRead_uart(Mem_Ctr.Addr,addr,pdat) ;            
+    234                        
+    235                      break ;
+    236                   
+    237                      default :  
+    238                          ErrCode = MODE_NOT_SOPORT ;
+    239                          break ;
+    240                  }
+    241                  
+    242              } else {
+    243                
+    244                   ErrCode = MODE_NOT_SOPORT ;
+    245                   
+    246              }
+    247              return(ErrCode) ;
+    248              
+    249          }
+    250          
+    251          
+    252          
+    253          unsigned char PM_Write(unsigned short addr,unsigned char *data,unsigned int xor_key)
+    254          {
+    255               unsigned char I2cState = 0 ;
+    256               unsigned char ErrCode  = 0 ;    
+    257              
+    258               if( Mem_Ctr.Addr >= 0x80 ) {// I2C mode
+    259                 
+    260                  I2cState = PM_SingleWrite(Mem_Ctr.Addr,addr,data,xor_key) ;                  
+    261                  if(I2cState != SUCCESS) {
+    262                      ErrCode = I2C_BUS_ERR ;            
+    263                  }
+    264                  
+    265              }  else if(Mem_Ctr.Addr < 0x0F)  {// Uart
+    266                        
+    267                  switch(Mem_Ctr.WriteMode)  {
+    268                    
+    269                      case SINGLE_WRITE_MODE : 
+    270                           PM_SingleWrite_uart(Mem_Ctr.Addr,addr,data,xor_key) ;                    
+    271                         
+    272                      break ;
+    273                   
+    274                      default :  
+    275                          ErrCode = MODE_NOT_SOPORT ;
+    276                          break ;
+    277                  }
+    278                  
+    279              } else {
+    280                
+    281                   ErrCode = MODE_NOT_SOPORT ;
+    282                   
+    283              }
+    284              
+    285              
+    286              return(ErrCode) ;
+    287              
+    288          }
+    289          
+    290          
+    291          //CM
+    292          unsigned char CM_Read(unsigned short addr, unsigned char *pdat)  
+    293          {
+    294            
+    295              unsigned char I2cState = 0 ;
+    296              unsigned char ErrCode = 0 ;
+    297              
+    298              if( Mem_Ctr.Addr >= 0x80 ) {// I2C mode      
+    299             
+    300                  I2cState = CM_LegacyRead(Mem_Ctr.Addr,addr,pdat) ;  
+    301                  if(I2cState != SUCCESS) {
+    302                      ErrCode = I2C_BUS_ERR ;
+    303                      
+    304                  }
+    305                  
+    306              }  else if(Mem_Ctr.Addr < 0x0F)  {// Uart
+    307                        
+    308                  switch(Mem_Ctr.ReadMode)  {          
+    309                      case LEGACY_READ_MODE : 
+    310                           CM_LegacyRead_uart(Mem_Ctr.Addr,addr,pdat) ;            
+    311                        
+    312                      break ;
+    313                   
+    314                      default :  
+    315                          ErrCode = MODE_NOT_SOPORT ;
+    316                          break ;
+    317                  }
+    318                  
+    319              } else {
+    320                
+    321                   ErrCode = MODE_NOT_SOPORT ;
+    322                   
+    323              }
+    324              return(ErrCode) ;
+    325              
+    326          }
+    327          
+    328          
+    329          unsigned char CM_Write(unsigned short addr,unsigned char *data)
+    330          {
+    331               unsigned char I2cState = 0 ;
+    332               unsigned char ErrCode  = 0 ;    
+    333              
+    334               if( Mem_Ctr.Addr >= 0x80 ) {// I2C mode
+    335                 
+    336                  I2cState = CM_SingleWrite(Mem_Ctr.Addr,addr,data) ;                  
+    337                  if(I2cState != SUCCESS) {
+    338                      ErrCode = I2C_BUS_ERR ;            
+    339                  }
+    340                  
+    341              }  else if(Mem_Ctr.Addr < 0x0F)  {// Uart
+    342                        
+    343                  switch(Mem_Ctr.WriteMode)  {
+    344                    
+    345                      case SINGLE_WRITE_MODE : 
+    346                           CM_SingleWrite_uart(Mem_Ctr.Addr,addr,data) ;                    
+    347                         
+    348                      break ;
+    349                   
+    350                      default :  
+    351                          ErrCode = MODE_NOT_SOPORT ;
+    352                          break ;
+    353                  }
+    354                  
+    355              } else {
+    356                
+    357                   ErrCode = MODE_NOT_SOPORT ;
+    358                   
+    359              }
+    360              
+    361              
+    362              return(ErrCode) ;
+    363              
+    364          }
+    365          
+    366          
+    367          
+    368          
+    369          
+    370          //Host Register
+    371          unsigned char HOST_Read( unsigned char host_addr,unsigned char *pVal)
+    372          {
+    373            
+    374              unsigned char I2cState = 0 ;
+    375              unsigned char ErrCode = 0 ;
+    376              
+    377              if( Mem_Ctr.Addr >= 0x80 ) {// I2C mode      
+    378             
+    379                  I2cState = HOST_LegacyRead(Mem_Ctr.Addr,host_addr,pVal) ;  
+    380                  if(I2cState != SUCCESS) {
+    381                      ErrCode = I2C_BUS_ERR ;
+    382                      
+    383                  }
+    384                  
+    385              }  else if(Mem_Ctr.Addr < 0x0F)  {// Uart
+    386                        
+    387                  switch(Mem_Ctr.ReadMode)  {          
+    388                      case LEGACY_READ_MODE : 
+    389                           HOST_LegacyRead_uart(Mem_Ctr.Addr,host_addr,pVal) ;           
+    390                        
+    391                      break ;
+    392                   
+    393                      default :  
+    394                          ErrCode = MODE_NOT_SOPORT ;
+    395                          break ;
+    396                  }
+    397                  
+    398              } else {
+    399                
+    400                   ErrCode = MODE_NOT_SOPORT ;
+    401                   
+    402              }
+    403              return(ErrCode) ;
+    404              
+    405          }
+    406          
+    407          
+    408          unsigned char HOST_Write_1( unsigned char host_addr,unsigned char host_val )
+    409          {
+    410               unsigned char I2cState = 0 ;
+    411               unsigned char ErrCode  = 0 ;    
+    412              
+    413               if( Mem_Ctr.Addr >= 0x80 ) {// I2C mode
+    414                 
+    415                  I2cState = HOST_SingleWrite_1( Mem_Ctr.Addr, host_addr, host_val ) ;                  
+    416                  if(I2cState != SUCCESS) {
+    417                      ErrCode = I2C_BUS_ERR ;            
+    418                  }
+    419                  
+    420              }  else if(Mem_Ctr.Addr < 0x0F)  {// Uart
+    421                        
+    422                  switch(Mem_Ctr.WriteMode)  {
+    423                    
+    424                      case SINGLE_WRITE_MODE : 
+    425                           HOST_SingleWrite_1_uart( Mem_Ctr.Addr, host_addr, host_val ) ;                    
+    426                         
+    427                      break ;
+    428                   
+    429                      default :  
+    430                          ErrCode = MODE_NOT_SOPORT ;
+    431                          break ;
+    432                  }
+    433                  
+    434              } else {
+    435                
+    436                   ErrCode = MODE_NOT_SOPORT ;
+    437                   
+    438              }
+    439              
+    440              
+    441              return(ErrCode) ;
+    442              
+    443          }
+    444          
+    445          unsigned char HOST_Write_2( unsigned char host_addr,unsigned short host_val )
+    446          {
+    447               unsigned char I2cState = 0 ;
+    448               unsigned char ErrCode  = 0 ;    
+    449              
+    450               if( Mem_Ctr.Addr >= 0x80 ) {// I2C mode
+    451                 
+    452                  I2cState = HOST_SingleWrite_2( Mem_Ctr.Addr, host_addr, host_val ) ;                  
+    453                  if(I2cState != SUCCESS) {
+    454                      ErrCode = I2C_BUS_ERR ;            
+    455                  }
+    456                  
+    457              }  else if(Mem_Ctr.Addr < 0x0F)  {// Uart
+    458                        
+    459                  switch(Mem_Ctr.WriteMode)  {
+    460                    
+    461                      case SINGLE_WRITE_MODE : 
+    462                           HOST_SingleWrite_2_uart( Mem_Ctr.Addr, host_addr, host_val ) ;                    
+    463                         
+    464                      break ;
+    465                   
+    466                      default :  
+    467                          ErrCode = MODE_NOT_SOPORT ;
+    468                          break ;
+    469                  }
+    470                  
+    471              } else {
+    472                
+    473                   ErrCode = MODE_NOT_SOPORT ;
+    474                   
+    475              }
+    476              
+    477              
+    478              return(ErrCode) ;
+    479              
+    480          }
+    481          
+    482          
+    483          
+    484          
+    485          //DSP Register
+    486          unsigned char DSP_Read( unsigned char dsp_addr,unsigned char *pVal)
+    487          {
+    488            
+    489              unsigned char I2cState = 0 ;
+    490              unsigned char ErrCode = 0 ;
+    491              
+    492              if( Mem_Ctr.Addr >= 0x80 ) {// I2C mode      
+    493             
+    494                  I2cState = DSP_LegacyRead(Mem_Ctr.Addr,dsp_addr,pVal) ;  
+    495                  if(I2cState != SUCCESS) {
+    496                      ErrCode = I2C_BUS_ERR ;
+    497                      
+    498                  }
+    499                  
+    500              }  else if(Mem_Ctr.Addr < 0x0F)  {// Uart
+    501                        
+    502                  switch(Mem_Ctr.ReadMode)  {          
+    503                      case LEGACY_READ_MODE : 
+    504                           DSP_LegacyRead_uart(Mem_Ctr.Addr,dsp_addr,pVal) ;           
+    505                        
+    506                      break ;
+    507                   
+    508                      default :  
+    509                          ErrCode = MODE_NOT_SOPORT ;
+    510                          break ;
+    511                  }
+    512                  
+    513              } else {
+    514                
+    515                   ErrCode = MODE_NOT_SOPORT ;
+    516                   
+    517              }
+    518              return(ErrCode) ;
+    519              
+    520          }
+    521          
+    522          unsigned char DSP_Write_1( unsigned char dsp_addr,unsigned char dsp_val )
+    523          {
+    524               unsigned char I2cState = 0 ;
+    525               unsigned char ErrCode  = 0 ;    
+    526              
+    527               if( Mem_Ctr.Addr >= 0x80 ) {// I2C mode
+    528                 
+    529                  I2cState = DSP_SingleWrite_1( Mem_Ctr.Addr, dsp_addr, dsp_val ) ;                  
+    530                  if(I2cState != SUCCESS) {
+    531                      ErrCode = I2C_BUS_ERR ;            
+    532                  }
+    533                  
+    534              }  else if(Mem_Ctr.Addr < 0x0F)  {// Uart
+    535                        
+    536                  switch(Mem_Ctr.WriteMode)  {
+    537                    
+    538                      case SINGLE_WRITE_MODE : 
+    539                           DSP_SingleWrite_1_uart( Mem_Ctr.Addr, dsp_addr, dsp_val ) ;                    
+    540                         
+    541                      break ;
+    542                   
+    543                      default :  
+    544                          ErrCode = MODE_NOT_SOPORT ;
+    545                          break ;
+    546                  }
+    547                  
+    548              } else {
+    549                
+    550                   ErrCode = MODE_NOT_SOPORT ;
+    551                   
+    552              }
+    553              
+    554              
+    555              return(ErrCode) ;
+    556              
+    557          }
+    558          
+    559          unsigned char DSP_Write_2( unsigned char dsp_addr,unsigned short dsp_val )
+    560          {
+    561               unsigned char I2cState = 0 ;
+    562               unsigned char ErrCode  = 0 ;    
+    563              
+    564               if( Mem_Ctr.Addr >= 0x80 ) {// I2C mode
+    565                 
+    566                  I2cState = DSP_SingleWrite_2( Mem_Ctr.Addr, dsp_addr, dsp_val ) ;                  
+    567                  if(I2cState != SUCCESS) {
+    568                      ErrCode = I2C_BUS_ERR ;            
+    569                  }
+    570                  
+    571              }  else if(Mem_Ctr.Addr < 0x0F)  {// Uart
+    572                        
+    573                  switch(Mem_Ctr.WriteMode)  {
+    574                    
+    575                      case SINGLE_WRITE_MODE : 
+    576                           DSP_SingleWrite_2_uart( Mem_Ctr.Addr, dsp_addr, dsp_val ) ;                    
+    577                         
+    578                      break ;
+    579                   
+    580                      default :  
+    581                          ErrCode = MODE_NOT_SOPORT ;
+    582                          break ;
+    583                  }
+    584                  
+    585              } else {
+    586                
+    587                   ErrCode = MODE_NOT_SOPORT ;
+    588                   
+    589              }
+    590              
+    591              
+    592              return(ErrCode) ;
+    593              
+    594          }
+    595          
+    596          
+    597          
+    598          
+    599          
+    600          
+    601          
+    602          
+    603          /****************************    Burst Write   ******************************/
+    604          
+    605          unsigned char DM_BstWrite(void *pDat,unsigned char DatNum)
+    606          {
+    607              unsigned char ErrCode =0 ;
+    608              unsigned char I2cState ;
+    609              
+    610              if(Mem_Ctr.Addr >= 0x80)// I2C
+    611              {                       
+    612                  I2cState = DM_BurstWrite(Mem_Ctr.Addr,(void *)pDat,DatNum) ;
+    613                  if(I2cState != SUCCESS)
+    614                  {
+    615                      ErrCode = I2C_BUS_ERR ;
+    616                  } 
+    617              }
+    618              /*
+    619              else if(Mem_Ctr.Addr < 0x0f) // Uart
+    620              {                     
+    621                  DM_BurstWrite_uart(Mem_Ctr.Addr,(void *)pDat,DatNum) ;
+    622              }
+    623              */
+    624              else  {
+    625                
+    626                  ErrCode = DVC_ADDR_NOT_EXIT ;
+    627              }
+    628              
+    629              return(ErrCode) ;     
+    630          }
+    631          
+    632          
+    633          unsigned char DM_BstWrite_s(unsigned short StAddr,void *pDat,unsigned char DatNum)
+    634          {
+    635              unsigned char ErrCode =0 ;
+    636          
+    637              unsigned char I2cState ;
+    638          
+    639              if(Mem_Ctr.Addr >= 0x80)  { // I2C
+    640                  I2cState = DM_BurstWrite_s(Mem_Ctr.Addr,StAddr,DatNum,(void *)pDat) ;
+    641                  
+    642                  if(I2cState != SUCCESS)   {
+    643                      ErrCode = I2C_BUS_ERR ;
+    644                  } 
+    645                  
+    646              }  else  {
+    647                
+    648                   ErrCode = MODE_NOT_SOPORT ;
+    649                   
+    650              }
+    651              
+    652              return(ErrCode) ;     
+    653          }
+    654          
+    655          
+    656          unsigned char PM_BstWrite_s(unsigned short StAddr,void *pDat,unsigned char DatNum)
+    657          {
+    658              unsigned char ErrCode =0 ;
+    659          
+    660              unsigned char I2cState ;
+    661          
+    662              if( Mem_Ctr.Addr >= 0x80 ) { // I2C
+    663                
+    664                  I2cState = PM_BurstWrite_s(Mem_Ctr.Addr,StAddr,DatNum,(void *)pDat) ;  
+    665                  if(I2cState != SUCCESS)  {
+    666                    
+    667                      ErrCode = I2C_BUS_ERR ;
+    668                  } 
+    669                  
+    670              }  else  {
+    671                
+    672                  ErrCode = MODE_NOT_SOPORT ;
+    673              }
+    674              
+    675              return(ErrCode) ;     
+    676          }
+    677          
+    678          
+    679          
+    680          /***************************     MEM_Block_Read / Write    ********************/
+    681          
+    682          unsigned char MEM_Block_Read(     unsigned char mem_type, 
+    683                                            unsigned short start_addr,
+    684                                            unsigned char num, 
+    685                                            unsigned char *pVal     )
+    686          {
+    687          
+    688            
+    689              unsigned char I2cState = 0 ;
+    690              unsigned char ErrCode  = 0 ;
+    691              
+    692              if( Mem_Ctr.Addr >= 0x80 ) {// I2C mode      
+    693             
+    694                  I2cState = MEM_Block_LegacyRead(Mem_Ctr.Addr, mem_type ,start_addr,num, pVal ) ;           
+    695                  if(I2cState != SUCCESS) {
+    696                      ErrCode = I2C_BUS_ERR ;
+    697                      
+    698                  }
+    699                  
+    700              }  else if(Mem_Ctr.Addr < 0x0F)  {// Uart
+    701                        
+    702                  switch(Mem_Ctr.ReadMode)  {          
+    703                      case LEGACY_READ_MODE : 
+    704                           MEM_Block_LegacyRead_uart(Mem_Ctr.Addr, mem_type ,start_addr,num, pVal ) ;             
+    705                        
+    706                      break ;
+    707                   
+    708                      default :  
+    709                          ErrCode = MODE_NOT_SOPORT ;
+    710                          break ;
+    711                  }
+    712                  
+    713              } else {
+    714                
+    715                   ErrCode = MODE_NOT_SOPORT ;
+    716                   
+    717              }
+    718              return(ErrCode) ;
+    719              
+    720          }
+    721          
+    722          
+    723          
+    724           
+    725          unsigned char MEM_Block_Write(    unsigned char mem_type, 
+    726                                            unsigned short start_addr, 
+    727                                            unsigned char num, 
+    728                                            unsigned char *pVal )
+    729          {
+    730               unsigned char I2cState = 0 ;
+    731               unsigned char ErrCode  = 0 ;    
+    732              
+    733               if( Mem_Ctr.Addr >= 0x80 ) {// I2C mode
+    734                 
+    735                  I2cState = MEM_Block_SingleWrite(Mem_Ctr.Addr,mem_type,start_addr, num,pVal) ;   
+    736                  if(I2cState != SUCCESS) {
+    737                      ErrCode = I2C_BUS_ERR ;            
+    738                  }
+    739                  
+    740              }  else if(Mem_Ctr.Addr < 0x0F)  {// Uart
+    741                        
+    742                  switch(Mem_Ctr.WriteMode)  {
+    743                    
+    744                      case SINGLE_WRITE_MODE : 
+    745                           MEM_Block_SingleWrite_uart(Mem_Ctr.Addr,mem_type,start_addr, num,pVal) ;                      
+    746                         
+    747                      break ;
+    748                   
+    749                      default :  
+    750                          ErrCode = MODE_NOT_SOPORT ;
+    751                          break ;
+    752                  }
+    753                  
+    754              } else {
+    755                
+    756                   ErrCode = MODE_NOT_SOPORT ;
+    757                   
+    758              }
+    759              
+    760              
+    761              return(ErrCode) ;
+    762              
+    763          }
+    764          
+    765          
+    766          
+    767          
+    768          /*****************************************************************************/
+    769          
+    770          
+    771          
+    772          
+    773          /****************************************************************************
+    774          	Function : int CheckMCUEndian(void)
+    775          	MCU  Endian test
+    776                        Big-Endian:    return 1
+    777                        Little-Endian: return 0
+    778          ****************************************************************************/
+    779          unsigned int CheckMCUEndian(void)
+    780          {
+    781            
+    782              union {
+    783                          unsigned int  a;
+    784                          unsigned char b;
+    785                    }c;
+    786              
+    787              c.a = 1;  
+    788              
+    789              return (c.b==0);
+    790              
+    791          }
+
+   Maximum stack usage in bytes:
+
+   .cstack Function
+   ------- --------
+       24  CM_Read
+             24 -> CM_LegacyRead
+             24 -> CM_LegacyRead_uart
+       24  CM_Write
+             24 -> CM_SingleWrite
+             24 -> CM_SingleWrite_uart
+        4  CheckMCUEndian
+       16  Check_DSP_ID
+             16 -> CM_Read
+       24  DM_BstWrite
+             24 -> DM_BurstWrite
+       24  DM_BstWrite_s
+             24 -> DM_BurstWrite_s
+       24  DM_Read
+             24 -> DM_FastRead
+             24 -> DM_FastReadReStart
+             24 -> DM_LegacyRead
+             24 -> DM_LegacyReadReStart
+             24 -> DM_LegacyRead_uart
+       24  DM_Write
+             24 -> DM_SingleWrite
+             24 -> DM_SingleWrite_uart
+       24  DSP_Read
+             24 -> DSP_LegacyRead
+             24 -> DSP_LegacyRead_uart
+       24  DSP_Write_1
+             24 -> DSP_SingleWrite_1
+             24 -> DSP_SingleWrite_1_uart
+       24  DSP_Write_2
+             24 -> DSP_SingleWrite_2
+             24 -> DSP_SingleWrite_2_uart
+       24  HOST_Read
+             24 -> HOST_LegacyRead
+             24 -> HOST_LegacyRead_uart
+       24  HOST_Write_1
+             24 -> HOST_SingleWrite_1
+             24 -> HOST_SingleWrite_1_uart
+       24  HOST_Write_2
+             24 -> HOST_SingleWrite_2
+             24 -> HOST_SingleWrite_2_uart
+        0  Init_Noah_Mem_Ctr
+       32  MEM_Block_Read
+             32 -> MEM_Block_LegacyRead
+             32 -> MEM_Block_LegacyRead_uart
+       32  MEM_Block_Write
+             32 -> MEM_Block_SingleWrite
+             32 -> MEM_Block_SingleWrite_uart
+       24  PM_BstWrite_s
+             24 -> PM_BurstWrite_s
+       24  PM_Read
+             24 -> PM_LegacyRead
+             24 -> PM_LegacyRead_uart
+       24  PM_Write
+             24 -> PM_SingleWrite
+             24 -> PM_SingleWrite_uart
+
+
+   Section sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       4  ??DataTable18
+       4  ??DataTable18_1
+     192  CM_Read
+      24  CM_SECTION_DEFINE
+     192  CM_Write
+      48  CheckMCUEndian
+     196  Check_DSP_ID
+     108  DM_BstWrite
+     124  DM_BstWrite_s
+     420  DM_Read
+     232  DM_Write
+     184  DSP_Read
+     192  DSP_Write_1
+     200  DSP_Write_2
+     184  HOST_Read
+     192  HOST_Write_1
+     200  HOST_Write_2
+      64  Init_Noah_Mem_Ctr
+     232  MEM_Block_Read
+     232  MEM_Block_Write
+       8  Mem_Ctr
+     124  PM_BstWrite_s
+     192  PM_Read
+     204  PM_Write
+
+ 
+     8 bytes in section .bss
+    24 bytes in section .rodata
+ 3 720 bytes in section .text
+ 
+ 3 720 bytes of CODE  memory
+    24 bytes of CONST memory
+     8 bytes of DATA  memory
+
+Errors: none
+Warnings: 1

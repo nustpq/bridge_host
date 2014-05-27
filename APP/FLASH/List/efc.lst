@@ -1,0 +1,484 @@
+###############################################################################
+#
+# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        22/May/2014  14:14:49
+# Copyright 1999-2014 IAR Systems AB.
+#
+#    Cpu mode     =  arm
+#    Endian       =  little
+#    Source file  =  E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Driver\efc.c
+#    Command line =  
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Driver\efc.c" -lcN
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\" -lb
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\" -o
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\Obj\" --no_cse
+#        --no_unroll --no_inline --no_code_motion --no_tbaa --no_clustering
+#        --no_scheduling --debug --endian=little --cpu=ARM7TDMI -e --fpu=None
+#        --dlib_config "C:\Program Files (x86)\IAR Systems\Embedded Workbench
+#        7.0\arm\INC\c\DLib_Config_Full.h" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\BSP\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Driver\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Noah\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Shell\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uCOS-II\Source\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\uC-CPU\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-LIB\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\uCOS-II\Ports\ARM\Generic\IAR\" -I
+#        "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\RS-232\Source\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\RS-232\Ports\Atmel\AT91SAM7X\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\Source\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Plugins\uCOS-II\" -I
+#        "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Demos\Intro\Source\"
+#        --interwork --cpu_mode arm -On --use_c++_inline
+#    List file    =  
+#        E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\efc.lst
+#    Object file  =  
+#        E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\Obj\efc.o
+#
+###############################################################################
+
+E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Driver\efc.c
+      1          /* ----------------------------------------------------------------------------
+      2           *         ATMEL Microcontroller Software Support 
+      3           * ----------------------------------------------------------------------------
+      4           * Copyright (c) 2008, Atmel Corporation
+      5           *
+      6           * All rights reserved.
+      7           *
+      8           * Redistribution and use in source and binary forms, with or without
+      9           * modification, are permitted provided that the following conditions are met:
+     10           *
+     11           * - Redistributions of source code must retain the above copyright notice,
+     12           * this list of conditions and the disclaimer below.
+     13           *
+     14           * Atmel's name may not be used to endorse or promote products derived from
+     15           * this software without specific prior written permission.
+     16           *
+     17           * DISCLAIMER: THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR
+     18           * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+     19           * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT ARE
+     20           * DISCLAIMED. IN NO EVENT SHALL ATMEL BE LIABLE FOR ANY DIRECT, INDIRECT,
+     21           * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+     22           * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
+     23           * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+     24           * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+     25           * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+     26           * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+     27           * ----------------------------------------------------------------------------
+     28           */
+     29          
+     30          //------------------------------------------------------------------------------
+     31          //         Headers
+     32          //------------------------------------------------------------------------------
+     33          
+     34          #include "efc.h"
+     35          
+     36          #ifdef BOARD_FLASH_EFC
+     37          
+     38          
+     39          //------------------------------------------------------------------------------
+     40          //         Local definitions
+     41          //------------------------------------------------------------------------------
+     42          
+     43          // Round a number to the nearest integral value (number must have been
+     44          // multiplied by 10, e.g. to round 10.3 enter 103).
+     45          #define ROUND(n)    ((((n) % 10) >= 5) ? (((n) / 10) + 1) : ((n) / 10))
+     46          
+     47          // Returns the FMCN field value when manipulating lock bits, given MCK.
+     48          #if defined(at91sam7a3)
+     49              #define FMCN_BITS(mck)      (ROUND((mck) / 1000000) << 16)
+     50          #else
+     51              #define FMCN_BITS(mck)      (ROUND((mck) / 100000) << 16)
+     52          #endif
+     53          
+     54          // Returns the FMCN field value when manipulating the rest of the flash.
+     55          #define FMCN_FLASH(mck)         ((((mck) / 2000000) * 3) << 16)
+     56          
+     57          //------------------------------------------------------------------------------
+     58          //         Local functions
+     59          //------------------------------------------------------------------------------
+     60          
+     61          /// Master clock frequency, used to infer the value of the FMCN field.
+     62          /*
+     63          #ifdef MCK_VARIABLE
+     64          static unsigned int lMck = 0;
+     65          #else
+     66          static const unsigned int lMck = MCK;
+     67          #endif
+     68          */
+     69          //------------------------------------------------------------------------------
+     70          //         Global functions
+     71          //------------------------------------------------------------------------------
+     72          
+     73          //------------------------------------------------------------------------------
+     74          /// Sets the system master clock so the FMCN field of the EFC(s) can be
+     75          /// programmed properly.
+     76          /// \param mck  Master clock frequency in Hz.
+     77          //------------------------------------------------------------------------------
+     78          void EFC_SetMasterClock(unsigned int mck)
+     79          {
+     80          #ifdef MCK_VARIABLE
+     81              lMck = mck;
+     82          #else
+     83              //ASSERT(mck == BOARD_MCK, "-F- EFC has not been configured to work at a freq. different from %dMHz", BOARD_MCK);
+     84          #endif
+     85          }
+     86          
+     87          //------------------------------------------------------------------------------
+     88          /// Enables the given interrupt sources on an EFC peripheral.
+     89          /// \param pEfc  Pointer to an AT91S_EFC structure.
+     90          /// \param sources  Interrupt sources to enable.
+     91          //------------------------------------------------------------------------------
+     92          void EFC_EnableIt(AT91S_EFC *pEfc, unsigned int sources)
+     93          {
+     94              //SANITY_CHECK(pEfc);
+     95              //SANITY_CHECK((sources & ~0x0000000D) == 0);
+     96          
+     97              pEfc->EFC_FMR |= sources;
+     98          }
+     99          
+    100          //------------------------------------------------------------------------------
+    101          /// Disables the given interrupt sources on an EFC peripheral.
+    102          /// \param pEfc  Pointer to an AT91S_EFC structure.
+    103          /// \param sources  Interrupt sources to disable.
+    104          //------------------------------------------------------------------------------
+    105          void EFC_DisableIt(AT91S_EFC *pEfc, unsigned int sources)
+    106          {
+    107              //SANITY_CHECK(pEfc);
+    108              //SANITY_CHECK((sources & ~(AT91C_MC_FRDY | AT91C_MC_LOCKE | AT91C_MC_PROGE)) == 0);
+    109          
+    110              pEfc->EFC_FMR &= ~sources;
+    111          }
+    112          
+    113          //------------------------------------------------------------------------------
+    114          /// Enables or disable the "Erase before programming" feature of an EFC.
+    115          /// \param pEfc  Pointer to an AT91S_EFC structure.
+    116          /// \param enable  If 1, the feature is enabled; otherwise it is disabled.
+    117          //------------------------------------------------------------------------------
+    118          void EFC_SetEraseBeforeProgramming(AT91S_EFC *pEfc, unsigned char enable)
+    119          {
+    120              //SANITY_CHECK(pEfc);
+    121          
+    122              if (enable) {
+    123          
+    124                  pEfc->EFC_FMR &= ~AT91C_MC_NEBP;
+    125              }
+    126              else {
+    127          
+    128                  pEfc->EFC_FMR |= AT91C_MC_NEBP;
+    129              }
+    130          }
+    131          
+    132          //------------------------------------------------------------------------------
+    133          /// Translates the given address into EFC, page and offset values. The resulting
+    134          /// values are stored in the provided variables if they are not null.
+    135          /// \param address  Address to translate.
+    136          /// \param ppEfc  Pointer to target EFC peripheral.
+    137          /// \param pPage  First page accessed.
+    138          /// \param pOffset  Byte offset in first page.
+    139          //------------------------------------------------------------------------------
+    140          void EFC_TranslateAddress(
+    141              unsigned int address,
+    142              AT91S_EFC **ppEfc,
+    143              unsigned short *pPage,
+    144              unsigned short *pOffset)
+    145          {
+    146              AT91S_EFC *pEfc;
+    147              unsigned short page;
+    148              unsigned short offset;
+    149          
+    150              //SANITY_CHECK(address >= (unsigned int)AT91C_IFLASH);
+    151              //SANITY_CHECK(address <= (unsigned int)(AT91C_IFLASH + AT91C_IFLASH_SIZE));
+    152          
+    153          #if defined(AT91C_BASE_EFC0)
+    154              if (address >= (AT91C_IFLASH + AT91C_IFLASH_SIZE / 2)) {
+    155          
+    156                  pEfc = AT91C_BASE_EFC1;
+    157                  page = (address - AT91C_IFLASH - AT91C_IFLASH_SIZE / 2) / AT91C_IFLASH_PAGE_SIZE;
+    158                  offset = (address - AT91C_IFLASH - AT91C_IFLASH_SIZE / 2) % AT91C_IFLASH_PAGE_SIZE;
+    159              }
+    160              else {
+    161          
+    162                  pEfc = AT91C_BASE_EFC0;
+    163                  page = (address - AT91C_IFLASH) / AT91C_IFLASH_PAGE_SIZE;
+    164                  offset = (address - AT91C_IFLASH) % AT91C_IFLASH_PAGE_SIZE;
+    165              }
+    166          #else
+    167              pEfc = AT91C_BASE_EFC;
+    168              page = (address - AT91C_IFLASH) / AT91C_IFLASH_PAGE_SIZE;
+    169              offset = (address - AT91C_IFLASH) % AT91C_IFLASH_PAGE_SIZE;
+    170          #endif
+    171              //TRACE_DEBUG("Translated 0x%08X to EFC=0x%08X, page=%d and offset=%d\n\r",
+    172                       // address, (unsigned int) pEfc, page, offset);
+    173          
+    174              // Store values
+    175              if (ppEfc) {
+    176          
+    177                  *ppEfc = pEfc;
+    178              }
+    179              if (pPage) {
+    180          
+    181                  *pPage = page;
+    182              }
+    183              if (pOffset) {
+    184          
+    185                  *pOffset = offset;
+    186              }
+    187          }
+    188          
+    189          //------------------------------------------------------------------------------
+    190          /// Computes the address of a flash access given the EFC, page and offset.
+    191          /// \param pEfc  Pointer to an AT91S_EFC structure.
+    192          /// \param page  Page number.
+    193          /// \param offset  Byte offset inside page.
+    194          /// \param pAddress  Computed address (optional).
+    195          //------------------------------------------------------------------------------
+    196          void EFC_ComputeAddress(
+    197              AT91S_EFC *pEfc,
+    198              unsigned short page,
+    199              unsigned short offset,
+    200              unsigned int *pAddress)
+    201          {
+    202              unsigned int address;
+    203          
+    204              //SANITY_CHECK(pEfc);
+    205          #if defined(AT91C_BASE_EFC1)
+    206              //SANITY_CHECK(page <= (AT91C_IFLASH_NB_OF_PAGES / 2));
+    207          #else
+    208              //SANITY_CHECK(page <= AT91C_IFLASH_NB_OF_PAGES);
+    209          #endif
+    210              //SANITY_CHECK(offset < AT91C_IFLASH_PAGE_SIZE);
+    211          
+    212              // Compute address
+    213              address = AT91C_IFLASH + page * AT91C_IFLASH_PAGE_SIZE + offset;
+    214          #if defined(AT91C_BASE_EFC1)
+    215              if (pEfc == AT91C_BASE_EFC1) {
+    216          
+    217                  address += AT91C_IFLASH_SIZE / 2;
+    218              }
+    219          #endif
+    220          
+    221              // Store result
+    222              if (pAddress) {
+    223          
+    224                  *pAddress = address;
+    225              }
+    226          }
+    227          
+    228          //------------------------------------------------------------------------------
+    229          /// Starts the executing the given command on an EFC. This function returns
+    230          /// as soon as the command is started. It does NOT set the FMCN field automatically.
+    231          /// \param pEfc  Pointer to an AT91S_EFC structure.
+    232          /// \param command  Command to execute.
+    233          /// \param argument  Command argument (should be 0 if not used).
+    234          //------------------------------------------------------------------------------
+    235          
+    236          __ramfunc void EFC_StartCommand(
+    237              AT91S_EFC *pEfc,
+    238              unsigned char command,
+    239              unsigned short argument)
+    240          {
+    241              //SANITY_CHECK(pEfc);
+    242              //ASSERT(lMck != 0, "-F- Master clock not set.\n\r");
+    243              
+    244              // Check command & argument
+    245              switch (command) {
+    246          
+    247                  case AT91C_MC_FCMD_PROG_AND_LOCK:
+    248                      //ASSERT(0, "-F- Write and lock command cannot be carried out.\n\r");
+    249                      break;
+    250          
+    251                  case AT91C_MC_FCMD_START_PROG:
+    252                  case AT91C_MC_FCMD_LOCK:
+    253                  case AT91C_MC_FCMD_UNLOCK:
+    254                      //ASSERT(argument < AT91C_IFLASH_NB_OF_PAGES,
+    255                            // "-F- Maximum number of pages is %d (argument was %d)\n\r",
+    256                            // AT91C_IFLASH_NB_OF_PAGES,
+    257                            // argument);
+    258                      break;
+    259          
+    260          #if (EFC_NUM_GPNVMS > 0)
+    261                  case AT91C_MC_FCMD_SET_GP_NVM:
+    262                  case AT91C_MC_FCMD_CLR_GP_NVM:
+    263                      //ASSERT(argument < EFC_NUM_GPNVMS, "-F- A maximum of %d GPNVMs are available on the chip.\n\r", EFC_NUM_GPNVMS);
+    264                      break;
+    265          #endif
+    266          
+    267                  case AT91C_MC_FCMD_ERASE_ALL:
+    268          
+    269          #if !defined(EFC_NO_SECURITY_BIT)
+    270                  case AT91C_MC_FCMD_SET_SECURITY:
+    271          #endif
+    272                      //ASSERT(argument == 0, "-F- Argument is meaningless for the given command\n\r");
+    273                      break;
+    274          
+    275                  default: //ASSERT(0, "-F- Unknown command %d\n\r", command);
+    276                      break;
+    277              }
+    278          
+    279              // Set FMCN
+    280              switch (command) {
+    281          
+    282                  case AT91C_MC_FCMD_LOCK:
+    283                  case AT91C_MC_FCMD_UNLOCK:
+    284          #if (EFC_NUM_GPNVMS > 0)
+    285                  case AT91C_MC_FCMD_SET_GP_NVM:
+    286                  case AT91C_MC_FCMD_CLR_GP_NVM:
+    287          #endif
+    288          #if !defined(EFC_NO_SECURITY_BIT)
+    289                  case AT91C_MC_FCMD_SET_SECURITY:
+    290          #endif
+    291                      pEfc->EFC_FMR = (pEfc->EFC_FMR & ~AT91C_MC_FMCN) | FMCN_BITS(MCK);//FMCN_BITS(lMck);
+    292                      break;
+    293          
+    294                  case AT91C_MC_FCMD_START_PROG:
+    295                  case AT91C_MC_FCMD_ERASE_ALL:
+    296                      pEfc->EFC_FMR = (pEfc->EFC_FMR & ~AT91C_MC_FMCN) | FMCN_FLASH(MCK); //FMCN_FLASH(lMck);
+    297                      break;
+    298              }
+    299          
+    300              // Start command
+    301              //ASSERT((pEfc->EFC_FSR & AT91C_MC_FRDY) != 0, "-F- Efc is not ready\n\r");
+    302              pEfc->EFC_FCR = (0x5A << 24) | (argument << 8) | command;
+    303          }
+    304          
+    305          //------------------------------------------------------------------------------
+    306          /// Performs the given command and wait until its completion (or an error).
+    307          /// Returns 0 if successful; otherwise returns an error code.
+    308          /// \param pEfc  Pointer to an AT91S_EFC structure.
+    309          /// \param command  Command to perform.
+    310          /// \param argument  Optional command argument.
+    311          //------------------------------------------------------------------------------
+    312          //////////////// 
+    313          /*
+    314          #if defined(flash)
+    315             #ifdef __ICCARM__
+    316          __ramfunc
+    317             #else
+    318          __attribute__ ((section (".ramfunc")))
+    319             #endif
+    320          #endif
+    321          */
+    322          __ramfunc unsigned char EFC_PerformCommand(   //ram function
+    323              AT91S_EFC *pEfc,
+    324              unsigned char command,
+    325              unsigned short argument)
+    326          {
+    327              unsigned int status;
+    328          
+    329              // Set FMCN
+    330              switch (command) {
+    331          
+    332                  case AT91C_MC_FCMD_LOCK:
+    333                  case AT91C_MC_FCMD_UNLOCK:
+    334          #if (EFC_NUM_GPNVMS > 0)
+    335                  case AT91C_MC_FCMD_SET_GP_NVM:
+    336                  case AT91C_MC_FCMD_CLR_GP_NVM:
+    337          #endif
+    338          #if !defined(EFC_NO_SECURITY_BIT)
+    339                  case AT91C_MC_FCMD_SET_SECURITY:
+    340          #endif
+    341                      pEfc->EFC_FMR = (pEfc->EFC_FMR & ~AT91C_MC_FMCN) | FMCN_BITS(MCK);//FMCN_BITS(lMck);
+    342                      break;
+    343          
+    344                  case AT91C_MC_FCMD_START_PROG:
+    345                  case AT91C_MC_FCMD_ERASE_ALL:
+    346                      pEfc->EFC_FMR = (pEfc->EFC_FMR & ~AT91C_MC_FMCN) | FMCN_FLASH(MCK);//FMCN_FLASH(lMck);
+    347                      break;
+    348              }
+    349          
+    350          #ifdef BOARD_FLASH_IAP_ADDRESS
+    351              // Pointer on IAP function in ROM
+    352              static void (*IAP_PerformCommand)(unsigned int, unsigned int);
+    353              unsigned int index = 0;
+    354          #ifdef AT91C_BASE_EFC1
+    355              if (pEfc == AT91C_BASE_EFC1) {
+    356          
+    357                  index = 1;
+    358              }
+    359          #endif
+    360              IAP_PerformCommand = (void (*)(unsigned int, unsigned int)) *((unsigned int *) BOARD_FLASH_IAP_ADDRESS);
+    361          
+    362              // Check if IAP function is implemented (opcode in SWI != 'b' or 'ldr') */
+    363              if ((((((unsigned long) IAP_PerformCommand >> 24) & 0xFF) != 0xEA) &&
+    364                  (((unsigned long) IAP_PerformCommand >> 24) & 0xFF) != 0xE5)) {
+    365          
+    366                  IAP_PerformCommand(index, (0x5A << 24) | (argument << 8) | command);
+    367                  return (pEfc->EFC_FSR & (AT91C_MC_LOCKE | AT91C_MC_PROGE));
+    368              }
+    369          #endif
+    370          
+    371              pEfc->EFC_FCR = (0x5A << 24) | (argument << 8) | command;
+    372              
+    373              //need wait
+    374              unsigned int i = 0xFFFF ; 
+    375              while( i-- > 0 );
+    376              
+    377              
+    378              do {
+    379                 
+    380                  status = pEfc->EFC_FSR;
+    381           
+    382              }
+    383              while ((status & AT91C_MC_FRDY) == 0);
+    384              
+    385              return (status & (AT91C_MC_PROGE | AT91C_MC_LOCKE));
+    386          }
+    387          
+    388          //------------------------------------------------------------------------------
+    389          /// Returns the current status of an EFC. Keep in mind that this function clears
+    390          /// the value of some status bits (LOCKE, PROGE).
+    391          /// \param pEfc  Pointer to an AT91S_EFC structure.
+    392          //------------------------------------------------------------------------------
+    393          unsigned int EFC_GetStatus(AT91S_EFC *pEfc)
+    394          {
+    395              return pEfc->EFC_FSR;
+    396          }
+    397          
+    398          #endif //#ifdef BOARD_FLASH_EFC
+    399          
+
+   Maximum stack usage in bytes:
+
+   .cstack Function
+   ------- --------
+      12   EFC_ComputeAddress
+       0   EFC_DisableIt
+       0   EFC_EnableIt
+       0   EFC_GetStatus
+       4   EFC_PerformCommand
+       0   EFC_SetEraseBeforeProgramming
+       0   EFC_SetMasterClock
+       0   EFC_StartCommand
+      12   EFC_TranslateAddress
+
+
+   Section sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+      64  EFC_ComputeAddress
+      16  EFC_DisableIt
+      16  EFC_EnableIt
+       8  EFC_GetStatus
+     164  EFC_PerformCommand
+      48  EFC_SetEraseBeforeProgramming
+       4  EFC_SetMasterClock
+     156  EFC_StartCommand
+      80  EFC_TranslateAddress
+
+ 
+ 236 bytes in section .text
+ 320 bytes in section .textrw
+ 
+ 556 bytes of CODE memory
+
+Errors: none
+Warnings: none

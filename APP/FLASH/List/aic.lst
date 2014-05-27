@@ -1,0 +1,159 @@
+###############################################################################
+#                                                                             #
+# IAR ANSI C/C++ Compiler V5.40.0.51500/W32 for ARM     11/Nov/2011  10:16:02 #
+# Copyright (C) 1999-2009 IAR Systems AB.                                     #
+#                                                                             #
+#    Cpu mode     =  arm                                                      #
+#    Endian       =  little                                                   #
+#    Source file  =  L:\SII_UCOS\Micrium_SAM7X256\Software\Driver\aic.c       #
+#    Command line =  L:\SII_UCOS\Micrium_SAM7X256\Software\Driver\aic.c -lcN  #
+#                    L:\SII_UCOS\Micrium_SAM7X256\Software\APP\FLASH\List\    #
+#                    -lb L:\SII_UCOS\Micrium_SAM7X256\Software\APP\FLASH\List #
+#                    \ -o L:\SII_UCOS\Micrium_SAM7X256\Software\APP\FLASH\Obj #
+#                    \ --no_cse --no_unroll --no_inline --no_code_motion      #
+#                    --no_tbaa --no_clustering --no_scheduling --debug        #
+#                    --endian=little --cpu=ARM7TDMI -e --fpu=None             #
+#                    --dlib_config "D:\Program Files\IAR Systems\Embedded     #
+#                    Workbench 5.4ARM\arm\INC\DLib_Config_Normal.h" -I        #
+#                    L:\SII_UCOS\Micrium_SAM7X256\Software\APP\ -I            #
+#                    L:\SII_UCOS\Micrium_SAM7X256\Software\APP\..\uC-CPU\ARM\ #
+#                    IAR\ -I L:\SII_UCOS\Micrium_SAM7X256\Software\APP\..\BSP #
+#                    \ -I L:\SII_UCOS\Micrium_SAM7X256\Software\APP\..\DRIVER #
+#                    \ -I L:\SII_UCOS\Micrium_SAM7X256\Software\APP\..\uCOS-I #
+#                    I\Source\ -I L:\SII_UCOS\Micrium_SAM7X256\Software\APP\. #
+#                    .\uC-CPU\ -I L:\SII_UCOS\Micrium_SAM7X256\Software\APP\. #
+#                    .\uC-LIB\ -I L:\SII_UCOS\Micrium_SAM7X256\Software\APP\. #
+#                    .\uC-CPU\ARM\IAR\ -I L:\SII_UCOS\Micrium_SAM7X256\Softwa #
+#                    re\APP\..\uCOS-II\Ports\ARM\Generic\IAR\ -I              #
+#                    L:\SII_UCOS\Micrium_SAM7X256\Software\APP\..\uC-Probe\Ta #
+#                    rget\Communication\Generic\RS-232\Source\ -I             #
+#                    L:\SII_UCOS\Micrium_SAM7X256\Software\APP\..\uC-Probe\Ta #
+#                    rget\Communication\Generic\RS-232\Ports\Atmel\AT91SAM7X\ #
+#                     -I L:\SII_UCOS\Micrium_SAM7X256\Software\APP\..\uC-Prob #
+#                    e\Target\Communication\Generic\Source\ -I                #
+#                    L:\SII_UCOS\Micrium_SAM7X256\Software\APP\..\uC-Probe\Ta #
+#                    rget\Plugins\uCOS-II\ -I L:\SII_UCOS\Micrium_SAM7X256\So #
+#                    ftware\APP\..\uC-Probe\Target\Demos\Intro\Source\ -I     #
+#                    "D:\Program Files\IAR Systems\Embedded Workbench         #
+#                    5.4ARM\arm\INC\" --interwork --cpu_mode arm -On          #
+#    List file    =  L:\SII_UCOS\Micrium_SAM7X256\Software\APP\FLASH\List\aic #
+#                    .lst                                                     #
+#    Object file  =  L:\SII_UCOS\Micrium_SAM7X256\Software\APP\FLASH\Obj\aic. #
+#                    o                                                        #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+L:\SII_UCOS\Micrium_SAM7X256\Software\Driver\aic.c
+      1          /* ----------------------------------------------------------------------------
+      2           *         ATMEL Microcontroller Software Support 
+      3           * ----------------------------------------------------------------------------
+      4           * Copyright (c) 2008, Atmel Corporation
+      5           *
+      6           * All rights reserved.
+      7           *
+      8           * Redistribution and use in source and binary forms, with or without
+      9           * modification, are permitted provided that the following conditions are met:
+     10           *
+     11           * - Redistributions of source code must retain the above copyright notice,
+     12           * this list of conditions and the disclaimer below.
+     13           *
+     14           * Atmel's name may not be used to endorse or promote products derived from
+     15           * this software without specific prior written permission.
+     16           *
+     17           * DISCLAIMER: THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR
+     18           * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+     19           * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT ARE
+     20           * DISCLAIMED. IN NO EVENT SHALL ATMEL BE LIABLE FOR ANY DIRECT, INDIRECT,
+     21           * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+     22           * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
+     23           * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+     24           * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+     25           * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+     26           * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+     27           * ----------------------------------------------------------------------------
+     28           */
+     29          
+     30          //------------------------------------------------------------------------------
+     31          //         Headers
+     32          //------------------------------------------------------------------------------
+     33          
+     34          
+     35          #include <bsp.h>
+     36          
+     37          //------------------------------------------------------------------------------
+     38          //         Global functions
+     39          //------------------------------------------------------------------------------
+     40          
+     41          //------------------------------------------------------------------------------
+     42          /// Configures an interrupt in the AIC. The interrupt is identified by its
+     43          /// source (AT91C_ID_xxx) and is configured to use the specified mode and
+     44          /// interrupt handler function. Mode is the value that will be put in AIC_SMRx
+     45          /// and the function address will be set in AIC_SVRx.
+     46          /// The interrupt is disabled before configuration, so it is useless
+     47          /// to do it before calling this function. When AIC_ConfigureIT returns, the
+     48          /// interrupt will always be disabled and cleared; it must be enabled by a
+     49          /// call to AIC_EnableIT().
+     50          /// \param source  Interrupt source to configure.
+     51          /// \param mode  Triggering mode and priority of the interrupt.
+     52          /// \param handler  Interrupt handler function.
+     53          //------------------------------------------------------------------------------
+     54          void AIC_ConfigureIT(
+     55              unsigned int source,
+     56              unsigned int mode,
+     57              void (*handler)(void))
+     58          {
+     59              // Disable the interrupt first
+     60              AT91C_BASE_AIC->AIC_IDCR = 1 << source;
+     61          
+     62              // Configure mode and handler
+     63              AT91C_BASE_AIC->AIC_SMR[source] = mode;
+     64              AT91C_BASE_AIC->AIC_SVR[source] = (unsigned int) handler;
+     65          
+     66              // Clear interrupt
+     67              AT91C_BASE_AIC->AIC_ICCR = 1 << source ;
+     68          }
+     69          
+     70          //------------------------------------------------------------------------------
+     71          /// Enables interrupts coming from the given (unique) source (AT91C_ID_xxx).
+     72          /// \param source  Interrupt source to enable.
+     73          //------------------------------------------------------------------------------
+     74          void AIC_EnableIT(unsigned int source)
+     75          {
+     76              AT91C_BASE_AIC->AIC_IECR = 1 << source;
+     77          }
+     78          
+     79          //------------------------------------------------------------------------------
+     80          /// Disables interrupts coming from the given (unique) source (AT91C_ID_xxx).
+     81          /// \param source  Interrupt source to enable.
+     82          //------------------------------------------------------------------------------
+     83          void AIC_DisableIT(unsigned int source)
+     84          {
+     85              AT91C_BASE_AIC->AIC_IDCR = 1 << source;
+     86          }
+     87          
+
+   Maximum stack usage in bytes:
+
+     Function        .cstack
+     --------        -------
+     AIC_ConfigureIT      0
+     AIC_DisableIT        0
+     AIC_EnableIT         0
+
+
+   Section sizes:
+
+     Function/Label  Bytes
+     --------------  -----
+     AIC_ConfigureIT   72
+     AIC_EnableIT      24
+     AIC_DisableIT     24
+
+ 
+ 120 bytes in section .text
+ 
+ 120 bytes of CODE memory
+
+Errors: none
+Warnings: none

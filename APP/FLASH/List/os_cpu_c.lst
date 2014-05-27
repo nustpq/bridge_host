@@ -1,0 +1,734 @@
+###############################################################################
+#
+# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        22/May/2014  14:14:52
+# Copyright 1999-2014 IAR Systems AB.
+#
+#    Cpu mode     =  arm
+#    Endian       =  little
+#    Source file  =  
+#        E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\uCOS-II\Ports\ARM\Generic\IAR\os_cpu_c.c
+#    Command line =  
+#        "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\uCOS-II\Ports\ARM\Generic\IAR\os_cpu_c.c" -lcN
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\" -lb
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\" -o
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\Obj\" --no_cse
+#        --no_unroll --no_inline --no_code_motion --no_tbaa --no_clustering
+#        --no_scheduling --debug --endian=little --cpu=ARM7TDMI -e --fpu=None
+#        --dlib_config "C:\Program Files (x86)\IAR Systems\Embedded Workbench
+#        7.0\arm\INC\c\DLib_Config_Full.h" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\BSP\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Driver\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Noah\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Shell\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uCOS-II\Source\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\uC-CPU\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-LIB\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\uCOS-II\Ports\ARM\Generic\IAR\" -I
+#        "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\RS-232\Source\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\RS-232\Ports\Atmel\AT91SAM7X\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\Source\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Plugins\uCOS-II\" -I
+#        "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Demos\Intro\Source\"
+#        --interwork --cpu_mode arm -On --use_c++_inline
+#    List file    =  
+#        E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\FLASH\List\os_cpu_c.lst
+#    Object file  =  
+#        E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\Obj\os_cpu_c.o
+#
+###############################################################################
+
+E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\uCOS-II\Ports\ARM\Generic\IAR\os_cpu_c.c
+      1          /*
+      2          *********************************************************************************************************
+      3          *                                               uC/OS-II
+      4          *                                         The Real-Time Kernel
+      5          *
+      6          *
+      7          *                             (c) Copyright 1992-2007, Micrium, Weston, FL
+      8          *                                          All Rights Reserved
+      9          *
+     10          *                                           Generic ARM Port
+     11          *
+     12          * File      : OS_CPU_C.C
+     13          * Version   : V2.89
+     14          * By        : Jean J. Labrosse
+     15          *             Jean-Denis Hatier
+     16          *
+     17          * For       : ARM7 or ARM9
+     18          * Mode      : ARM or Thumb
+     19          * Toolchain : IAR's EWARM V4.11a and higher
+     20          *********************************************************************************************************
+     21          */
+     22          
+     23          #define  OS_CPU_GLOBALS
+     24          #include <ucos_ii.h>
+     25          
+     26          /*$PAGE*/
+     27          /*
+     28          *********************************************************************************************************
+     29          *                                             LOCAL CONSTANTS
+     30          *
+     31          * Note(s) : 1) ARM_MODE_ARM is the CPSR bit mask for ARM Mode
+     32          *           2) ARM_MODE_THUMB is the CPSR bit mask for THUMB Mode
+     33          *           3) ARM_SVC_MODE_THUMB is the CPSR bit mask for SVC MODE + THUMB Mode
+     34          *           4) ARM_SVC_MODE_ARM is the CPSR bit mask for SVC MODE + ARM Mode
+     35                      5) OS_NTASKS_FP  establishes the number of tasks capable of supporting floating-point.  One
+     36          *              task is removed for the idle task because it doesn't do floating-point at all.
+     37          *           6) OS_FP_STORAGE_SIZE  currently allocates 128 bytes of storage in order to accomodate
+     38          *              thirty-two single-precision 32-bit, or sixteen double-precision 64-bit VFP registers.
+     39          *********************************************************************************************************
+     40          */
+     41          
+     42          #define  ARM_MODE_ARM           0x00000000u
+     43          #define  ARM_MODE_THUMB         0x00000020u
+     44          
+     45          #define  ARM_SVC_MODE_THUMB    (0x00000013uL + ARM_MODE_THUMB)
+     46          #define  ARM_SVC_MODE_ARM      (0x00000013uL + ARM_MODE_ARM)
+     47          
+     48          #define  OS_NTASKS_FP          (OS_MAX_TASKS + OS_N_SYS_TASKS - 1u)
+     49          #define  OS_FP_STORAGE_SIZE            128u
+     50          
+     51          /*
+     52          *********************************************************************************************************
+     53          *                                          LOCAL VARIABLES
+     54          *********************************************************************************************************
+     55          */
+     56          
+     57          #if OS_TMR_EN > 0u
+     58          static  INT16U  OSTmrCtr;
+     59          #endif
+     60          
+     61          #if OS_CPU_FPU_EN > 0u
+     62          static  OS_MEM  *OSFPPartPtr;                    /* Ptr to memory partition for storing FPU registers  */
+     63          static  INT32U   OSFPPart[OS_NTASKS_FP][OS_FP_STORAGE_SIZE / sizeof(INT32U)];
+     64          #endif
+     65          
+     66          /*$PAGE*/
+     67          /*
+     68          *********************************************************************************************************
+     69          *                                        INITIALIZE FP SUPPORT
+     70          *
+     71          * Description: This function initializes the memory partition used to save FPU registers
+     72          *              during a context switch.  This function MUST be called AFTER calling
+     73          *              OSInit(). OS_CPU_FPU_EN must be defined > 0 in order to compile FPU support into the
+     74          *              build.
+     75          *
+     76          * Arguments  : none
+     77          *
+     78          * Returns    : none
+     79          *
+     80          * Note(s)    : 1) Tasks that are to use FP support MUST be created with OSTaskCreateExt().
+     81          *              2) For the ARM VFP, 128 bytes are required to save the VFP context.
+     82          *                 The INT32U data type is used to ensure that storage is aligned on a 32-bit boundary.
+     83          *              3) If you need to perform floating point operations from within the OSStatTaskHook(),
+     84          *                 then you must change the 'Options' attribute for OSTaskCreatExt() when creating
+     85          *                 the statistics task. This only applies if OS_TaskStat() was created with OSTaskCreateExt().
+     86          *********************************************************************************************************
+     87          */
+     88          
+     89          #if OS_CPU_FPU_EN > 0u
+     90          void  OS_CPU_FP_Init (void)
+     91          {
+     92              INT8U    err;
+     93          #if (OS_TASK_STAT_EN > 0u) && (OS_TASK_CREATE_EXT_EN > 0u)
+     94              OS_TCB  *ptcb;
+     95              void    *pblk;
+     96          #endif
+     97          
+     98          
+     99              OSFPPartPtr = OSMemCreate(&OSFPPart[0][0], OS_NTASKS_FP, OS_FP_STORAGE_SIZE, &err);
+    100          
+    101          #if (OS_TASK_STAT_EN > 0u) && (OS_TASK_CREATE_EXT_EN > 0u)/* CHANGE 'OPTIONS' for OS_TaskStat()        */
+    102              ptcb            = OSTCBPrioTbl[OS_TASK_STAT_PRIO];
+    103              ptcb->OSTCBOpt |= OS_TASK_OPT_SAVE_FP;                /* Allow floating-point support for Stat task*/
+    104              pblk            = OSMemGet(OSFPPartPtr, &err);        /* Get storage for VFP registers             */
+    105              if (pblk != (void *)0) {                              /* Did we get a memory block?                */
+    106                  ptcb->OSTCBExtPtr = pblk;                         /* Yes, Link to task's TCB                   */
+    107                  OS_CPU_FP_Save(pblk);                             /*      Save the VFP registers in block      */
+    108              }
+    109          #endif
+    110          }
+    111          #endif
+    112          
+    113          /*
+    114          *********************************************************************************************************
+    115          *                                       OS INITIALIZATION HOOK
+    116          *                                            (BEGINNING)
+    117          *
+    118          * Description: This function is called by OSInit() at the beginning of OSInit().
+    119          *
+    120          * Arguments  : none
+    121          *
+    122          * Note(s)    : 1) Interrupts should be disabled during this call.
+    123          *********************************************************************************************************
+    124          */
+    125          #if OS_CPU_HOOKS_EN > 0u
+    126          void  OSInitHookBegin (void)
+    127          {
+    128              INT32U   size;
+    129              OS_STK  *pstk;
+    130          
+    131                                                                     /* Clear exception stack for stack checking.*/
+    132              pstk = &OS_CPU_ExceptStk[0];
+    133              size = OS_CPU_EXCEPT_STK_SIZE;
+    134              while (size > 0u) {
+    135                  size--;
+    136                 *pstk = (OS_STK)0;
+    137              }
+    138          
+    139          #if OS_STK_GROWTH == 1u
+    140              OS_CPU_ExceptStkBase = &OS_CPU_ExceptStk[OS_CPU_EXCEPT_STK_SIZE - 1u];
+    141          #else
+    142              OS_CPU_ExceptStkBase = &OS_CPU_ExceptStk[0];
+    143          #endif
+    144          
+    145          #if OS_TMR_EN > 0u
+    146              OSTmrCtr = 0u;
+    147          #endif
+    148          }
+    149          #endif
+    150          
+    151          /*
+    152          *********************************************************************************************************
+    153          *                                       OS INITIALIZATION HOOK
+    154          *                                               (END)
+    155          *
+    156          * Description: This function is called by OSInit() at the end of OSInit().
+    157          *
+    158          * Arguments  : none
+    159          *
+    160          * Note(s)    : 1) Interrupts should be disabled during this call.
+    161          *********************************************************************************************************
+    162          */
+    163          #if OS_CPU_HOOKS_EN > 0u
+    164          void  OSInitHookEnd (void)
+    165          {
+    166          #if OS_CPU_INT_DIS_MEAS_EN > 0u
+    167              OS_CPU_IntDisMeasInit();
+    168          #endif
+    169          
+    170          #if OS_CPU_FPU_EN > 0u
+    171              OS_CPU_FP_Init();                            /* Initialize support for VFP register save / restore */
+    172          #endif
+    173          }
+    174          #endif
+    175          
+    176          /*
+    177          *********************************************************************************************************
+    178          *                                          TASK CREATION HOOK
+    179          *
+    180          * Description: This function is called when a task is created.
+    181          *
+    182          * Arguments  : ptcb   is a pointer to the task control block of the task being created.
+    183          *
+    184          * Note(s)    : 1) Interrupts are disabled during this call.
+    185          *********************************************************************************************************
+    186          */
+    187          #if OS_CPU_HOOKS_EN > 0u
+    188          void  OSTaskCreateHook (OS_TCB *ptcb)
+    189          {
+    190          #if OS_CPU_FPU_EN > 0u
+    191              INT8U  err;
+    192              void  *pblk;
+    193          #endif
+    194          
+    195          
+    196          #if OS_CPU_FPU_EN > 0u
+    197              if (ptcb->OSTCBOpt & OS_TASK_OPT_SAVE_FP) {  /* See if task needs FP support                       */
+    198                  pblk = OSMemGet(OSFPPartPtr, &err);      /* Yes, Get storage for VFP registers                 */
+    199                  if (pblk != (void *)0) {                 /*      Did we get a memory block?                    */
+    200                      ptcb->OSTCBExtPtr = pblk;            /*      Yes, Link to task's TCB                       */
+    201                      OS_CPU_FP_Save(pblk);                /*           Save the VFP registers in block          */
+    202                  }
+    203              }
+    204          #endif
+    205          
+    206          #if OS_APP_HOOKS_EN > 0u
+    207              App_TaskCreateHook(ptcb);
+    208          #else
+    209              (void)ptcb;                                  /* Prevent compiler warning                           */
+    210          #endif
+    211          }
+    212          #endif
+    213          
+    214          
+    215          /*
+    216          *********************************************************************************************************
+    217          *                                           TASK DELETION HOOK
+    218          *
+    219          * Description: This function is called when a task is deleted.
+    220          *
+    221          * Arguments  : ptcb   is a pointer to the task control block of the task being deleted.
+    222          *
+    223          * Note(s)    : 1) Interrupts are disabled during this call.
+    224          *********************************************************************************************************
+    225          */
+    226          #if OS_CPU_HOOKS_EN > 0u
+    227          void  OSTaskDelHook (OS_TCB *ptcb)
+    228          {
+    229          #if OS_CPU_FPU_EN > 0u
+    230              if (ptcb->OSTCBOpt & OS_TASK_OPT_SAVE_FP) {            /* See if task had FP support               */
+    231                  if (ptcb->OSTCBExtPtr != (void *)0) {              /* Yes, OSTCBExtPtr must not be NULL        */
+    232                      OSMemPut(OSFPPartPtr, ptcb->OSTCBExtPtr);      /*      Return memory block to free pool    */
+    233                  }
+    234              }
+    235          #endif
+    236          
+    237          #if OS_APP_HOOKS_EN > 0u
+    238              App_TaskDelHook(ptcb);
+    239          #else
+    240              (void)ptcb;                                            /* Prevent compiler warning                 */
+    241          #endif
+    242          }
+    243          #endif
+    244          
+    245          /*
+    246          *********************************************************************************************************
+    247          *                                             IDLE TASK HOOK
+    248          *
+    249          * Description: This function is called by the idle task.  This hook has been added to allow you to do
+    250          *              such things as STOP the CPU to conserve power.
+    251          *
+    252          * Arguments  : none
+    253          *
+    254          * Note(s)    : 1) Interrupts are enabled during this call.
+    255          *********************************************************************************************************
+    256          */
+    257          #if OS_CPU_HOOKS_EN > 0u
+    258          void  OSTaskIdleHook (void)
+    259          {
+    260          #if OS_CPU_ARM_DCC_EN > 0u
+    261              OSDCC_Handler();
+    262          #endif
+    263          
+    264          #if OS_APP_HOOKS_EN > 0u
+    265              App_TaskIdleHook();
+    266          #endif
+    267          }
+    268          #endif
+    269          
+    270          /*
+    271          *********************************************************************************************************
+    272          *                                            TASK RETURN HOOK
+    273          *
+    274          * Description: This function is called if a task accidentally returns.  In other words, a task should
+    275          *              either be an infinite loop or delete itself when done.
+    276          *
+    277          * Arguments  : ptcb      is a pointer to the task control block of the task that is returning.
+    278          *
+    279          * Note(s)    : none
+    280          *********************************************************************************************************
+    281          */
+    282          
+    283          #if OS_CPU_HOOKS_EN > 0u
+    284          void  OSTaskReturnHook (OS_TCB  *ptcb)
+    285          {
+    286          #if OS_APP_HOOKS_EN > 0u
+    287              App_TaskReturnHook(ptcb);
+    288          #else
+    289              (void)ptcb;
+    290          #endif
+    291          }
+    292          #endif
+    293          
+    294          /*
+    295          *********************************************************************************************************
+    296          *                                           STATISTIC TASK HOOK
+    297          *
+    298          * Description: This function is called every second by uC/OS-II's statistics task.  This allows your
+    299          *              application to add functionality to the statistics task.
+    300          *
+    301          * Arguments  : none
+    302          *********************************************************************************************************
+    303          */
+    304          
+    305          #if OS_CPU_HOOKS_EN > 0u
+    306          void  OSTaskStatHook (void)
+    307          {
+    308          #if OS_APP_HOOKS_EN > 0u
+    309              App_TaskStatHook();
+    310          #endif
+    311          }
+    312          #endif
+    313          
+    314          /*
+    315          *********************************************************************************************************
+    316          *                                        INITIALIZE A TASK'S STACK
+    317          *
+    318          * Description: This function is called by either OSTaskCreate() or OSTaskCreateExt() to initialize the
+    319          *              stack frame of the task being created.  This function is highly processor specific.
+    320          *
+    321          * Arguments  : task          is a pointer to the task code
+    322          *
+    323          *              p_arg         is a pointer to a user supplied data area that will be passed to the task
+    324          *                            when the task first executes.
+    325          *
+    326          *              ptos          is a pointer to the top of stack.  It is assumed that 'ptos' points to
+    327          *                            a 'free' entry on the task stack.  If OS_STK_GROWTH is set to 1 then
+    328          *                            'ptos' will contain the HIGHEST valid address of the stack.  Similarly, if
+    329          *                            OS_STK_GROWTH is set to 0, the 'ptos' will contains the LOWEST valid address
+    330          *                            of the stack.
+    331          *
+    332          *              opt           specifies options that can be used to alter the behavior of OSTaskStkInit().
+    333          *                            (see uCOS_II.H for OS_TASK_OPT_xxx).
+    334          *
+    335          * Returns    : Always returns the location of the new top-of-stack once the processor registers have
+    336          *              been placed on the stack in the proper order.
+    337          *
+    338          * Note(s)    : 1) Interrupts are enabled when your task starts executing.
+    339          *              2) All tasks run in SVC mode.
+    340          *********************************************************************************************************
+    341          */
+    342          
+    343          OS_STK *OSTaskStkInit (void (*task)(void *p_arg), void *p_arg, OS_STK *ptos, INT16U opt)
+    344          {
+    345              OS_STK *stk;
+    346              INT32U  task_addr;
+    347          
+    348          
+    349              opt       = opt;                             /* 'opt' is not used, prevent warning                 */
+    350              stk       = ptos;                            /* Load stack pointer                                 */
+    351              task_addr = (INT32U)task & ~1u;              /* Mask off lower bit in case task is thumb mode      */
+    352              *(stk)    = (INT32U)task_addr;               /* Entry Point                                        */
+    353              *(--stk)  = (INT32U)OS_TaskReturn;           /* R14 (LR)                                           */
+    354              *(--stk)  = (INT32U)0x12121212uL;            /* R12                                                */
+    355              *(--stk)  = (INT32U)0x11111111uL;            /* R11                                                */
+    356              *(--stk)  = (INT32U)0x10101010uL;            /* R10                                                */
+    357              *(--stk)  = (INT32U)0x09090909uL;            /* R9                                                 */
+    358              *(--stk)  = (INT32U)0x08080808uL;            /* R8                                                 */
+    359              *(--stk)  = (INT32U)0x07070707uL;            /* R7                                                 */
+    360              *(--stk)  = (INT32U)0x06060606uL;            /* R6                                                 */
+    361              *(--stk)  = (INT32U)0x05050505uL;            /* R5                                                 */
+    362              *(--stk)  = (INT32U)0x04040404uL;            /* R4                                                 */
+    363              *(--stk)  = (INT32U)0x03030303uL;            /* R3                                                 */
+    364              *(--stk)  = (INT32U)0x02020202uL;            /* R2                                                 */
+    365              *(--stk)  = (INT32U)0x01010101uL;            /* R1                                                 */
+    366              *(--stk)  = (INT32U)p_arg;                   /* R0 : argument                                      */
+    367              if ((INT32U)task & 0x01u) {                  /* See if task runs in Thumb or ARM mode              */
+    368                  *(--stk) = (INT32U)ARM_SVC_MODE_THUMB;   /* CPSR  (Enable IRQ and FIQ interrupts, THUMB-mode)  */
+    369              } else {
+    370                  *(--stk) = (INT32U)ARM_SVC_MODE_ARM;     /* CPSR  (Enable IRQ and FIQ interrupts, ARM-mode)    */
+    371              }
+    372          
+    373              return (stk);
+    374          }
+    375          
+    376          /*
+    377          *********************************************************************************************************
+    378          *                                           TASK SWITCH HOOK
+    379          *
+    380          * Description: This function is called when a task switch is performed.  This allows you to perform other
+    381          *              operations during a context switch.
+    382          *
+    383          * Arguments  : none
+    384          *
+    385          * Note(s)    : 1) Interrupts are disabled during this call.
+    386          *              2) It is assumed that the global pointer 'OSTCBHighRdy' points to the TCB of the task that
+    387          *                 will be 'switched in' (i.e. the highest priority task) and, 'OSTCBCur' points to the
+    388          *                 task being switched out (i.e. the preempted task).
+    389          *********************************************************************************************************
+    390          */
+    391          #if (OS_CPU_HOOKS_EN > 0u) && (OS_TASK_SW_HOOK_EN > 0u)
+    392          void  OSTaskSwHook (void)
+    393          {
+    394          #if OS_CPU_FPU_EN > 0u
+    395              void  *pblk;
+    396          #endif
+    397          
+    398          #if OS_CPU_FPU_EN > 0u                                     /* Save VFP context of preempted task       */
+    399              if (OSRunning == OS_TRUE) {                            /* Don't save on OSStart()!                 */
+    400                  if (OSTCBCur->OSTCBOpt & OS_TASK_OPT_SAVE_FP) {    /* See if task used FP                      */
+    401                      pblk = OSTCBCur->OSTCBExtPtr;                  /* Yes, Get pointer to FP storage area      */
+    402                      if (pblk != (void *)0) {                       /*      Make sure we have storage           */
+    403                          OS_CPU_FP_Save(pblk);                      /*      Save the VFP registers in block     */
+    404                      }
+    405                  }
+    406              }
+    407                                                                     /* Restore VFP context of new task          */
+    408              if (OSTCBHighRdy->OSTCBOpt & OS_TASK_OPT_SAVE_FP) {    /* See if new task uses FP                  */
+    409                  pblk = OSTCBHighRdy->OSTCBExtPtr;                  /* Yes, Get pointer to FP storage area      */
+    410                  if (pblk != (void *)0) {                           /*      Make sure we have storage           */
+    411                      OS_CPU_FP_Restore(pblk);                       /*      Get contents of VFP registers       */
+    412                  }
+    413              }
+    414          #endif
+    415          
+    416          #if OS_APP_HOOKS_EN > 0u
+    417              App_TaskSwHook();
+    418          #endif
+    419          }
+    420          #endif
+    421          
+    422          /*
+    423          *********************************************************************************************************
+    424          *                                           OS_TCBInit() HOOK
+    425          *
+    426          * Description: This function is called by OS_TCBInit() after setting up most of the TCB.
+    427          *
+    428          * Arguments  : ptcb    is a pointer to the TCB of the task being created.
+    429          *
+    430          * Note(s)    : 1) Interrupts may or may not be ENABLED during this call.
+    431          *********************************************************************************************************
+    432          */
+    433          #if OS_CPU_HOOKS_EN > 0u
+    434          void  OSTCBInitHook (OS_TCB *ptcb)
+    435          {
+    436          #if OS_APP_HOOKS_EN > 0u
+    437              App_TCBInitHook(ptcb);
+    438          #else
+    439              (void)ptcb;                                            /* Prevent compiler warning                 */
+    440          #endif
+    441          }
+    442          #endif
+    443          
+    444          /*
+    445          *********************************************************************************************************
+    446          *                                               TICK HOOK
+    447          *
+    448          * Description: This function is called every tick.
+    449          *
+    450          * Arguments  : none
+    451          *
+    452          * Note(s)    : 1) Interrupts may or may not be ENABLED during this call.
+    453          *********************************************************************************************************
+    454          */
+    455          #if (OS_CPU_HOOKS_EN > 0u) && (OS_TIME_TICK_HOOK_EN > 0u)
+    456          void  OSTimeTickHook (void)
+    457          {
+    458          #if OS_APP_HOOKS_EN > 0u
+    459              App_TimeTickHook();
+    460          #endif
+    461          
+    462          #if OS_TMR_EN > 0u
+    463              OSTmrCtr++;
+    464              if (OSTmrCtr >= (OS_TICKS_PER_SEC / OS_TMR_CFG_TICKS_PER_SEC)) {
+    465                  OSTmrCtr = 0u;
+    466                  OSTmrSignal();
+    467              }
+    468          #endif
+    469          
+    470          #if OS_CPU_ARM_DCC_EN > 0u
+    471              OSDCC_Handler();
+    472          #endif
+    473          }
+    474          #endif
+    475          
+    476          
+    477          /*
+    478          *********************************************************************************************************
+    479          *                             INTERRUPT DISABLE TIME MEASUREMENT, START
+    480          *********************************************************************************************************
+    481          */
+    482          
+    483          #if OS_CPU_INT_DIS_MEAS_EN > 0u
+    484          void  OS_CPU_IntDisMeasInit (void)
+    485          {
+    486              OS_CPU_IntDisMeasNestingCtr = 0u;
+    487              OS_CPU_IntDisMeasCntsEnter  = 0u;
+    488              OS_CPU_IntDisMeasCntsExit   = 0u;
+    489              OS_CPU_IntDisMeasCntsMax    = 0u;
+    490              OS_CPU_IntDisMeasCntsDelta  = 0u;
+    491              OS_CPU_IntDisMeasCntsOvrhd  = 0u;
+    492              OS_CPU_IntDisMeasStart();                              /* Measure the overhead of the functions    */
+    493              OS_CPU_IntDisMeasStop();
+    494              OS_CPU_IntDisMeasCntsOvrhd  = OS_CPU_IntDisMeasCntsDelta;
+    495          }
+    496          
+    497          
+    498          void  OS_CPU_IntDisMeasStart (void)
+    499          {
+    500              OS_CPU_IntDisMeasNestingCtr++;
+    501              if (OS_CPU_IntDisMeasNestingCtr == 1u) {               /* Only measure at the first nested level   */
+    502                  OS_CPU_IntDisMeasCntsEnter = OS_CPU_IntDisMeasTmrRd();
+    503              }
+    504          }
+    505          
+    506          
+    507          void  OS_CPU_IntDisMeasStop (void)
+    508          {
+    509              OS_CPU_IntDisMeasNestingCtr--;                                      /* Decrement nesting ctr       */
+    510              if (OS_CPU_IntDisMeasNestingCtr == 0u) {
+    511                  OS_CPU_IntDisMeasCntsExit  = OS_CPU_IntDisMeasTmrRd();
+    512                  OS_CPU_IntDisMeasCntsDelta = OS_CPU_IntDisMeasCntsExit - OS_CPU_IntDisMeasCntsEnter;
+    513                  if (OS_CPU_IntDisMeasCntsDelta > OS_CPU_IntDisMeasCntsOvrhd) {  /* Ensure overhead < delta     */
+    514                      OS_CPU_IntDisMeasCntsDelta -= OS_CPU_IntDisMeasCntsOvrhd;
+    515                  } else {
+    516                      OS_CPU_IntDisMeasCntsDelta  = OS_CPU_IntDisMeasCntsOvrhd;
+    517                  }
+    518                  if (OS_CPU_IntDisMeasCntsDelta > OS_CPU_IntDisMeasCntsMax) {    /* Track MAXIMUM               */
+    519                      OS_CPU_IntDisMeasCntsMax = OS_CPU_IntDisMeasCntsDelta;
+    520                  }
+    521              }
+    522          }
+    523          #endif
+    524          
+    525          
+    526          /*
+    527          *********************************************************************************************************
+    528          *                                     INITIALIZE EXCEPTION VECTORS
+    529          *
+    530          * Description : This function initialize exception vectors to the default handlers.
+    531          *
+    532          * Arguments   : None.
+    533          *********************************************************************************************************
+    534          */
+    535          
+    536          void  OS_CPU_InitExceptVect (void)
+    537          {
+    538              (*(INT32U *)OS_CPU_ARM_EXCEPT_UNDEF_INSTR_VECT_ADDR)       =         OS_CPU_ARM_INSTR_JUMP_TO_HANDLER;
+    539              (*(INT32U *)OS_CPU_ARM_EXCEPT_UNDEF_INSTR_HANDLER_ADDR)    = (INT32U)OS_CPU_ARM_ExceptUndefInstrHndlr;
+    540          
+    541              (*(INT32U *)OS_CPU_ARM_EXCEPT_SWI_VECT_ADDR)               =         OS_CPU_ARM_INSTR_JUMP_TO_HANDLER;
+    542              (*(INT32U *)OS_CPU_ARM_EXCEPT_SWI_HANDLER_ADDR)            = (INT32U)OS_CPU_ARM_ExceptSwiHndlr;
+    543          
+    544              (*(INT32U *)OS_CPU_ARM_EXCEPT_PREFETCH_ABORT_VECT_ADDR)    =         OS_CPU_ARM_INSTR_JUMP_TO_HANDLER;
+    545              (*(INT32U *)OS_CPU_ARM_EXCEPT_PREFETCH_ABORT_HANDLER_ADDR) = (INT32U)OS_CPU_ARM_ExceptPrefetchAbortHndlr;
+    546          
+    547              (*(INT32U *)OS_CPU_ARM_EXCEPT_DATA_ABORT_VECT_ADDR)        =         OS_CPU_ARM_INSTR_JUMP_TO_HANDLER;
+    548              (*(INT32U *)OS_CPU_ARM_EXCEPT_DATA_ABORT_HANDLER_ADDR)     = (INT32U)OS_CPU_ARM_ExceptDataAbortHndlr;
+    549          
+    550              (*(INT32U *)OS_CPU_ARM_EXCEPT_ADDR_ABORT_VECT_ADDR)        =         OS_CPU_ARM_INSTR_JUMP_TO_HANDLER;
+    551              (*(INT32U *)OS_CPU_ARM_EXCEPT_ADDR_ABORT_HANDLER_ADDR)     = (INT32U)OS_CPU_ARM_ExceptAddrAbortHndlr;
+    552          
+    553              (*(INT32U *)OS_CPU_ARM_EXCEPT_IRQ_VECT_ADDR)               =         OS_CPU_ARM_INSTR_JUMP_TO_HANDLER;
+    554              (*(INT32U *)OS_CPU_ARM_EXCEPT_IRQ_HANDLER_ADDR)            = (INT32U)OS_CPU_ARM_ExceptIrqHndlr;
+    555          
+    556              (*(INT32U *)OS_CPU_ARM_EXCEPT_FIQ_VECT_ADDR)               =         OS_CPU_ARM_INSTR_JUMP_TO_HANDLER;
+    557              (*(INT32U *)OS_CPU_ARM_EXCEPT_FIQ_HANDLER_ADDR)            = (INT32U)OS_CPU_ARM_ExceptFiqHndlr;
+    558          }
+    559          
+    560          
+    561          /*
+    562          *********************************************************************************************************
+    563          *                              GET NUMBER OF FREE ENTRIES IN EXCEPTION STACK
+    564          *
+    565          * Description : This function computes the number of free entries in the exception stack.
+    566          *
+    567          * Arguments   : None.
+    568          *
+    569          * Returns     : The number of free entries in the exception stack.
+    570          *********************************************************************************************************
+    571          */
+    572          
+    573          INT32U  OS_CPU_ExceptStkChk (void)
+    574          {
+    575              OS_STK  *pchk;
+    576              INT32U   nfree;
+    577              INT32U   size;
+    578          
+    579          
+    580              nfree = 0;
+    581              size  = OS_CPU_EXCEPT_STK_SIZE;
+    582          #if OS_STK_GROWTH == 1u
+    583              pchk = &OS_CPU_ExceptStk[0];
+    584              while ((*pchk++ == (OS_STK)0) && (size > 0u)) {   /* Compute the number of zero entries on the stk */
+    585                  nfree++;
+    586                  size--;
+    587              }
+    588          #else
+    589              pchk = &OS_CPU_ExceptStk[OS_CPU_EXCEPT_STK_SIZE - 1u];
+    590              while ((*pchk-- == (OS_STK)0) && (size > 0u)) {   /* Compute the number of zero entries on the stk */
+    591                  nfree++;
+    592                  size--;
+    593              }
+    594          #endif
+    595              return (nfree);
+    596          }
+
+   Maximum stack usage in bytes:
+
+   .cstack Function
+   ------- --------
+       0   OSInitHookBegin
+       0   OSInitHookEnd
+       8   OSTCBInitHook
+         8   -> App_TCBInitHook
+       8   OSTaskCreateHook
+         8   -> App_TaskCreateHook
+       8   OSTaskDelHook
+         8   -> App_TaskDelHook
+       8   OSTaskIdleHook
+         8   -> App_TaskIdleHook
+         8   -> OSDCC_Handler
+       8   OSTaskReturnHook
+         8   -> App_TaskReturnHook
+       8   OSTaskStatHook
+         8   -> App_TaskStatHook
+       8   OSTaskStkInit
+       8   OSTaskSwHook
+         8   -> App_TaskSwHook
+       8   OSTimeTickHook
+         8   -> App_TimeTickHook
+         8   -> OSDCC_Handler
+         8   -> OSTmrSignal
+       0   OS_CPU_ExceptStkChk
+       0   OS_CPU_InitExceptVect
+
+
+   Section sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       4  ??DataTable4
+       4  ??DataTable4_1
+       4  ??DataTable4_10
+       4  ??DataTable4_11
+       4  ??DataTable4_12
+       4  ??DataTable4_13
+       4  ??DataTable4_14
+       4  ??DataTable4_15
+       4  ??DataTable4_16
+       4  ??DataTable4_17
+       4  ??DataTable4_18
+       4  ??DataTable4_19
+       4  ??DataTable4_2
+       4  ??DataTable4_20
+       4  ??DataTable4_21
+       4  ??DataTable4_22
+       4  ??DataTable4_23
+       4  ??DataTable4_24
+       4  ??DataTable4_3
+       4  ??DataTable4_4
+       4  ??DataTable4_5
+       4  ??DataTable4_6
+       4  ??DataTable4_7
+       4  ??DataTable4_8
+       4  ??DataTable4_9
+      68  OSInitHookBegin
+       4  OSInitHookEnd
+      24  OSTCBInitHook
+      24  OSTaskCreateHook
+      24  OSTaskDelHook
+      20  OSTaskIdleHook
+      24  OSTaskReturnHook
+      16  OSTaskStatHook
+     232  OSTaskStkInit
+      16  OSTaskSwHook
+      72  OSTimeTickHook
+       2  OSTmrCtr
+     512  OS_CPU_ExceptStk
+       4  OS_CPU_ExceptStkBase
+      68  OS_CPU_ExceptStkChk
+       4  OS_CPU_ExceptStkPtr
+     172  OS_CPU_InitExceptVect
+
+ 
+ 522 bytes in section .bss
+ 864 bytes in section .text
+ 
+ 864 bytes of CODE memory
+ 522 bytes of DATA memory
+
+Errors: none
+Warnings: none

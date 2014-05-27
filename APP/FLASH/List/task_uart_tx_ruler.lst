@@ -1,0 +1,251 @@
+###############################################################################
+#
+# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        22/May/2014  14:14:57
+# Copyright 1999-2014 IAR Systems AB.
+#
+#    Cpu mode     =  arm
+#    Endian       =  little
+#    Source file  =  
+#        E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\task_uart_tx_ruler.c
+#    Command line =  
+#        "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\task_uart_tx_ruler.c" -lcN "E:\SVN
+#        Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\" -lb "E:\SVN
+#        Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\" -o "E:\SVN
+#        Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\Obj\" --no_cse
+#        --no_unroll --no_inline --no_code_motion --no_tbaa --no_clustering
+#        --no_scheduling --debug --endian=little --cpu=ARM7TDMI -e --fpu=None
+#        --dlib_config "C:\Program Files (x86)\IAR Systems\Embedded Workbench
+#        7.0\arm\INC\c\DLib_Config_Full.h" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\BSP\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Driver\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Noah\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Shell\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uCOS-II\Source\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\uC-CPU\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-LIB\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\uCOS-II\Ports\ARM\Generic\IAR\" -I
+#        "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\RS-232\Source\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\RS-232\Ports\Atmel\AT91SAM7X\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\Source\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Plugins\uCOS-II\" -I
+#        "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Demos\Intro\Source\"
+#        --interwork --cpu_mode arm -On --use_c++_inline
+#    List file    =  
+#        E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\FLASH\List\task_uart_tx_ruler.lst
+#    Object file  =  
+#        E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\FLASH\Obj\task_uart_tx_ruler.o
+#
+###############################################################################
+
+E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\task_uart_tx_ruler.c
+      1          /*
+      2          *********************************************************************************************************
+      3          *                               iSAM TEST BENCH AUDIO BRIDGE BOARD APP PACKAGE
+      4          *
+      5          *                            (c) Copyright 2013 - 2016; Fortemedia Inc.; Nanjing, China
+      6          *
+      7          *                   All rights reserved.  Protected by international copyright laws.
+      8          *                   Knowledge of the source code may not be used to write a similar
+      9          *                   product.  This file may only be used in accordance with a license
+     10          *                   and should not be redistributed in any way.
+     11          *********************************************************************************************************
+     12          */
+     13          
+     14          /*
+     15          *********************************************************************************************************
+     16          *
+     17          *                                           TASK PACKAGE
+     18          *
+     19          *                                          Atmel AT91SAM7A3
+     20          *                                               on the
+     21          *                                      iSAM Audio Bridge Board
+     22          *
+     23          * Filename      : task_uart_tx_ruler.c
+     24          * Version       : V1.0.0
+     25          * Programmer(s) : PQ
+     26          *********************************************************************************************************
+     27          * Note(s)       :
+     28          *********************************************************************************************************
+     29          */
+     30          
+     31          #include <includes.h>
+     32          
+     33          //Queue
+     34          void  *MsgQ_RulerUART2Noah[MsgUARTQueue_SIZE];
+     35          void  *MsgQ_Noah2RulerUART[MsgUARTQueue_SIZE];
+     36          //Event
+     37          OS_EVENT  *EVENT_MsgQ_RulerUART2Noah;
+     38          OS_EVENT  *EVENT_MsgQ_Noah2RulerUART;
+     39          
+     40          
+     41          CPU_INT32U  Tx_ReSend_Happens_Ruler = 0;   // debug use, resend happen times, NOTE: only writable in this task
+     42          CPU_INT08U  PcCmdTxID_Ruler[4];   // Frame TXD ID for 4 rulers
+     43          
+     44          
+     45          /*
+     46          *********************************************************************************************************
+     47          *                                    App_TaskUART_Tx_Ruler()
+     48          *
+     49          * Description : Process UART Transmit related process between Audio Bridge and Ruler.
+     50          *               Wait for data message from other task that want to send to Ruler.
+     51          *
+     52          * Argument(s) : p_arg   Argument passed to 'App_TaskUART_Tx_Ruler()' by 'OSTaskCreate()'.
+     53          *
+     54          * Return(s)   : none.
+     55          *
+     56          * Note(s)     : (1) The first line of code is used to prevent a compiler warning because 'p_arg' is not
+     57          *                   used.  The compiler should not generate any code for this statement.
+     58          *********************************************************************************************************
+     59          */
+     60          void App_TaskUART_Tx_Ruler( void *p_arg )
+     61          {    
+     62              (void)p_arg;
+     63              
+     64              CPU_INT08U       errCode ; 
+     65              CPU_INT08U       sum ; 
+     66              CPU_INT08U      *pTaskMsgIN ;
+     67              NOAH_CMD        *pPcCmd ; 
+     68              CPU_INT08U       resend_index;  
+     69          
+     70              pTaskMsgIN  = NULL;
+     71              pPcCmd      = NULL;	
+     72          	sum         = 0;
+     73              errCode     = UNKOW_ERR_RPT ;     
+     74              
+     75               
+     76          	while (DEF_TRUE) { 
+     77          
+     78                  // Noah to Uart transmit
+     79                  pTaskMsgIN   = (INT8U *)OSQPend( EVENT_MsgQ_Noah2RulerUART, 0, &errCode );
+     80                  
+     81                  if( pTaskMsgIN != NULL && OS_ERR_NONE == errCode )   {  
+     82                    
+     83                      pPcCmd  = (NOAH_CMD *)pTaskMsgIN ;             
+     84                      if( GET_FRAME_TYPE(pPcCmd->head) == FRAM_TYPE_DATA  ) {  //data frame
+     85                          
+     86                          for( resend_index = 0; resend_index < MAX_RESEND_TIMES; resend_index++ ) {    
+     87                              
+     88                              APP_TRACE_DBG(("\r\n>>Tx R[%d]:[0x%2x][",Global_Ruler_Index,PcCmdTxID_Ruler[Global_Ruler_Index]));
+     89                              for(unsigned int i = 0; i<pPcCmd->DataLen; i++){   
+     90                                  APP_TRACE_DBG((" %2X", *(unsigned char*)(pPcCmd->Data+i) )); 
+     91                              }
+     92                              APP_TRACE_DBG((" ]")); 
+     93                              
+     94                              Queue_Write( (void*)pUART_Send_Buf[RULER_UART] , CMD_DATA_SYNC1   ); //Sync1
+     95                              Queue_Write( (void*)pUART_Send_Buf[RULER_UART] , CMD_DATA_SYNC2_1 ); //Sync2                  
+     96                              ////Queue_Write( (void*)pUART_Send_Buf[RULER_UART] , ((pPcCmd->Data[0] == RULER_CMD_SET_RULER)|| (pPcCmd->Data[0] == RULER_CMD_SETUP_SYNC)) ? RULER_ID_DEFAULT : Global_Ruler_Index ); //ruler_id 
+     97                              
+     98                              pPcCmd->head  = SET_FRAME_HEAD( PcCmdTxID_Ruler[Global_Ruler_Index], FRAM_TYPE_DATA ) ; //set frame ID for data transmit                                
+     99                              sum  =  CheckSum( pPcCmd->head, &(pPcCmd->DataLen), pPcCmd->DataLen + 1); //calculate checksum   
+    100                              
+    101                              Queue_WriteBuf( pTaskMsgIN,  (void*)pUART_Send_Buf[RULER_UART], pPcCmd->DataLen + 2 ); //3Bytes = head(1Bytes) + len(1Bytes)
+    102                              Queue_Write( (void*)pUART_Send_Buf[RULER_UART], sum   ); //  check sum(1Bytes)
+    103                              UART_WriteStart( RULER_UART ); //send data  
+    104                              
+    105                              OSSemPend(ACK_Sem_RulerUART, 500, &errCode);//pending 500ms for ACK back                     
+    106                              if( OS_ERR_NONE == errCode )   {               
+    107                                  OSMemPut( pMEM_Part_MsgUART, pTaskMsgIN );    //release mem 
+    108                                  PcCmdTxID_Ruler[Global_Ruler_Index] += 0x40;// this frame send out ok, frame ++,   //0xC0                   
+    109                                  break;                        
+    110                              } 
+    111                              
+    112                          }
+    113                          
+    114                          if(  resend_index >= MAX_RESEND_TIMES ) {   // reach max send times                    
+    115                              OSMemPut( pMEM_Part_MsgUART, pTaskMsgIN );    //release mem a space at least
+    116                              pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, SET_FRAME_HEAD(PcCmdTxID_Ruler[Global_Ruler_Index]+1,FRAM_TYPE_EST), NULL, 0, 1, NULL, 0) ;   //insert EST  package 
+    117                              
+    118                          } 
+    119                          
+    120                          if(  resend_index > 1 ) {   // resend happens, debug use      
+    121                              Tx_ReSend_Happens_Ruler ++ ;
+    122                          }
+    123                          
+    124                      } else { //ACK / NAK  frame, no resend action  
+    125                        
+    126                              Queue_Write( (void*)pUART_Send_Buf[RULER_UART], CMD_DATA_SYNC1   ); //Sync1
+    127                              Queue_Write( (void*)pUART_Send_Buf[RULER_UART], CMD_DATA_SYNC2_1 ); //Sync2  
+    128                              //Queue_Write( (void*)pUART_Send_Buf[RULER_UART] , (pPcCmd->head == FRAM_TYPE_EST) ? RULER_ID_DEFAULT : Global_Ruler_Index ); //ruler_id 
+    129                              ////Queue_Write( (void*)pUART_Send_Buf[RULER_UART] ,  RULER_ID_DEFAULT); //ruler_id 
+    130                              Queue_WriteBuf( pTaskMsgIN,(void*)pUART_Send_Buf[RULER_UART], 2 );
+    131                              //OSQAccept( EVENT_MsgQ_Noah2RulerUART, &errCode ); //delete message from queue                    
+    132                              UART_WriteStart( RULER_UART ); //send data                     
+    133           
+    134                              if( GET_FRAME_TYPE(pPcCmd->head) == FRAM_TYPE_ACK ) {
+    135                                  APP_TRACE_DBG(("\r\n>>ACK"));
+    136                              } else if ( GET_FRAME_TYPE(pPcCmd->head) == FRAM_TYPE_NAK ) {
+    137                                  APP_TRACE_DBG(("\r\n>>NAK"));
+    138                              } else if ( GET_FRAME_TYPE(pPcCmd->head) == FRAM_TYPE_EST ) {
+    139                                  APP_TRACE_DBG(("\r\n>>EST"));
+    140                              } else if ( GET_FRAME_TYPE(pPcCmd->head) == FRAM_TYPE_ESTA ) {
+    141                                  APP_TRACE_DBG(("\r\n>>ESTA"));
+    142                              } else {
+    143                                  APP_TRACE_DBG(("\r\n>>Err"));
+    144                              }   
+    145                              APP_TRACE_DBG((" [ %2X %2X ]", *pTaskMsgIN, *(pTaskMsgIN+1)));  
+    146                              
+    147                              OSMemPut( pMEM_Part_MsgUART, pTaskMsgIN );    //release mem 
+    148                      }                       
+    149                   
+    150                  }  
+    151                  
+    152                  ////OSTimeDly(5);		                                     	
+    153          	}
+    154                 
+    155              
+    156              
+    157              
+    158          }
+    159          
+    160          
+    161          
+    162          
+    163              
+
+   Maximum stack usage in bytes:
+
+   .cstack Function
+   ------- --------
+      40   App_TaskUART_Tx_Ruler
+        40   -> CheckSum
+        40   -> OSMemPut
+        40   -> OSQPend
+        40   -> OSSemPend
+        40   -> Queue_Write
+        40   -> Queue_WriteBuf
+        40   -> UART_WriteStart
+        40   -> pcSendDateToBuf
+
+
+   Section sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+     720  App_TaskUART_Tx_Ruler
+       4  EVENT_MsgQ_Noah2RulerUART
+       4  EVENT_MsgQ_RulerUART2Noah
+      40  MsgQ_Noah2RulerUART
+      40  MsgQ_RulerUART2Noah
+       4  PcCmdTxID_Ruler
+       4  Tx_ReSend_Happens_Ruler
+
+ 
+  96 bytes in section .bss
+ 720 bytes in section .text
+ 
+ 720 bytes of CODE memory
+  96 bytes of DATA memory
+
+Errors: none
+Warnings: none

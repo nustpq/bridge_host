@@ -1,0 +1,449 @@
+###############################################################################
+#                                                                             #
+# IAR ANSI C/C++ Compiler V6.40.1.53790/W32 for ARM     26/Aug/2013  22:00:07 #
+# Copyright 1999-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    Cpu mode     =  arm                                                      #
+#    Endian       =  little                                                   #
+#    Source file  =  G:\Bridge_Host_OS\Noah\mem_rom.c                         #
+#    Command line =  G:\Bridge_Host_OS\Noah\mem_rom.c -lcN                    #
+#                    G:\Bridge_Host_OS\APP\FLASH\List\ -lb                    #
+#                    G:\Bridge_Host_OS\APP\FLASH\List\ -o                     #
+#                    G:\Bridge_Host_OS\APP\FLASH\Obj\ --no_cse --no_unroll    #
+#                    --no_inline --no_code_motion --no_tbaa --no_clustering   #
+#                    --no_scheduling --debug --endian=little --cpu=ARM7TDMI   #
+#                    -e --fpu=None --dlib_config "D:\Program Files (x86)\IAR  #
+#                    Systems\Embedded Workbench 6.4\arm\INC\c\DLib_Config_Nor #
+#                    mal.h" -I G:\Bridge_Host_OS\APP\ -I                      #
+#                    G:\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\ -I              #
+#                    G:\Bridge_Host_OS\APP\..\BSP\ -I                         #
+#                    G:\Bridge_Host_OS\APP\..\Driver\ -I                      #
+#                    G:\Bridge_Host_OS\APP\..\Noah\ -I                        #
+#                    G:\Bridge_Host_OS\APP\..\Shell\ -I                       #
+#                    G:\Bridge_Host_OS\APP\..\uCOS-II\Source\ -I              #
+#                    G:\Bridge_Host_OS\APP\..\uC-CPU\ -I                      #
+#                    G:\Bridge_Host_OS\APP\..\uC-LIB\ -I                      #
+#                    G:\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\ -I              #
+#                    G:\Bridge_Host_OS\APP\..\uCOS-II\Ports\ARM\Generic\IAR\  #
+#                    -I G:\Bridge_Host_OS\APP\..\uC-Probe\Target\Communicatio #
+#                    n\Generic\RS-232\Source\ -I                              #
+#                    G:\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\G #
+#                    eneric\RS-232\Ports\Atmel\AT91SAM7X\ -I                  #
+#                    G:\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\G #
+#                    eneric\Source\ -I G:\Bridge_Host_OS\APP\..\uC-Probe\Targ #
+#                    et\Plugins\uCOS-II\ -I G:\Bridge_Host_OS\APP\..\uC-Probe #
+#                    \Target\Demos\Intro\Source\ --interwork --cpu_mode arm   #
+#                    -On --use_c++_inline                                     #
+#    List file    =  G:\Bridge_Host_OS\APP\FLASH\List\mem_rom.lst             #
+#    Object file  =  G:\Bridge_Host_OS\APP\FLASH\Obj\mem_rom.o                #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+G:\Bridge_Host_OS\Noah\mem_rom.c
+      1          #include <includes.h>
+      2          #include <flashd.h>
+      3          
+      4          
+      5          
+      6          
+      7          /****************************  EEPROM   Write ********************************/
+      8          //bytes operation
+      9          
+     10          // less than 16kbits(2kBtyes) EEPROM :
+     11          unsigned char EM_SingleWrite_S(unsigned char dev_addr,unsigned short em_addr,unsigned char dm_val)
+     12          {  
+     13              unsigned char state ;
+     14             
+     15              unsigned char buf[] = {  dm_val };
+     16              state =  TWID_Write(  (  dev_addr | ( (em_addr>>7)&0x0E )  )>>1, em_addr & 0xFF,  1 , buf, sizeof(buf), NULL);   
+     17              
+     18              return(state);
+     19          }
+     20          
+     21          // less than 4Mbits(512kBtyes) EEPROM :
+     22          unsigned char EM_SingleWrite_L(unsigned char dev_addr,unsigned int em_addr,unsigned char dm_val)
+     23          {  
+     24              unsigned char state ;
+     25              
+     26              unsigned char buf[] = {  dm_val };
+     27              state =  TWID_Write(   ( dev_addr| (em_addr>>15)&0x0E ) >>1, em_addr & 0xFFFF, 2 , buf, sizeof(buf), NULL);      
+     28               
+     29              return(state);
+     30          }
+     31          
+     32          
+     33          
+     34          //Page operation
+     35          #define PAGE_NUM 8
+     36          unsigned char EM_PageWrite(unsigned char dev_addr,unsigned short page_StAddr,unsigned char *pData,unsigned char DataLen) //no support yet
+     37          {    
+     38              unsigned char state =0 ;
+     39              /*
+     40              unsigned char i;
+     41              unsigned char buf[PAGE_NUM + 2] ;
+     42          
+     43              buf[0] = page_StAddr&0xff ;
+     44              for(i=0;i<DataLen;i++)
+     45              {
+     46                  buf[i+1] = *(pData+i) ;
+     47              }
+     48              //state = I2c_buf_write(dev_addr | ((page_StAddr>>7)&0x0e) ,buf,DataLen +1) ;
+     49              OSTimeDly(10); //delay_ms(10) ; 
+     50              */
+     51              return(state);
+     52          }
+     53          
+     54          #define PAGE_NUM_L 64
+     55          unsigned char EM_PageWrite_L(unsigned char dev_addr,unsigned short page_StAddr,unsigned char *pData,unsigned char DataLen) //no support yet
+     56          {    
+     57              unsigned char state =0 ;
+     58              /*
+     59              unsigned char i;
+     60              unsigned char buf[PAGE_NUM_L + 3] ;
+     61          
+     62              buf[0] = (page_StAddr>>8)&0x7f ;
+     63          
+     64              buf[1] = page_StAddr&0xff ;
+     65              for(i=0;i<DataLen;i++)
+     66              {
+     67                  buf[i+2] = *(pData+i) ;
+     68              }
+     69              //state = I2c_buf_write(dev_addr,buf,DataLen + 2) ;
+     70              OSTimeDly(10);//delay_ms(10) ; 
+     71              */
+     72              return(state);
+     73          }
+     74          
+     75          unsigned char EM_StrPgWrite_S(unsigned char dev_addr,unsigned short em_st_addr,unsigned char *ptr,unsigned char datalen) //no support yet
+     76          {
+     77              unsigned char state = 0 ;
+     78              unsigned char ErrCode = 0 ;
+     79              
+     80              unsigned char red =0;
+     81              unsigned char pglen = 0;
+     82              
+     83              red = em_st_addr%PAGE_NUM ;
+     84              
+     85              if(red) {
+     86                  pglen = PAGE_NUM - red ;
+     87                  state = EM_PageWrite(dev_addr,em_st_addr,ptr,pglen) ;
+     88                  if(state != SUCCESS)
+     89                  {
+     90                      ErrCode = I2C_BUS_ERR ;
+     91                      return( ErrCode );
+     92                  }
+     93                  datalen    -= pglen ;
+     94                  em_st_addr += pglen ;
+     95                  ptr        += pglen ;
+     96              }
+     97              
+     98              while(datalen)   {
+     99                  pglen = ((datalen > PAGE_NUM) ?  PAGE_NUM : datalen ) ;
+    100                  state = EM_PageWrite(dev_addr,em_st_addr,ptr,pglen) ;
+    101                  if(state != SUCCESS)
+    102                  {
+    103                      ErrCode = I2C_BUS_ERR ;
+    104                      break ;
+    105                  }
+    106                  datalen    -= pglen ;
+    107                  em_st_addr += pglen ;
+    108                  ptr        += pglen ;
+    109              }
+    110              return(ErrCode) ;
+    111          }
+    112          
+    113          
+    114          unsigned char EM_StrPgWrite_L(unsigned char dev_addr,unsigned short em_st_addr,unsigned char *ptr,unsigned char datalen) //no support yet
+    115          {
+    116              unsigned char state = 0 ;
+    117              unsigned char ErrCode = 0 ;
+    118              
+    119              unsigned char red =0;
+    120              unsigned char pglen = 0;
+    121              
+    122              red = em_st_addr%PAGE_NUM_L ;
+    123              
+    124              if(red)
+    125              {
+    126                  pglen = PAGE_NUM_L - red ;
+    127                  state = EM_PageWrite_L(dev_addr,em_st_addr,ptr,pglen) ;
+    128                  if(state != SUCCESS)
+    129                  {
+    130                      ErrCode = I2C_BUS_ERR ;
+    131                      return( ErrCode );
+    132                  }
+    133                  datalen    -= pglen ;
+    134                  em_st_addr += pglen ;
+    135                  ptr        += pglen ;
+    136              }
+    137              while(datalen)
+    138              {
+    139                  pglen = ((datalen > PAGE_NUM_L) ?  PAGE_NUM_L : datalen ) ;
+    140                  state = EM_PageWrite_L(dev_addr,em_st_addr,ptr,pglen) ;
+    141                  if(state != SUCCESS)
+    142                  {
+    143                      ErrCode = I2C_BUS_ERR ;
+    144                      break ;
+    145                  }
+    146                  datalen    -= pglen ;
+    147                  em_st_addr += pglen ;
+    148                  ptr        += pglen ;
+    149              }
+    150              return(ErrCode) ;
+    151          }
+    152          
+    153          unsigned char EM_StrWrite_S(unsigned char dev_addr,unsigned short em_st_addr,unsigned char *ptr,unsigned char datalen)
+    154          {
+    155              unsigned char i;
+    156              unsigned char state   = 0 ;
+    157              unsigned char ErrCode = 0 ;  
+    158               
+    159              
+    160              for(i=0;i<datalen;i++)
+    161              {
+    162                  state = EM_SingleWrite_S(dev_addr,(em_st_addr+i),*(ptr+i)) ;
+    163                  OSTimeDly(4); //delay_ms(4) ;
+    164                  if(state != SUCCESS)
+    165                  {
+    166                      ErrCode = I2C_BUS_ERR ;
+    167                      break ;
+    168                  }
+    169              }
+    170              return(ErrCode) ;
+    171          }
+    172          
+    173          
+    174          unsigned char EM_StrWrite_L(unsigned char dev_addr,unsigned short em_st_addr,unsigned char *ptr,unsigned char datalen)
+    175          {
+    176              unsigned char i;
+    177              unsigned char state = 0 ;
+    178              unsigned char ErrCode = 0 ;
+    179              
+    180              for(i=0;i<datalen;i++)
+    181              {
+    182                  state = EM_SingleWrite_L(dev_addr,(em_st_addr+i),*(ptr+i)) ;
+    183                  OSTimeDly(4);//delay_ms(4) ;
+    184                  if(state != SUCCESS)
+    185                  {
+    186                      ErrCode = I2C_BUS_ERR ;
+    187                      break ;
+    188                  }
+    189              }
+    190              return(ErrCode) ;
+    191          }
+    192          
+    193          
+    194          
+    195          
+    196          /****************************  EEPROM  Read ********************************/
+    197          //bytes operation
+    198          unsigned char EM_SingleRead_S(unsigned char dev_addr, unsigned short em_addr,unsigned char *pVal)
+    199          {
+    200              unsigned char state ;
+    201           
+    202              state =  TWID_Read(  (  dev_addr | ( (em_addr>>7)&0x0E )  )>>1, em_addr & 0xFF,  1 , pVal, 1, NULL);  
+    203             
+    204              return(state);    
+    205          }
+    206          
+    207          
+    208          unsigned char EM_SingleRead_L(unsigned char dev_addr, unsigned int em_addr,unsigned char *pVal)
+    209          {
+    210              unsigned char state ;
+    211              
+    212              state =  TWID_Read(  ( dev_addr | ( (em_addr>>15)&0x0E )  )>>1, em_addr & 0xFFFF,  2 , pVal, 1, NULL);  
+    213          
+    214              return(state);    
+    215          }
+    216          
+    217          
+    218          unsigned char EM_StrRead_S(unsigned char dev_addr, unsigned short em_st_addr,unsigned char *ptr,unsigned char datalen)
+    219          {
+    220              unsigned i ;
+    221              unsigned char state ;
+    222              unsigned char ErrCode = 0;
+    223              
+    224              for(i=0; i<datalen; i++)
+    225              {
+    226                  state = EM_SingleRead_S(dev_addr, (em_st_addr+i),(ptr+i));
+    227                  if(state != SUCCESS)
+    228                  {
+    229                      ErrCode = I2C_BUS_ERR ;
+    230                      break ;
+    231                  }
+    232              }
+    233              return(ErrCode); 
+    234          }
+    235          
+    236          
+    237          unsigned char EM_StrRead_L(unsigned char dev_addr, unsigned short em_st_addr,unsigned char *ptr,unsigned char datalen)
+    238          {
+    239            
+    240              unsigned i ;
+    241              unsigned char state ;
+    242              unsigned char ErrCode =0;
+    243              
+    244              for(i=0;i<datalen;i++)
+    245              {
+    246                  state = EM_SingleRead_L(dev_addr, (em_st_addr+i),(ptr+i));
+    247                  if(state != SUCCESS)
+    248                  {
+    249                      ErrCode = I2C_BUS_ERR ;
+    250                      break ;
+    251                  }
+    252              }
+    253              
+    254              return(ErrCode); 
+    255              
+    256          }
+    257          
+    258          
+    259          
+    260          
+    261          
+    262          
+    263          
+    264          
+    265          
+    266          /****************************  PM Write to Flash ******************************/
+    267          #if  1
+    268          //Due to the not full page write buffer related has been relaized in function FLASHD_Write() 
+    269          unsigned char PM_StrWrite_L(unsigned char dev_addr,unsigned short em_st_addr,unsigned char *ptr,unsigned char datalen)
+    270          {
+    271              unsigned char error = 0 ;
+    272              unsigned int address ;
+    273              
+    274              address = (Flash_DownLoad_Type == LOAD_PATCH_CODE) ? FLASH_START_ADDRESS_PATCH : FLASH_START_ADDRESS_BIN ; 
+    275              address = address + (unsigned int)AT91C_IFLASH + em_st_addr ;
+    276             
+    277              error = FLASHD_Write( address , ptr, datalen);         // PQ  
+    278                    
+    279              return ( error ) ;    
+    280          }
+    281          
+    282          #else  
+    283          
+    284          // in case of that there is no page buffer in FLASHD_Write()
+    285          unsigned char tempbuf[ AT91C_IFLASH_PAGE_SIZE ] ;
+    286          unsigned char PM_StrWrite_L(unsigned char dev_addr,unsigned short em_st_addr,unsigned char *ptr,unsigned char datalen)
+    287          {
+    288              unsigned int i;
+    289              unsigned char error = 0 ;
+    290              unsigned int LOAD_ADDRESS, lastPageAddress ;
+    291              static unsigned char TempDataLen = 0 ;
+    292             
+    293              LOAD_ADDRESS = (Flash_DownLoad_Type == LOAD_PATCH_CODE) ? FLASH_START_ADDRESS_PATCH : FLASH_START_ADDRESS_BIN ; 
+    294              LOAD_ADDRESS += AT91C_IFLASH ;
+    295              lastPageAddress = LOAD_ADDRESS ;
+    296              
+    297              if(em_st_addr == 0){   // first data pakege
+    298                
+    299                  TempDataLen = 0 ;
+    300                  lastPageAddress = LOAD_ADDRESS;
+    301              }
+    302              
+    303              while( datalen ){
+    304                
+    305                  if(TempDataLen + datalen >= AT91C_IFLASH_PAGE_SIZE){ // buffer is full  :256
+    306                 
+    307                      for(i=0;i<TempDataLen;i++){
+    308                        
+    309                          PageBuffer[i] = tempbuf[i] ;
+    310                      }
+    311                      
+    312                      for(i=0;i<(AT91C_IFLASH_PAGE_SIZE - TempDataLen);i++){
+    313                        
+    314                          PageBuffer[i+TempDataLen] = ptr[i] ;
+    315                      }
+    316                      
+    317                      lastPageAddress = (em_st_addr/AT91C_IFLASH_PAGE_SIZE) * AT91C_IFLASH_PAGE_SIZE + LOAD_ADDRESS ;  //em_st_addr must be X 256   
+    318                        
+    319                      error = 2; //FLASHD_Write( lastPageAddress, PageBuffer, AT91C_IFLASH_PAGE_SIZE);  //PQ
+    320                      
+    321                      //WriteOnePage(addr,(unsigned int *)&PageBuffer) ;
+    322                      
+    323                      lastPageAddress     += AT91C_IFLASH_PAGE_SIZE ;
+    324                      datalen    -= (AT91C_IFLASH_PAGE_SIZE - TempDataLen) ;
+    325                      em_st_addr += (AT91C_IFLASH_PAGE_SIZE - TempDataLen) ;
+    326                      ptr        += (AT91C_IFLASH_PAGE_SIZE - TempDataLen) ;
+    327                      TempDataLen = 0 ;
+    328                  }
+    329                  else{ // buffer not full
+    330                    
+    331                      for(i=0; i<datalen; i++){
+    332                        
+    333                          tempbuf[i+TempDataLen] = ptr[i] ;
+    334                      }
+    335                      TempDataLen  += datalen ;
+    336                      datalen = 0 ; //to exit while loop
+    337                  }
+    338                  
+    339              }  
+    340              return ( error ) ;
+    341              
+    342          }
+    343          #endif
+    344          
+    345          
+
+   Maximum stack usage in bytes:
+
+   .cstack Function
+   ------- --------
+        0  EM_PageWrite
+        0  EM_PageWrite_L
+       32  EM_SingleRead_L
+             32 -> TWID_Read
+       32  EM_SingleRead_S
+             32 -> TWID_Read
+       32  EM_SingleWrite_L
+             32 -> TWID_Write
+       32  EM_SingleWrite_S
+             32 -> TWID_Write
+       40  EM_StrPgWrite_L
+             40 -> EM_PageWrite_L
+             40 -> __aeabi_idivmod
+       40  EM_StrPgWrite_S
+             40 -> EM_PageWrite
+             40 -> __aeabi_idivmod
+       32  EM_StrRead_L
+             32 -> EM_SingleRead_L
+       32  EM_StrRead_S
+             32 -> EM_SingleRead_S
+       32  EM_StrWrite_L
+             32 -> EM_SingleWrite_L
+             32 -> OSTimeDly
+       32  EM_StrWrite_S
+             32 -> EM_SingleWrite_S
+             32 -> OSTimeDly
+       32  PM_StrWrite_L
+             32 -> FLASHD_Write
+
+
+   Section sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       4  ??DataTable0
+      16  EM_PageWrite
+      16  EM_PageWrite_L
+     104  EM_SingleRead_L
+     116  EM_SingleRead_S
+     104  EM_SingleWrite_L
+     116  EM_SingleWrite_S
+     328  EM_StrPgWrite_L
+     328  EM_StrPgWrite_S
+     132  EM_StrRead_L
+     132  EM_StrRead_S
+     160  EM_StrWrite_L
+     156  EM_StrWrite_S
+     112  PM_StrWrite_L
+
+ 
+ 1 824 bytes in section .text
+ 
+ 1 824 bytes of CODE memory
+
+Errors: none
+Warnings: none

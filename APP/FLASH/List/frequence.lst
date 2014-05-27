@@ -1,0 +1,258 @@
+###############################################################################
+#                                                                             #
+# IAR ANSI C/C++ Compiler V6.40.1.53790/W32 for ARM     14/Jun/2013  14:09:21 #
+# Copyright 1999-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    Cpu mode     =  arm                                                      #
+#    Endian       =  little                                                   #
+#    Source file  =  G:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Driver\freq #
+#                    uence.c                                                  #
+#    Command line =  "G:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Driver\fre #
+#                    quence.c" -lcN "G:\SVN Dir\PQ\iSAM Test                  #
+#                    Bench\Bridge_Host_OS\APP\FLASH\List\" -lb "G:\SVN        #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\"   #
+#                    -o "G:\SVN Dir\PQ\iSAM Test                              #
+#                    Bench\Bridge_Host_OS\APP\FLASH\Obj\" --no_cse            #
+#                    --no_unroll --no_inline --no_code_motion --no_tbaa       #
+#                    --no_clustering --no_scheduling --debug --endian=little  #
+#                    --cpu=ARM7TDMI -e --fpu=None --dlib_config "D:\Program   #
+#                    Files\IAR Systems\Embedded Workbench                     #
+#                    6.4\arm\INC\c\DLib_Config_Normal.h" -I "G:\SVN           #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\" -I "G:\SVN   #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\ #
+#                    IAR\" -I "G:\SVN Dir\PQ\iSAM Test                        #
+#                    Bench\Bridge_Host_OS\APP\..\BSP\" -I "G:\SVN             #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\Driver\"    #
+#                    -I "G:\SVN Dir\PQ\iSAM Test                              #
+#                    Bench\Bridge_Host_OS\APP\..\Noah\" -I "G:\SVN            #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\Shell\" -I  #
+#                    "G:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uCO #
+#                    S-II\Source\" -I "G:\SVN Dir\PQ\iSAM Test                #
+#                    Bench\Bridge_Host_OS\APP\..\uC-CPU\" -I "G:\SVN          #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uC-LIB\"    #
+#                    -I "G:\SVN Dir\PQ\iSAM Test                              #
+#                    Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "G:\SVN  #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uCOS-II\Por #
+#                    ts\ARM\Generic\IAR\" -I "G:\SVN Dir\PQ\iSAM Test         #
+#                    Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communicatio #
+#                    n\Generic\RS-232\Source\" -I "G:\SVN Dir\PQ\iSAM Test    #
+#                    Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communicatio #
+#                    n\Generic\RS-232\Ports\Atmel\AT91SAM7X\" -I "G:\SVN      #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uC-Probe\Ta #
+#                    rget\Communication\Generic\Source\" -I "G:\SVN           #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uC-Probe\Ta #
+#                    rget\Plugins\uCOS-II\" -I "G:\SVN Dir\PQ\iSAM Test       #
+#                    Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Demos\Intro\ #
+#                    Source\" --interwork --cpu_mode arm -On --use_c++_inline #
+#    List file    =  G:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\L #
+#                    ist\frequence.lst                                        #
+#    Object file  =  G:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\O #
+#                    bj\frequence.o                                           #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+G:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Driver\frequence.c
+      1          #include <stdio.h>
+      2          #include <string.h>
+      3          #include <usart.h>
+      4          #include <pio.h>
+      5          #include "frequence.h"
+      6          
+      7          
+      8          #define FREQUENCY_CMD_DELAY_MS   50 //10ms delay
+      9          
+     10          static const char FuncShape[][4] = {  "SIN", "SQU", "TRI"  };
+     11          
+     12          
+     13          
+     14          static CPU_INT08U Freq_Gen_Adj_TypeA( void *pdata ) // for F80-A
+     15          {
+     16            
+     17          	    FRQADJ   *FrqAdj = (FRQADJ *)pdata;
+     18                  CPU_FP32  temp ;         
+     19                      
+     20                  //check power ack
+     21                  memset(combuf, 0, PDC_LEN);
+     22                  USART_SendByte(SIGNAL_POWER_UART,0x0D);           
+     23                  USART_SendStr(SIGNAL_POWER_UART,"*IDN?");
+     24                  USART_SendByte(SIGNAL_POWER_UART,0x00);
+     25                  if( USART_Read_Timeout(SIGNAL_POWER_UART,combuf,PDC_LEN,1000) != 0) {          
+     26                      return (FRQ_MODULE_ERR); 
+     27                      
+     28                  }
+     29                  if( strstr((const char*)combuf,"SAMPLE") == NULL  )   {          
+     30                      return (FRQ_MODULE_ERR);  
+     31                      
+     32                  }        
+     33                  USART_SendByte(SIGNAL_POWER_UART,0x0D);  
+     34          	    sprintf( (char *)combuf,"FUNC:SHAP %s",FuncShape[FrqAdj->FrqType]);       
+     35                  USART_SendStr(SIGNAL_POWER_UART, combuf);  
+     36                  USART_SendByte(SIGNAL_POWER_UART,0x00); 
+     37                  OSTimeDly( FREQUENCY_CMD_DELAY_MS );
+     38                  
+     39                  //choose FM 
+     40                  USART_SendByte(SIGNAL_POWER_UART,0x0D); 
+     41                  sprintf( (char *)combuf,"FM:STAT ON" );        
+     42                  USART_SendStr(SIGNAL_POWER_UART, combuf);      
+     43                  USART_SendByte(SIGNAL_POWER_UART,0x00);
+     44                  OSTimeDly( FREQUENCY_CMD_DELAY_MS );
+     45                      
+     46                  USART_SendByte(SIGNAL_POWER_UART,0x0D);  
+     47          	    sprintf( (char *)combuf,"FREQ %d HZ",FrqAdj->Frq);       
+     48                  USART_SendStr(SIGNAL_POWER_UART, combuf);  
+     49                  USART_SendByte(SIGNAL_POWER_UART,0x00);
+     50                  OSTimeDly( FREQUENCY_CMD_DELAY_MS );
+     51                   
+     52                  USART_SendByte(SIGNAL_POWER_UART,0x0D);
+     53                  temp = ((float)FrqAdj->Volt)/1000/2 ; 
+     54                  sprintf( (char *)combuf,"VOLT %f",temp);	
+     55                  USART_SendStr(SIGNAL_POWER_UART, combuf); 
+     56                  USART_SendByte(SIGNAL_POWER_UART,0x00);
+     57                  OSTimeDly( FREQUENCY_CMD_DELAY_MS );        
+     58                  
+     59                  USART_SendByte(SIGNAL_POWER_UART,0x0D);
+     60                  temp /= 2 ;
+     61                  sprintf( (char *)combuf,"VOLT:OFFSET %f",temp);	
+     62                  USART_SendStr(SIGNAL_POWER_UART, combuf); 
+     63                  USART_SendByte(SIGNAL_POWER_UART,0x00);
+     64                  
+     65                  OSTimeDly(200);        
+     66                  //check applied ?
+     67                  USART_SendByte(SIGNAL_POWER_UART,0x0D);      
+     68                  USART_SendStr(SIGNAL_POWER_UART,"APPL?");
+     69                  USART_SendByte(SIGNAL_POWER_UART,0x00);
+     70                  if( USART_Read_Timeout(SIGNAL_POWER_UART,combuf,PDC_LEN,1000) != 0 )  {          
+     71                      return (FRQ_MODULE_ERR); 
+     72                      
+     73                  } 
+     74                  if( strstr((const char *)&combuf[1],FuncShape[FrqAdj->FrqType] ) == NULL )  {          
+     75                      return (FRQ_MODULE_ERR);  
+     76                      
+     77                  }     
+     78                  
+     79                  return 0 ;
+     80          }
+     81          
+     82          
+     83          
+     84          static CPU_INT08U Freq_Gen_Adj_TypeB( void *pdata )// for F80-B and F40
+     85          {
+     86            
+     87          	    FRQADJ   *FrqAdj = (FRQADJ *)pdata;
+     88                  CPU_FP32  temp ;         
+     89                  unsigned int voltage_div    = 2 ;
+     90                  unsigned int delay_ms_add   = 0 ; 
+     91                  
+     92                  memset(combuf, 0, PDC_LEN);   
+     93                  USART_SendStr(SIGNAL_POWER_UART,"*IDN?");
+     94                  USART_SendByte(SIGNAL_POWER_UART,0x0A);
+     95                  if( USART_Read_Timeout(SIGNAL_POWER_UART,combuf,PDC_LEN,1000) != 0 )  {          
+     96                      return (FRQ_MODULE_ERR); 
+     97                      
+     98                  }        
+     99                  if(  strstr( (const char *)combuf,"SAMPLE") == NULL  )  {   
+    100                      if( strstr( (const char *)combuf,"SHENGPU")== NULL )  {
+    101                         return (FRQ_MODULE_ERR);     
+    102                         
+    103                      } else  {
+    104                         voltage_div    = 2;   
+    105                         delay_ms_add   = 50; //add ms delay for F40
+    106                         
+    107                      }
+    108                      
+    109                  }            
+    110          	    sprintf( (char *)combuf,"FUNC:SHAP %s",FuncShape[FrqAdj->FrqType]);       
+    111                  USART_SendStr(SIGNAL_POWER_UART, combuf);  
+    112                  USART_SendByte(SIGNAL_POWER_UART,0x0A);
+    113                  OSTimeDly( FREQUENCY_CMD_DELAY_MS );
+    114                  
+    115                   //choose FM  
+    116                  sprintf( (char *)combuf,"FM:STAT ON" );        
+    117                  USART_SendStr(SIGNAL_POWER_UART, combuf);      
+    118                  USART_SendByte(SIGNAL_POWER_UART,0x0A);
+    119                  OSTimeDly( FREQUENCY_CMD_DELAY_MS );
+    120                   
+    121          	    sprintf( (char *)combuf,"FREQ %d HZ",FrqAdj->Frq);       
+    122                  USART_SendStr(SIGNAL_POWER_UART, combuf);  
+    123                  USART_SendByte(SIGNAL_POWER_UART,0x0A);        
+    124                  OSTimeDly( FREQUENCY_CMD_DELAY_MS );
+    125                  OSTimeDly( delay_ms_add ) ;
+    126                   
+    127                  temp = ((float)FrqAdj->Volt)/1000/voltage_div ; 
+    128                  sprintf( (char *)combuf,"VOLT %f",temp);	
+    129                  USART_SendStr(SIGNAL_POWER_UART, combuf); 
+    130                  USART_SendByte(SIGNAL_POWER_UART,0x0A);        
+    131                  OSTimeDly( FREQUENCY_CMD_DELAY_MS );
+    132                  OSTimeDly( delay_ms_add ) ;
+    133                           
+    134                  temp /= 2 ;
+    135                  sprintf( (char *)combuf,"VOLT:OFFSET %f",temp);	
+    136                  USART_SendStr(SIGNAL_POWER_UART, combuf); 
+    137                  USART_SendByte(SIGNAL_POWER_UART,0x0A);        
+    138                  OSTimeDly(200);
+    139                    
+    140                  USART_SendStr(SIGNAL_POWER_UART,"APPL?");
+    141                  USART_SendByte(SIGNAL_POWER_UART,0x0A);  
+    142                  if( USART_Read_Timeout(SIGNAL_POWER_UART,combuf,PDC_LEN,1000) != 0 ) {          
+    143                      return (FRQ_MODULE_ERR); 
+    144                      
+    145                  }    
+    146                  if( strstr( (const char *)&combuf[0],FuncShape[FrqAdj->FrqType] ) == NULL )  {          
+    147                      return (FRQ_MODULE_ERR); 
+    148                      
+    149                  } 
+    150                  // printf(">>>>Set Frequency GOOD!"); 
+    151            
+    152                  return (0) ;
+    153          }
+    154          
+    155          
+    156          //There are two types of Function generator that need different commands
+    157          CPU_INT08U  CTR_FrqAdj( void *pdata )
+    158          {
+    159            
+    160          #if 1
+    161              CPU_INT08U status;
+    162              PIO_Set( &pinsControls[0] );//choose USRT0 to signal generator 
+    163              
+    164              status = Freq_Gen_Adj_TypeA(pdata);    
+    165              if(status != 0)
+    166              {   
+    167                 status = Freq_Gen_Adj_TypeB(pdata); 
+    168              }
+    169              
+    170              return status;
+    171              
+    172          #else   //Freq control disabled
+    173              
+    174              return (FRQ_MODULE_ERR);
+    175              
+    176          #endif
+    177            
+    178          }
+    179          
+    180          
+    181           
+    182          CPU_INT08U CTR_FrqCtr( void *pdata )
+    183          {
+    184                  /*
+    185                  FRQCTR *FrqCtr = (FRQCTR *)pdata;
+    186                  PIO_Set( UART0_SEL );//choose USRT0 to signal generator 
+    187            
+    188                  USART_SendByte(SIGNAL_POWER_UART,0x0D);       
+    189                  sprintf( combuf,"FM:STAT %s",FuncOnoff[FrqCtr->Ctr] );        
+    190                  USART_SendStr(SIGNAL_POWER_UART, combuf);      
+    191                  USART_SendByte(SIGNAL_POWER_UART,0x00);       
+    192             
+    193                  return 0 ; 
+    194                  */ 
+    195            
+    196                  // not support onoff control so far
+    197                  return (FRQ_MODULE_NOT_EXIST);
+    198                  
+    199          }
+    200          
+
+Errors: 3
+Warnings: none

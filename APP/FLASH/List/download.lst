@@ -1,0 +1,172 @@
+###############################################################################
+#                                                                             #
+# IAR ANSI C/C++ Compiler V6.40.1.53790/W32 for ARM     26/Aug/2013  21:59:59 #
+# Copyright 1999-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    Cpu mode     =  arm                                                      #
+#    Endian       =  little                                                   #
+#    Source file  =  G:\Bridge_Host_OS\Noah\download.c                        #
+#    Command line =  G:\Bridge_Host_OS\Noah\download.c -lcN                   #
+#                    G:\Bridge_Host_OS\APP\FLASH\List\ -lb                    #
+#                    G:\Bridge_Host_OS\APP\FLASH\List\ -o                     #
+#                    G:\Bridge_Host_OS\APP\FLASH\Obj\ --no_cse --no_unroll    #
+#                    --no_inline --no_code_motion --no_tbaa --no_clustering   #
+#                    --no_scheduling --debug --endian=little --cpu=ARM7TDMI   #
+#                    -e --fpu=None --dlib_config "D:\Program Files (x86)\IAR  #
+#                    Systems\Embedded Workbench 6.4\arm\INC\c\DLib_Config_Nor #
+#                    mal.h" -I G:\Bridge_Host_OS\APP\ -I                      #
+#                    G:\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\ -I              #
+#                    G:\Bridge_Host_OS\APP\..\BSP\ -I                         #
+#                    G:\Bridge_Host_OS\APP\..\Driver\ -I                      #
+#                    G:\Bridge_Host_OS\APP\..\Noah\ -I                        #
+#                    G:\Bridge_Host_OS\APP\..\Shell\ -I                       #
+#                    G:\Bridge_Host_OS\APP\..\uCOS-II\Source\ -I              #
+#                    G:\Bridge_Host_OS\APP\..\uC-CPU\ -I                      #
+#                    G:\Bridge_Host_OS\APP\..\uC-LIB\ -I                      #
+#                    G:\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\ -I              #
+#                    G:\Bridge_Host_OS\APP\..\uCOS-II\Ports\ARM\Generic\IAR\  #
+#                    -I G:\Bridge_Host_OS\APP\..\uC-Probe\Target\Communicatio #
+#                    n\Generic\RS-232\Source\ -I                              #
+#                    G:\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\G #
+#                    eneric\RS-232\Ports\Atmel\AT91SAM7X\ -I                  #
+#                    G:\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\G #
+#                    eneric\Source\ -I G:\Bridge_Host_OS\APP\..\uC-Probe\Targ #
+#                    et\Plugins\uCOS-II\ -I G:\Bridge_Host_OS\APP\..\uC-Probe #
+#                    \Target\Demos\Intro\Source\ --interwork --cpu_mode arm   #
+#                    -On --use_c++_inline                                     #
+#    List file    =  G:\Bridge_Host_OS\APP\FLASH\List\download.lst            #
+#    Object file  =  G:\Bridge_Host_OS\APP\FLASH\Obj\download.o               #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+G:\Bridge_Host_OS\Noah\download.c
+      1          #include <includes.h>
+      2          #include <download.h>
+      3          
+      4          
+      5          /*
+      6          *********************************************************************************************************
+      7          *                                       LoadFile()
+      8          *
+      9          * Description : load Bin or VEC from falsh to DSP 
+     10          *
+     11          * Argument(s) : patch_flag     LOAD_PATCH_CODE
+     12          *                              LOAD_34RAM_CODE/LOAD_32RAM_CODE
+     13          *
+     14          * Return(s)   : state          0    : no error
+     15          *                              0xF0 : i2c WRITE error
+     16          *                              0xF1 : FM34 decryption failed
+     17          *
+     18          * Caller(s)   : CTR_RawWrite()
+     19          *
+     20          * Note(s)     : none.
+     21          *********************************************************************************************************
+     22          */
+     23          
+     24          unsigned char LoadFile( unsigned char patch_flag )
+     25          {    
+     26              unsigned char  i                         ;
+     27              unsigned short j                         ;
+     28              unsigned char  k                         ;
+     29              unsigned short addr                      ;
+     30              unsigned char Seg                        ;
+     31              unsigned char state              = 0     ;
+     32              unsigned char temp[2]                    ; 
+     33              unsigned char counter_check_bit  = 0     ;
+     34              unsigned int decode_key                  ;
+     35              unsigned int LOAD_ADDRESS                ;
+     36              LD_FILE_COFIG  *pf               = NULL  ;
+     37              unsigned char  *pd               = NULL  ;    
+     38              unsigned char chip_index         = 0     ;
+     39              
+     40              
+     41              LOAD_ADDRESS  = ( patch_flag == LOAD_PATCH_CODE ) ?  FLASH_START_ADDRESS_PATCH : FLASH_START_ADDRESS_BIN ;
+     42              LOAD_ADDRESS += (unsigned int)AT91C_IFLASH ; //convert offset to address
+     43              
+     44              pf = ( LD_FILE_COFIG  *)LOAD_ADDRESS;
+     45              pd = pf->Data;
+     46              
+     47              if( patch_flag == LOAD_32RAM_CODE) {  // FM32 RAM code    
+     48                  decode_key = 0xE9B760; // key
+     49              } else {                              // FM34 patch code or FM34 RAM code     
+     50                  decode_key = 0;
+     51              } 
+     52              
+     53              chip_index = Check_DSP_ID() ;
+     54              
+     55              for( i=0; i<pf->BlockNum; i++ )   {   
+     56                
+     57                  addr = pf->DataBlock[i].OffSet ;
+     58                  Seg  = pf->DataBlock[i].Seg ; 
+     59                  
+     60                  // Overlay *********************  
+     61                  // Only support 4 layers : 0x100(4th), 0x11(3th), 0x10(2th), 0x00(0th)        
+     62                  HOST_Write_1(0x64,Seg) ; //set segment(overlay)    
+     63                  
+     64                  for( j=0; j<pf->DataBlock[i].DataNum; j++ ) {   
+     65                      if( k++ > 60 ) {//led           
+     66                          LED_Toggle(LED_DS2);  
+     67                          k = 0 ;                    
+     68                      }  
+     69                      if(Seg == 0 && addr >= CM_SECTION_DEFINE[chip_index][1] && addr < CM_SECTION_DEFINE[chip_index][2]) { // CM data  
+     70                          state = CM_Write( addr++, pd );
+     71                      } else {
+     72                          state = PM_Write( addr++, pd, decode_key ) ;    
+     73                      }
+     74                      if(state != 0 ) {
+     75                          LED_Clear(LED_DS2); // led 
+     76                          state = 0xF0;
+     77                          return state;
+     78                      }
+     79                      pd += 3 ; //although high 2 bytes use, the CM data still is 3 bytes in LD file                
+     80                  }        
+     81              }           
+     82                
+     83              if( patch_flag == LOAD_34RAM_CODE ) {// FM34 RAM code 
+     84                  OSTimeDly(10); //wait for decryption        
+     85                  do{         
+     86                            DM_Read(0x3FF3, temp ) ;
+     87                            counter_check_bit++;
+     88                            OSTimeDly(1); //wait for decryption 
+     89                  } while( !(temp[1]&0x40)  && counter_check_bit < 100 ); // wait for bit14 be set 1
+     90                       
+     91                  if(! (temp[1] & 0x80) ) { // check bit15             
+     92                         state = 0xF1; // Decryption is done, Download is failed
+     93                  }   
+     94              } 
+     95              
+     96              LED_Clear(LED_DS2); // led     
+     97              return(state) ;
+     98              
+     99          }
+    100          
+
+   Maximum stack usage in bytes:
+
+   .cstack Function
+   ------- --------
+       56  LoadFile
+             56 -> CM_Write
+             56 -> Check_DSP_ID
+             56 -> DM_Read
+             56 -> HOST_Write_1
+             56 -> LED_Clear
+             56 -> LED_Toggle
+             56 -> OSTimeDly
+             56 -> PM_Write
+
+
+   Section sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+     668  LoadFile
+
+ 
+ 668 bytes in section .text
+ 
+ 668 bytes of CODE memory
+
+Errors: none
+Warnings: none

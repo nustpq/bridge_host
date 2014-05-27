@@ -1,0 +1,287 @@
+###############################################################################
+#
+# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        22/May/2014  14:14:54
+# Copyright 1999-2014 IAR Systems AB.
+#
+#    Cpu mode     =  arm
+#    Endian       =  little
+#    Source file  =  
+#        E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\uC-Probe\Target\Communication\Generic\OS\uCOS-II\probe_com_os.c
+#    Command line =  
+#        "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\uC-Probe\Target\Communication\Generic\OS\uCOS-II\probe_com_os.c"
+#        -lcN "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\"
+#        -lb "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\" -o
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\Obj\" --no_cse
+#        --no_unroll --no_inline --no_code_motion --no_tbaa --no_clustering
+#        --no_scheduling --debug --endian=little --cpu=ARM7TDMI -e --fpu=None
+#        --dlib_config "C:\Program Files (x86)\IAR Systems\Embedded Workbench
+#        7.0\arm\INC\c\DLib_Config_Full.h" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\BSP\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Driver\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Noah\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Shell\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uCOS-II\Source\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\uC-CPU\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-LIB\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\uCOS-II\Ports\ARM\Generic\IAR\" -I
+#        "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\RS-232\Source\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\RS-232\Ports\Atmel\AT91SAM7X\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\Source\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Plugins\uCOS-II\" -I
+#        "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Demos\Intro\Source\"
+#        --interwork --cpu_mode arm -On --use_c++_inline
+#    List file    =  
+#        E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\FLASH\List\probe_com_os.lst
+#    Object file  =  
+#        E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\FLASH\Obj\probe_com_os.o
+#
+###############################################################################
+
+E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\uC-Probe\Target\Communication\Generic\OS\uCOS-II\probe_com_os.c
+      1          /*
+      2          *********************************************************************************************************
+      3          *                                       uC/Probe Communication
+      4          *
+      5          *                         (c) Copyright 2007-2008; Micrium, Inc.; Weston, FL
+      6          *
+      7          *               All rights reserved.  Protected by international copyright laws.
+      8          *               Knowledge of the source code may NOT be used to develop a similar product.
+      9          *               Please help us continue to provide the Embedded community with the finest
+     10          *               software available.  Your honesty is greatly appreciated.
+     11          *********************************************************************************************************
+     12          */
+     13          
+     14          /*
+     15          *********************************************************************************************************
+     16          *
+     17          *                                       COMMUNICATION: GENERIC
+     18          *                                        Micrium uC/OS-II PORT
+     19          *
+     20          * Filename      : probe_com_os.c
+     21          * Version       : V2.30
+     22          * Programmer(s) : BAN
+     23          *********************************************************************************************************
+     24          * Note(s)       : (1) This file is the uC/OS-II layer for the uC/Probe Generic Communication Module.
+     25          *
+     26          *                 (2) Assumes uC/OS-II V2.87+ is included in the project build.
+     27          *********************************************************************************************************
+     28          */
+     29          
+     30          
+     31          /*
+     32          *********************************************************************************************************
+     33          *                                            INCLUDE FILES
+     34          *********************************************************************************************************
+     35          */
+     36          
+     37          #include  <probe_com.h>
+     38          #include  <ucos_ii.h>
+     39          
+     40          
+     41          /*
+     42          *********************************************************************************************************
+     43          *                                            LOCAL DEFINES
+     44          *********************************************************************************************************
+     45          */
+     46          
+     47          
+     48          /*
+     49          *********************************************************************************************************
+     50          *                                           LOCAL CONSTANTS
+     51          *********************************************************************************************************
+     52          */
+     53          
+     54          
+     55          /*
+     56          *********************************************************************************************************
+     57          *                                          LOCAL DATA TYPES
+     58          *********************************************************************************************************
+     59          */
+     60          
+     61          
+     62          /*
+     63          *********************************************************************************************************
+     64          *                                            LOCAL TABLES
+     65          *********************************************************************************************************
+     66          */
+     67          
+     68          
+     69          /*
+     70          *********************************************************************************************************
+     71          *                                       LOCAL GLOBAL VARIABLES
+     72          *********************************************************************************************************
+     73          */
+     74          
+     75          #if ((PROBE_COM_CFG_TERMINAL_REQ_EN == DEF_ENABLED) && (OS_SEM_EN > 0))
+     76          static  OS_EVENT  *ProbeCom_OS_TerminalSem;
+     77          #endif
+     78          
+     79          
+     80          /*
+     81          *********************************************************************************************************
+     82          *                                      LOCAL FUNCTION PROTOTYPES
+     83          *********************************************************************************************************
+     84          */
+     85          
+     86          
+     87          /*
+     88          *********************************************************************************************************
+     89          *                                     LOCAL CONFIGURATION ERRORS
+     90          *********************************************************************************************************
+     91          */
+     92          
+     93          #if ((PROBE_COM_CFG_TERMINAL_REQ_EN == DEF_ENABLED) && (OS_SEM_EN == 0))
+     94          #error  "OS_SEM_EN              illegally #define'd in 'os_cfg.h'   "
+     95          #error  "                       [MUST be  > 0]                      "
+     96          #endif
+     97          
+     98          
+     99          /*
+    100          *********************************************************************************************************
+    101          *                                         ProbeCom_OS_Init()
+    102          *
+    103          * Description : Create a semaphore for terminal output completion notification.
+    104          *
+    105          * Argument(s) : none.
+    106          *
+    107          * Return(s)   : DEF_OK,   if OS initialization successful.
+    108          *               DEF_FAIL, otherwise.
+    109          *
+    110          * Caller(s)   : ProbeCom_Init().
+    111          *
+    112          * Note(s)     : none.
+    113          *********************************************************************************************************
+    114          */
+    115          
+    116          #if (PROBE_COM_CFG_TERMINAL_REQ_EN == DEF_ENABLED)
+    117          CPU_BOOLEAN  ProbeCom_OS_Init (void)
+    118          {
+    119          #if (OS_SEM_EN > 0)
+    120              INT8U  err;
+    121          
+    122          
+    123              ProbeCom_OS_TerminalSem = OSSemCreate(0);
+    124              if (ProbeCom_OS_TerminalSem == (OS_EVENT *)0) {
+    125                  return (DEF_FAIL);
+    126              }
+    127          
+    128          #if (OS_VERSION < 287)
+    129          #if (OS_EVENT_NAME_SIZE > 1)
+    130              OSEventNameSet(ProbeCom_OS_TerminalSem, (INT8U *)"Probe Term", &err);
+    131          #endif
+    132          #else
+    133          #if (OS_EVENT_NAME_EN   > 0)
+    134              OSEventNameSet(ProbeCom_OS_TerminalSem, (INT8U *)"Probe Term", &err);
+    135          #endif
+    136          #endif
+    137          
+    138              (void)&err;
+    139          
+    140              return (DEF_OK);
+    141          #endif
+    142          }
+    143          #endif
+    144          
+    145          
+    146          /*
+    147          *********************************************************************************************************
+    148          *                                    ProbeCom_OS_TerminalOutWait()
+    149          *
+    150          * Description : Wait for terminal output to complete.
+    151          *
+    152          * Argument(s) : none.
+    153          *
+    154          * Return(s)   : none.
+    155          *
+    156          * Caller(s)   : ProbeCom_TerminalOut().
+    157          *
+    158          * Note(s)     : none.
+    159          *********************************************************************************************************
+    160          */
+    161          
+    162          #if (PROBE_COM_CFG_TERMINAL_REQ_EN == DEF_ENABLED)
+    163          void  ProbeCom_OS_TerminalOutWait (void)
+    164          {
+    165          #if (OS_SEM_EN > 0)
+    166              INT8U  err;
+    167          
+    168          
+    169              OSSemPend(ProbeCom_OS_TerminalSem, 0, &err);                /* Wait for output to complete.                         */
+    170          #endif
+    171          }
+    172          #endif
+    173          
+    174          
+    175          /*
+    176          *********************************************************************************************************
+    177          *                                   ProbeCom_OS_TerminalOutSignal()
+    178          *
+    179          * Description : Signal terminal output completion.
+    180          *
+    181          * Argument(s) : none.
+    182          *
+    183          * Return(s)   : none.
+    184          *
+    185          * Caller(s)   : ProbeCom_CmdTerminalOut().
+    186          *
+    187          * Note(s)     : none.
+    188          *********************************************************************************************************
+    189          */
+    190          
+    191          #if (PROBE_COM_CFG_TERMINAL_REQ_EN == DEF_ENABLED)
+    192          void  ProbeCom_OS_TerminalOutSignal (void)
+    193          {
+    194          #if (OS_SEM_EN > 0)
+    195              (void)OSSemPost(ProbeCom_OS_TerminalSem);                   /* Output has completed.                                */
+    196          #endif
+    197          }
+    198          #endif
+
+   Maximum stack usage in bytes:
+
+   .cstack Function
+   ------- --------
+       8   ProbeCom_OS_Init
+         8   -> OSEventNameSet
+         8   -> OSSemCreate
+       8   ProbeCom_OS_TerminalOutSignal
+         8   -> OSSemPost
+       8   ProbeCom_OS_TerminalOutWait
+         8   -> OSSemPend
+
+
+   Section sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+      12  ?<Constant "Probe Term">
+       4  ??DataTable2
+       4  ??DataTable2_1
+      80  ProbeCom_OS_Init
+      24  ProbeCom_OS_TerminalOutSignal
+      32  ProbeCom_OS_TerminalOutWait
+       4  ProbeCom_OS_TerminalSem
+
+ 
+   4 bytes in section .bss
+  12 bytes in section .rodata
+ 144 bytes in section .text
+ 
+ 144 bytes of CODE  memory
+  12 bytes of CONST memory
+   4 bytes of DATA  memory
+
+Errors: none
+Warnings: none

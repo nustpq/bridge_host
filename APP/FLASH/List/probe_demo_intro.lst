@@ -1,0 +1,344 @@
+###############################################################################
+#
+# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        22/May/2014  14:14:54
+# Copyright 1999-2014 IAR Systems AB.
+#
+#    Cpu mode     =  arm
+#    Endian       =  little
+#    Source file  =  
+#        E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\uC-Probe\Target\Demos\Intro\Source\probe_demo_intro.c
+#    Command line =  
+#        "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\uC-Probe\Target\Demos\Intro\Source\probe_demo_intro.c"
+#        -lcN "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\"
+#        -lb "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\" -o
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\Obj\" --no_cse
+#        --no_unroll --no_inline --no_code_motion --no_tbaa --no_clustering
+#        --no_scheduling --debug --endian=little --cpu=ARM7TDMI -e --fpu=None
+#        --dlib_config "C:\Program Files (x86)\IAR Systems\Embedded Workbench
+#        7.0\arm\INC\c\DLib_Config_Full.h" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\BSP\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Driver\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Noah\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Shell\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uCOS-II\Source\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\uC-CPU\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-LIB\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\uCOS-II\Ports\ARM\Generic\IAR\" -I
+#        "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\RS-232\Source\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\RS-232\Ports\Atmel\AT91SAM7X\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\Source\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Plugins\uCOS-II\" -I
+#        "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Demos\Intro\Source\"
+#        --interwork --cpu_mode arm -On --use_c++_inline
+#    List file    =  
+#        E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\FLASH\List\probe_demo_intro.lst
+#    Object file  =  
+#        E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\FLASH\Obj\probe_demo_intro.o
+#
+###############################################################################
+
+E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\uC-Probe\Target\Demos\Intro\Source\probe_demo_intro.c
+      1          /*
+      2          *********************************************************************************************************
+      3          *                                              uC/Probe
+      4          *
+      5          *                         (c) Copyright 2007-2009; Micrium, Inc.; Weston, FL
+      6          *
+      7          *               All rights reserved.  Protected by international copyright laws.
+      8          *               Knowledge of the source code may NOT be used to develop a similar product.
+      9          *               Please help us continue to provide the Embedded community with the finest
+     10          *               software available.  Your honesty is greatly appreciated.
+     11          *********************************************************************************************************
+     12          */
+     13          
+     14          /*
+     15          *********************************************************************************************************
+     16          *
+     17          *                                                uC/Probe
+     18          *                                            INTRODUCTION DEMO
+     19          *
+     20          *
+     21          * Filename      : probe_demo_intro.c
+     22          * Version       : V2.20
+     23          * Programmer(s) : FT
+     24          *********************************************************************************************************
+     25          */
+     26          
+     27          
+     28          /*
+     29          *********************************************************************************************************
+     30          *                                            INCLUDE FILES
+     31          *********************************************************************************************************
+     32          */
+     33          
+     34          #define    PROBE_DEMO_INTRO_MODULE
+     35          #include  <probe_demo_intro.h>
+     36          
+     37          
+     38          /*
+     39          *********************************************************************************************************
+     40          *                                            LOCAL DEFINES
+     41          *********************************************************************************************************
+     42          */
+     43          
+     44          #define  PROBE_DEMO_INTRO_LED_SEL_POLL_RATE_mS              10
+     45          
+     46          
+     47          /*
+     48          *********************************************************************************************************
+     49          *                                           LOCAL CONSTANTS
+     50          *********************************************************************************************************
+     51          */
+     52          
+     53          
+     54          /*
+     55          *********************************************************************************************************
+     56          *                                          LOCAL DATA TYPES
+     57          *********************************************************************************************************
+     58          */
+     59          
+     60          
+     61          /*
+     62          *********************************************************************************************************
+     63          *                                            LOCAL TABLES
+     64          *********************************************************************************************************
+     65          */
+     66          
+     67          
+     68          /*
+     69          *********************************************************************************************************
+     70          *                                       LOCAL GLOBAL VARIABLES
+     71          *********************************************************************************************************
+     72          */
+     73          
+     74                                                                          /* -------- GLOBAL VARIABLES TO BE MONITORED  ------- */
+     75          static  CPU_INT32U   ProbeDemoIntro_Dial;                       /* Test variable for the Dial component demo.         */
+     76          
+     77          static  CPU_BOOLEAN  ProbeDemoIntro_LED_Sel;                    /* LEDs select value.                                 */
+     78          static  CPU_BOOLEAN  ProbeDemoIntro_LED1;                       /* LED 1 value                                        */
+     79          static  CPU_BOOLEAN  ProbeDemoIntro_LED2;                       /* LED 2 value                                        */
+     80          static  CPU_BOOLEAN  ProbeDemoIntro_LED3;                       /* LED 3 value                                        */
+     81                                                                          
+     82          
+     83          static  CPU_INT32U   ProbeDemoIntro_PicIx;                      /* Test variable for the Picture component demo.      */
+     84          
+     85                                                                          /* ----------- PROBE DEMO INTRO TASKS STACK  -------- */
+     86                                                                          /* LED 1 and 2 selection task.                        */
+     87          static  OS_STK       ProbeDemoIntro_TaskLED_Stk[PROBE_DEMO_INTRO_CFG_TASK_LED_STK_SIZE]; 
+     88          
+     89          
+     90          /*
+     91          *********************************************************************************************************
+     92          *                                      LOCAL FUNCTION PROTOTYPES
+     93          *********************************************************************************************************
+     94          */
+     95          
+     96          static  void  ProbeDemoIntro_TaskLED (void  *p_arg);
+     97          
+     98          
+     99          /*
+    100          *********************************************************************************************************
+    101          *                                     LOCAL CONFIGURATION ERRORS
+    102          *********************************************************************************************************
+    103          */
+    104          
+    105          
+    106          /*
+    107          *********************************************************************************************************
+    108          *                                             ProbeDemoIntro_Init()
+    109          *
+    110          * Description : Initialize the uC/Probe Introduction demo.
+    111          *
+    112          * Argument(s) : none.
+    113          *
+    114          * Return(s)   : none.
+    115          *
+    116          * Caller(s)   : Application.
+    117          *
+    118          * Note(s)     : none.
+    119          *********************************************************************************************************
+    120          */
+    121          
+    122          void  ProbeDemoIntro_Init (void)
+    123          {
+    124              CPU_INT08U  os_err;
+    125          
+    126          
+    127              (void)&ProbeDemoIntro_Dial;                                 /* Avoid warning.                                     */
+    128              (void)&ProbeDemoIntro_LED_Sel;
+    129              (void)&ProbeDemoIntro_LED1;
+    130              (void)&ProbeDemoIntro_LED2;
+    131              (void)&ProbeDemoIntro_LED3;
+    132              (void)&ProbeDemoIntro_PicIx;
+    133              
+    134          
+    135          #if (OS_TASK_CREATE_EXT_EN > 0)                                 /* ---------------- CREATE KSD TASKS ---------------- */
+    136          #if (OS_STK_GROWTH == 1)
+    137              os_err = OSTaskCreateExt((void (*)(void *)) ProbeDemoIntro_TaskLED,
+    138                                       (void           *) 0,
+    139                                       (OS_STK         *)&ProbeDemoIntro_TaskLED_Stk[PROBE_DEMO_INTRO_CFG_TASK_LED_STK_SIZE - 1],   
+    140                                       (INT8U           ) PROBE_DEMO_INTRO_CFG_TASK_LED_PRIO,                            
+    141                                       (INT16U          ) PROBE_DEMO_INTRO_CFG_TASK_LED_PRIO,                              
+    142                                       (OS_STK         *)&ProbeDemoIntro_TaskLED_Stk[0],                                
+    143                                       (INT32U          ) PROBE_DEMO_INTRO_CFG_TASK_LED_STK_SIZE,                      
+    144                                       (void           *) 0,                                          
+    145                                       (INT16U          )(OS_TASK_OPT_STK_CHK | OS_TASK_OPT_STK_CLR));
+    146              
+    147          #else
+    148              os_err = OSTaskCreateExt((void (*)(void *)) ProbeDemoIntro_TaskLED,
+    149                                       (void           *) 0,
+    150                                       (OS_STK         *)&ProbeDemoIntro_TaskLED_Stk[0],                                   
+    151                                       (INT8U           ) PROBE_DEMO_INTRO_CFG_TASK_LED_PRIO,                              
+    152                                       (INT16U          ) PROBE_DEMO_INTRO_CFG_TASK_LED_PRIO,                                
+    153                                       (OS_STK         *)&ProbeDemoIntro_TaskLED_Stk[PROBE_DEMO_INTRO_CFG_TASK_LED_STK_SIZE - 1],    
+    154                                       (INT32U          ) PROBE_DEMO_INTRO_CFG_TASK_LED_STK_SIZE,                          
+    155                                       (void           *) 0,                                              
+    156                                       (INT16U          )(OS_TASK_OPT_STK_CHK | OS_TASK_OPT_STK_CLR));
+    157          
+    158          #endif
+    159          #else
+    160          #if (OS_STK_GROWTH == 1)
+    161              os_err = OSTaskCreate((void (*)(void *)) ProbeDemoIntro_TaskLED,
+    162                                    (void           *) 0,
+    163                                    (OS_STK         *)&ProbeDemoIntro_TaskLED_Stk[PROBE_DEMO_INTRO_CFG_TASK_LED_STK_SIZE - 1],
+    164                                    (INT8U           ) PROBE_DEMO_INTRO_CFG_TASK_LED_PRIO);
+    165          
+    166          
+    167          #else
+    168              os_err = OSTaskCreate((void (*)(void *)) ProbeDemoIntro_TaskLED,
+    169                                    (void           *) 0,
+    170                                    (OS_STK         *)&ProbeDemoIntro_TaskLED_Stk[0],
+    171                                    (INT8U           ) PROBE_DEMO_INTRO_CFG_TASK_LED_PRIO);
+    172          #endif
+    173          #endif
+    174              
+    175          
+    176          #if (OS_VERSION < 287)
+    177          #if (OS_TASK_NAME_SIZE > 17)
+    178              OSTaskNameSet(PROBE_DEMO_INTRO_CFG_TASK_LED_PRIO, (CPU_INT08U *)"Probe Demo Intro", &os_err);
+    179          #endif
+    180          #else
+    181          #if (OS_TASK_NAME_EN > 0)
+    182              OSTaskNameSet(PROBE_DEMO_INTRO_CFG_TASK_LED_PRIO, (CPU_INT08U *)"Probe Demo Intro", &os_err);
+    183          #endif
+    184          #endif
+    185              
+    186          }
+    187          
+    188          
+    189          /*
+    190          *********************************************************************************************************
+    191          *                                         ProbeDemoIntro_TaskLED()
+    192          *
+    193          * Description : Monitors the ProbeDemoIntro_LED_Sel variable
+    194          *
+    195          * Argument(s) : p_arg       Pointer to task initialization argument.
+    196          *
+    197          * Return(s)   : none.
+    198          *
+    199          * Caller(s)   : This is a task.
+    200          *
+    201          * Note(s)     : (1) If ProbeDemoIntro_LED_Sel == 0 then
+    202          *                   (a) ProbeDemoIntro_LED1 is turned OFF.
+    203          *                   (b) ProbeDemoIntro_LED2 is turned ON.
+    204          *
+    205          *               (2) If ProbeDemoIntro_LED_Sel != 0 then
+    206          *                   (a) ProbeDemoIntro_LED1 is turned ON.
+    207          *                   (b) ProbeDemoIntro_LED2 is turned FF.
+    208          *
+    209          *               (3) Virtual LED3 toggled at 1 Hz.
+    210          *********************************************************************************************************
+    211          */
+    212          
+    213          static  void  ProbeDemoIntro_TaskLED (void *p_arg)
+    214          {
+    215              CPU_INT32U  ms_ctr;
+    216          
+    217          
+    218              ms_ctr              = 0;
+    219              ProbeDemoIntro_LED1 = DEF_OFF;
+    220              ProbeDemoIntro_LED2 = DEF_OFF;
+    221              ProbeDemoIntro_LED3 = DEF_OFF;
+    222          
+    223              while(DEF_TRUE) {
+    224                  if(ProbeDemoIntro_LED_Sel == DEF_OFF) {
+    225                      ProbeDemoIntro_LED1 = DEF_OFF;
+    226                      ProbeDemoIntro_LED2 = DEF_ON;
+    227                  } else {
+    228                      ProbeDemoIntro_LED1 = DEF_ON;
+    229                      ProbeDemoIntro_LED2 = DEF_OFF;
+    230                  }
+    231          
+    232                  if (ms_ctr > (DEF_TIME_NBR_mS_PER_SEC / PROBE_DEMO_INTRO_LED_SEL_POLL_RATE_mS)) {
+    233                      if (ProbeDemoIntro_LED3 == DEF_OFF) {
+    234                         ProbeDemoIntro_LED3 = DEF_ON;
+    235                      } else {
+    236                         ProbeDemoIntro_LED3 = DEF_OFF;
+    237                      }
+    238                      ms_ctr = 0;
+    239                  } else {
+    240                      ms_ctr++;
+    241                  }
+    242          
+    243                  OSTimeDlyHMSM(0, 0, 0, PROBE_DEMO_INTRO_LED_SEL_POLL_RATE_mS);
+    244              }
+    245          }
+
+   Maximum stack usage in bytes:
+
+   .cstack Function
+   ------- --------
+      32   ProbeDemoIntro_Init
+        32   -> OSTaskCreateExt
+        32   -> OSTaskNameSet
+      16   ProbeDemoIntro_TaskLED
+        16   -> OSTimeDlyHMSM
+
+
+   Section sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+      20  ?<Constant "Probe Demo Intro">
+       4  ??DataTable1
+       4  ??DataTable1_1
+       4  ??DataTable1_2
+       4  ??DataTable1_3
+       4  ??DataTable1_4
+       4  ??DataTable1_5
+       4  ??DataTable1_6
+       4  ??DataTable1_7
+       4  ??DataTable1_8
+       4  ProbeDemoIntro_Dial
+     124  ProbeDemoIntro_Init
+       1  ProbeDemoIntro_LED1
+       1  ProbeDemoIntro_LED2
+       1  ProbeDemoIntro_LED3
+       1  ProbeDemoIntro_LED_Sel
+       4  ProbeDemoIntro_PicIx
+     212  ProbeDemoIntro_TaskLED
+    1024  ProbeDemoIntro_TaskLED_Stk
+
+ 
+ 1 036 bytes in section .bss
+    20 bytes in section .rodata
+   372 bytes in section .text
+ 
+   372 bytes of CODE  memory
+    20 bytes of CONST memory
+ 1 036 bytes of DATA  memory
+
+Errors: none
+Warnings: none

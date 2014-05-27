@@ -1,0 +1,718 @@
+###############################################################################
+#
+# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        22/May/2014  14:15:42
+# Copyright 1999-2014 IAR Systems AB.
+#
+#    Cpu mode     =  arm
+#    Endian       =  little
+#    Source file  =  
+#        E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Driver\codec.c
+#    Command line =  
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Driver\codec.c" -lcN
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\" -lb
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\" -o
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\Obj\" --no_cse
+#        --no_unroll --no_inline --no_code_motion --no_tbaa --no_clustering
+#        --no_scheduling --debug --endian=little --cpu=ARM7TDMI -e --fpu=None
+#        --dlib_config "C:\Program Files (x86)\IAR Systems\Embedded Workbench
+#        7.0\arm\INC\c\DLib_Config_Full.h" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\BSP\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Driver\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Noah\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Shell\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uCOS-II\Source\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\uC-CPU\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-LIB\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\uCOS-II\Ports\ARM\Generic\IAR\" -I
+#        "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\RS-232\Source\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\RS-232\Ports\Atmel\AT91SAM7X\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\Source\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Plugins\uCOS-II\" -I
+#        "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Demos\Intro\Source\"
+#        --interwork --cpu_mode arm -On --use_c++_inline
+#    List file    =  
+#        E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\codec.lst
+#    Object file  =  
+#        E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\Obj\codec.o
+#
+###############################################################################
+
+E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Driver\codec.c
+      1          #include <bsp.h>
+      2          #include <pio.h>
+      3          #include <async.h>
+      4          #include <twid.h>
+      5          #include "codec.h"
+      6          
+      7          
+      8          
+      9          unsigned char Codec_Read(unsigned char dev_addr,unsigned char reg,unsigned char *pVal)
+     10          {
+     11              unsigned char state = 0;   
+     12              state =  TWID_Read( dev_addr>>1, reg, 1, pVal++,1, NULL) ;
+     13              return(state);
+     14          }
+     15          
+     16          
+     17          unsigned char Codec_Write(unsigned char dev_addr,unsigned char reg,unsigned char data)
+     18          {      
+     19              unsigned char buf[] = {  data };     
+     20              unsigned char state;
+     21                
+     22              state =  TWID_Write( dev_addr>>1, reg, 1 , buf, sizeof(buf), NULL);     
+     23              
+     24              return state ;
+     25          }
+     26          
+     27          
+     28          unsigned char Codec_Read_SPI(unsigned char dev_addr,unsigned char reg,unsigned char *pVal)
+     29          {
+     30              unsigned char state = 0;   
+     31              //state =  TWID_Read( dev_addr>>1, reg, 1, pVal++,1, NULL) ;
+     32              return(state);
+     33          }
+     34          
+     35          
+     36          unsigned char Codec_Write_SPI(unsigned char dev_addr,unsigned char reg,unsigned char data)
+     37          {      
+     38              unsigned char buf[] = { dev_addr<<1, reg, data };     
+     39              unsigned char state;    
+     40              
+     41              state = SPI_WriteBuffer_API( buf, 3);     
+     42            
+     43              
+     44              return state ;
+     45              
+     46          }
+     47          
+     48          
+     49          //i2c_channel = 0 ~ 7
+     50          unsigned char Codec_Mixer(unsigned char i2c_channel )
+     51          {    
+     52               unsigned char buf   ;
+     53               unsigned char state ;
+     54               
+     55               state = 0xe0 ; 
+     56               
+     57               if( i2c_channel <= 3 )  {//PCA9548A,
+     58                  buf   = 0x01<<i2c_channel ; //select i2c_channel
+     59                  state = TWID_Write( PCA9548A_ADDRESS>>1, 0, 0, &buf, 1, NULL); 
+     60               /*
+     61                  buf   = 0 ;
+     62                  state = TWID_Write( PCA9540B_ADDRESS>>1, 0, 0, &buf, 1, NULL); 
+     63                
+     64               } else {  // PCA9540B
+     65                  buf   = 4 ; //select CH0
+     66                  state = TWID_Write( PCA9540B_ADDRESS>>1, 0, 0, &buf, 1, NULL); 
+     67                  buf   = 0 ;
+     68                  state = TWID_Write( PCA9548A_ADDRESS>>1, 0, 0, &buf, 1, NULL); 
+     69               */
+     70               }
+     71               
+     72               return state ;
+     73          }
+     74          
+     75          
+     76          
+     77          
+     78          
+     79          
+     80          unsigned char Set_Codec(unsigned char codec_control_type, unsigned char size_para, unsigned char *pdata)
+     81          {
+     82              unsigned char i, state = 0 ;
+     83              for(i = 0; i< size_para ; i++)
+     84              {
+     85                if(codec_control_type == 0 ) {
+     86                  state = Codec_Write(CODEC_ADDRESS,*(pdata+i*2),*(pdata+i*2+1));
+     87                } else {
+     88                  state = Codec_Write_SPI(AD1938_ADDRESS,*(pdata+i*2),*(pdata+i*2+1));
+     89                }
+     90                  if( state != 0 ) break;
+     91              }
+     92              return state;
+     93            
+     94          }
+     95          
+     96          
+     97          unsigned char Get_Codec(unsigned char codec_control_type, unsigned char reg, unsigned char *pdata)
+     98          {
+     99              unsigned char state = 0 ;
+    100              
+    101              if(codec_control_type == 0 ) {
+    102                  state = Codec_Read( CODEC_ADDRESS, reg, pdata) ;
+    103              } else {
+    104                  state = Codec_Read_SPI( CODEC_ADDRESS, reg, pdata) ;
+    105              }
+    106              
+    107              return state;
+    108            
+    109          }
+    110          
+    111          
+    112          /*********************************************************************************************************************************/
+    113          // OSC=12.288Mhz
+    114          
+    115          unsigned char I2CWrite_Codec( unsigned char reg,unsigned char data )
+    116          {
+    117              unsigned char err;
+    118              err = Codec_Write( AD1937_ADDRESS, reg, data);
+    119              return err;
+    120          }
+    121          
+    122          unsigned char I2CWrite_Codec_AIC3204( unsigned char reg,unsigned char data )
+    123          {
+    124              unsigned char err;
+    125              err = Codec_Write( CODEC_ADDRESS, reg, data);
+    126              return err;
+    127          }
+    128          
+    129          void ALL_POWER_ON(void)
+    130          {
+    131              I2CWrite_Codec(DAC_Control0,0x00);  //
+    132              I2CWrite_Codec(ADC_Control0,0x00);  //
+    133          }
+    134          
+    135          
+    136          void ALL_POWER_OFF(void)
+    137          {
+    138              I2CWrite_Codec(DAC_Control0,0x01);  //
+    139              I2CWrite_Codec(ADC_Control0,0x01);  //
+    140          }
+    141          
+    142          
+    143          unsigned char Codec_DAC_Attenuation( unsigned char DAC_NAME, unsigned int x10gain )
+    144          {
+    145              
+    146              unsigned char err;
+    147              float temp ;
+    148              
+    149              if( x10gain == 1000 ){        
+    150                  return 0 ;
+    151              }
+    152              if (x10gain > 945) {//0.375*252=94.5dB         
+    153                  err = CODEC_SETVOL_RANGE_ERR;
+    154                  APP_TRACE_INFO(("ERR: CODEC Gain Over Range!\r\n"));        
+    155                  return err;
+    156              }
+    157              temp = x10gain/(0.375*10); 
+    158              err = I2CWrite_Codec(DAC_NAME,(unsigned char)temp);
+    159              if( OS_ERR_NONE != err ) {
+    160                  err = CODEC_WR_REG_ERR;
+    161                  return err ;
+    162              }
+    163              APP_TRACE_DBG(("\r\nSet CODEC REG[%d]=0x%0X",DAC_NAME,(unsigned char)temp)); 
+    164              
+    165              return 0;
+    166          
+    167          }
+    168          
+    169          //unsigned char Codec_DAC_Attenuation( unsigned char DAC_NAME, float gain )
+    170          //{
+    171          //    
+    172          //    unsigned char err;
+    173          //    float temp ;
+    174          //      
+    175          //    if ( gain > 0 ) {         
+    176          //        err = 1;
+    177          //        return err;
+    178          //    }
+    179          //    
+    180          //    if(gain< -95.25 ) {
+    181          //        temp = 255 ;
+    182          //        
+    183          //    } else {
+    184          //        temp = -gain/0.375; 
+    185          //        
+    186          //    }
+    187          //    
+    188          //    err = I2CWrite_Codec(DAC_NAME,(unsigned char)temp);
+    189          //    
+    190          //    return err;
+    191          //    
+    192          //}
+    193          
+    194          
+    195          // Main clock source = 12.288 MHz.   
+    196          unsigned char Codec_SetFCLK( unsigned int fclk )
+    197          {
+    198              
+    199              unsigned char err;
+    200              unsigned char pll_reg;
+    201              
+    202              switch( fclk )   {
+    203                
+    204                  case 8000:  // Need  12.288 / 2 MHz Osc 
+    205                      pll_reg = 0x9e;      
+    206                      return CODEC_SETFCLK_RANGE_ERR;
+    207                      break;            
+    208                  case 16000:            
+    209                      pll_reg = 0x9e;            
+    210                      break;
+    211                  case 24000:      
+    212                      pll_reg = 0x9c;            
+    213                      break;
+    214                  case 32000:            
+    215                      pll_reg = 0x9a;      
+    216                      break;
+    217                  case 44100: // Need 11.2896 MHz Osc 
+    218                      pll_reg = 0x98;  
+    219                      return CODEC_SETFCLK_RANGE_ERR;
+    220                      break;
+    221                  case 48000:             
+    222                      pll_reg = 0x98;            
+    223                      break;
+    224                  case 96000: // Need 12.288 * 2 MHz Osc       
+    225                      pll_reg = 0x98;             
+    226                      return CODEC_SETFCLK_RANGE_ERR;
+    227                      break;
+    228                      
+    229                  default:
+    230                      return CODEC_SETFCLK_RANGE_ERR;
+    231                      break;
+    232                      
+    233              }
+    234              
+    235              err = I2CWrite_Codec( PLL_Control0, pll_reg );
+    236              if( OS_ERR_NONE != err ) {
+    237                  err = CODEC_WR_REG_ERR;
+    238                  return err ;
+    239              }
+    240          
+    241              return err;
+    242              
+    243          }
+    244          
+    245          
+    246          unsigned char Codec_SetMode( unsigned char mode )
+    247          {
+    248              unsigned char err;
+    249              unsigned char dac_reg0,dac_reg1;
+    250              unsigned char adc_reg1,adc_reg2;
+    251              
+    252              switch( mode )  {
+    253              
+    254                  case I2S_MODE:
+    255                           dac_reg0 = 0x00;      //I2S
+    256                           dac_reg1 = 0x70;      //2 channels
+    257                           adc_reg1 = 0x03;      //I2S
+    258                           adc_reg2 = 0x01;      //2 channels
+    259                           break;
+    260                  case TDM_MODE:
+    261                           dac_reg0 = 0x40;      //TDM
+    262                           dac_reg1 = 0x74;      // 8 channels
+    263                           adc_reg1 = 0x23;      //TDM
+    264                           adc_reg2 = 0x21;      // 8 channels
+    265                           break;
+    266                  case TDM16_MODE:
+    267                           dac_reg0 = 0x40;      //TDM
+    268                           dac_reg1 = 0x72;      // 4 channels
+    269                           adc_reg1 = 0x23;      //TDM
+    270                           adc_reg2 = 0x11;      // 4 channels
+    271                           break;
+    272                  default:
+    273                          return CODEC_SETMODE_RANGE_ERR;
+    274                          break;
+    275              } 
+    276              
+    277              err = I2CWrite_Codec( DAC_Control0, dac_reg0 );
+    278              if( OS_ERR_NONE != err ) {
+    279                  err = CODEC_WR_REG_ERR;
+    280                  return err ;
+    281              }    
+    282              err = I2CWrite_Codec( DAC_Control1, dac_reg1 );
+    283              if( OS_ERR_NONE != err ) {
+    284                  err = CODEC_WR_REG_ERR;
+    285                  return err ;
+    286              }
+    287              
+    288              err = I2CWrite_Codec( ADC_Control1, adc_reg1 );
+    289              if( OS_ERR_NONE != err ) {
+    290                  err = CODEC_WR_REG_ERR;
+    291                  return err ;
+    292              }    
+    293              err = I2CWrite_Codec( ADC_Control2, adc_reg2 );
+    294              if( OS_ERR_NONE != err ) {
+    295                  err = CODEC_WR_REG_ERR;
+    296                  return err ;
+    297              }
+    298          
+    299              return err;    
+    300            
+    301          }
+    302          
+    303          /*******************************************/
+    304          
+    305          unsigned char Init_CODEC( unsigned int sample_rate )   
+    306          { 
+    307              unsigned char err;
+    308              unsigned char i;
+    309              static unsigned int sr_saved; 
+    310              
+    311              unsigned char reg_para[][2] = {
+    312                  
+    313                  { PLL_Control0,0x98 },
+    314                  { PLL_Control1,0x00 },  //
+    315                  { DAC_Control2,0x18 },  // 16bit    
+    316                  { DAC_Mute    ,0xF0 },  // DAC3.4 mute.
+    317                  { DAC1L_Volume,0x00 },  // no attenuation on SPK
+    318                  { DAC1R_Volume,0x00 },  // no attenuation on SPK
+    319                  { DAC2L_Volume,0x00 },  // no attenuation on Lout
+    320                  { DAC2R_Volume,0x00 },  // no attenuation on Lout
+    321                  { ADC_Control0,0x30 }  //Enable ADC
+    322           //    { DAC3L_Volume,0x00 },  // not used on AB03
+    323           //    { DAC3R_Volume,0x00 },  // not used on AB03 
+    324                  
+    325              };
+    326              
+    327              if( sample_rate == sr_saved ) {
+    328                  return 0;
+    329              } else {
+    330                  sr_saved = sample_rate ;
+    331              }
+    332          
+    333              for( i = 0; i< sizeof(reg_para)>>1; i++ ) {
+    334                err = I2CWrite_Codec(reg_para[i][0], reg_para[i][1]); 
+    335                if( OS_ERR_NONE != err ) {
+    336                    err = CODEC_WR_REG_ERR;
+    337                    return err ;
+    338                }
+    339                
+    340              }
+    341              
+    342              err = Codec_SetFCLK( sample_rate );
+    343              if( OS_ERR_NONE != err ) {
+    344                  err = CODEC_WR_REG_ERR;
+    345                  return err ;
+    346              }    
+    347          
+    348              err = Codec_SetMode( TDM_MODE );   
+    349              if( OS_ERR_NONE != err ) {
+    350                  err = CODEC_WR_REG_ERR;
+    351                  return err ;
+    352              }     
+    353          
+    354              if( !( Get_Switches() & 0x01 ) ) {
+    355                  err = CODEC_LOUT_Small_Gain_En( true ); //attenuation enable
+    356              }
+    357              
+    358              return err;
+    359              
+    360          }
+    361          
+    362          
+    363          
+    364          
+    365          unsigned char CODEC_LOUT_Small_Gain_En( bool small_gain )
+    366          {
+    367              unsigned char err;
+    368              unsigned char reg;
+    369              if( small_gain ) {        
+    370                  reg = 64;    // 64*0.375=24dB attenuation on Lout     
+    371                  APP_TRACE_INFO(("Lout Gain 24dB attenuation: Enabled \r\n"));  
+    372                  
+    373              } else {        
+    374                  reg = 0;    // 0dB attenuation on Lout        
+    375                  APP_TRACE_INFO(("Lout Gain 24dB attenuation: Disabled \r\n"));  
+    376                  
+    377              }    
+    378              err = I2CWrite_Codec( DAC2L_Volume, reg );
+    379              if( OS_ERR_NONE != err ) {
+    380                  err = CODEC_WR_REG_ERR;
+    381                  return err ;
+    382              }    
+    383              
+    384              err = I2CWrite_Codec( DAC2R_Volume, reg );
+    385              if( OS_ERR_NONE != err ) {
+    386                  err = CODEC_WR_REG_ERR;
+    387                  return err ;
+    388              }
+    389          
+    390              return err;    
+    391              
+    392          }
+    393          
+    394          
+    395          unsigned char CODEC_Set_Volume( unsigned int vol_spk, unsigned int vol_lin )
+    396          {
+    397             
+    398              unsigned char err;
+    399              unsigned char temp;
+    400              
+    401              temp = 0xF0;
+    402              err = Codec_DAC_Attenuation(DAC1L_Volume, vol_spk );    
+    403              if( OS_ERR_NONE != err ){
+    404                  return err;
+    405              }
+    406              err = Codec_DAC_Attenuation(DAC1R_Volume, vol_spk );
+    407              if( OS_ERR_NONE != err ){
+    408                  return err;
+    409              }
+    410              
+    411              err = Codec_DAC_Attenuation(DAC2L_Volume, vol_lin );
+    412              if( OS_ERR_NONE != err ){
+    413                  return err;
+    414              }   
+    415              err = Codec_DAC_Attenuation(DAC2R_Volume, vol_lin );
+    416              if( OS_ERR_NONE != err ){
+    417                  return err;
+    418              }
+    419               
+    420              if( vol_spk == SET_VOLUME_MUTE ) {
+    421                  temp += (3<<0);
+    422              }
+    423              if( vol_lin == SET_VOLUME_MUTE ) {
+    424                  temp += (3<<2);
+    425              }
+    426              err = I2CWrite_Codec(DAC_Mute,temp);
+    427              
+    428              return err;
+    429              
+    430          }
+    431          
+    432          
+    433          
+    434          
+    435          
+    436          
+    437          
+    438          
+    439          
+    440          
+    441          
+    442          
+    443          
+    444          
+    445          
+    446          
+    447          
+    448          
+    449          /*
+    450          unsigned char config_aic3204[][2] = {
+    451              
+    452              
+    453          	      0,0x00, //page0---------------------	      
+    454          	      //software reset	
+    455          	      1,0X01, 
+    456          	      
+    457          	      //PLL not used here
+    458          	      4,0x01,	 //BCLK as main clock       
+    459          	      11,0x84,  //NDAC=4    
+    460          	      12,0x82,  //MDAC=2	      
+    461          	      13,0x00,   
+    462          	      14,32,    //DOSR=32
+    463          	      
+    464          	      18,0x84,  //NADC=4               
+    465          	      19,0x82,  //MADC=2		      
+    466          	      20,32,   //AOSR=32		    
+    467          	      //30,0X82,  //bclk=bdiv_clkin/4
+    468          
+    469          	      //set route settings
+    470          	      //29,0X11,    // Inner ADC is routed to DAC	
+    471          	      //29,0X21,    // I2S input is routed to I2S output	
+    472          	      //29,0X1,     // No innner rounte      
+    473          
+    474          	      //set digital interface, On S-II board CODEC set as master 
+    475          	      27,0x71,   	//DSP mode,32bit,Slave,HZ after data transmit done	  
+    476          	      28,96,   	//data offset 6*32 = 6<<5 = 192, defalut put line in channels on slot 6, 7 
+    477          //	      32,0X00, 
+    478          //	      33,0X4d, 
+    479          	      34,0x20, 
+    480          //	      53,0X02,  	//Dout is pin5
+    481          //	      54,0X02,  	//pin4 is i2s data input  
+    482          	         
+    483          //		  //set channels
+    484          //	      63,0Xd4, //DAC Channel Setup 
+    485          //	      64,0X00, //DAC Channel Setup	 
+    486          //	      65,0X00, //DAC Volume L set 0dB
+    487          //	      66,0X00, //DAC Volume R set 0dB
+    488          	     
+    489          //	      //set dmic data pin setting
+    490          //	      55,0X0e,   // Set MISO as PDM CLK ouput pin
+    491          //	      56,0X02,   // SCLK pin is enabled	
+    492                    
+    493                    //set ADC channel
+    494          	      81, 0xF0,//81, 0xDC , //????????adc_input_para,   // enable ADC and set SCLK as PDM DATA input pin-------	    
+    495          	      //Dmic clock output(=adc_mod_clk), PDM CLK = ADC_MOD_CLK	        
+    496          	      82,0X00,   //ADC Fine gain adjust, 0dB, unmute
+    497          	      83,0X00,   //ADC Volume L set 0dB
+    498          	      84,0X00,   //ADC Volume R set 0dB
+    499          
+    500          	      0,0X01,  //page1--------------------------
+    501          	          
+    502          	      //set power
+    503          	      1,0x08,  //disconnect AVDD and DVDD		 
+    504          	      2,0X01,  //enable Master Analog Power Control		
+    505          //	      3,0X00,  //Set the DAC L PTM mode to PTM_P3/4
+    506          //	      4,0X00,  //Set the DAC R PTM mode to PTM_P3/4		      
+    507          //	      9, 0XFF,  //All HPOUT,LOUT and Mixer Amplifier are Power up  
+    508          //	      9, 0x3c,
+    509          	      10,0X00,  //Set the Input Common Mode to 0.9V and Output Common Mode for Headphone to Input Common Mode
+    510          //		  20,0X00,  //headphone driver startup
+    511          
+    512          		  //set route settings
+    513          		  //CODEC LO to FM23 LIN, single ended
+    514          ////		  12,0X00, //HPL route off
+    515          ////	      13,0X00, //HPR route off
+    516          ////	      14,0X08, //LOL route: DAC L 
+    517          ////	      15,0X00, //LOR route off
+    518          ////
+    519          ////	      12,0X08, //HPL route off
+    520          ////	      13,0X08, //HPR route off
+    521          ////	      14,0X08, //LOL route: DAC L 
+    522          ////	      15,0X08, //LOR route off
+    523          	      
+    524          //          //set DAC output gains
+    525          //	      16,0X00,  //HPL 0db gain
+    526          //	      17,0X00,  //HPR 0db gain
+    527          //	      //18,0X00,  //LOL 0db gain
+    528          //	      //19,0X00,  //LOR 0db gain  
+    529          //	      18,0X3A,  //LOL -6db gain
+    530          //	      19,0X3A,  //LOR -6db gain   
+    531                    
+    532          		 //set ADC routine
+    533          	      52,0X04, //IN3L to L_MICPGA_Positive
+    534          	      54,0X40, //CM1L to L_MICPGA_Negative
+    535          	      55,0X04, //IN3R to R_MICPGA_Positive
+    536          	      57,0X40, //CM1R to R_MICPGA_Negative         
+    537          
+    538          	      		       
+    539          	      //set ADC input gains
+    540          	      59,0X00,  //L PGA 0db gain
+    541          	      60,0X00   //R PGA 0db gain	    
+    542          };
+    543          
+    544          unsigned char Init_CODEC_AIC3204( unsigned int sample_rate ) 
+    545          {
+    546              unsigned char i ;
+    547              unsigned char err;
+    548              
+    549              for (i = 0 ; i< sizeof(config_aic3204)>>1 ; i++ ) {    
+    550                  err = I2CWrite_Codec_AIC3204(config_aic3204[i][0],config_aic3204[i][1]);
+    551                  if(err != 0 ) {
+    552                      break;
+    553                  }
+    554              }
+    555              return err;    
+    556              
+    557          }
+    558          
+    559          unsigned char Set_AIC3204_DSP_Offset( unsigned char slot_index ) 
+    560          {
+    561              
+    562              unsigned char err;
+    563              
+    564              if( slot_index >6 ) { //slot_index is for line in channels
+    565                  return 0x99;
+    566              }      
+    567              err = I2CWrite_Codec_AIC3204( 28, slot_index << 5);
+    568              
+    569              return err;    
+    570              
+    571          }
+    572          */
+    573          
+
+   Maximum stack usage in bytes:
+
+   .cstack Function
+   ------- --------
+       8   ALL_POWER_OFF
+         8   -> I2CWrite_Codec
+       8   ALL_POWER_ON
+         8   -> I2CWrite_Codec
+      16   CODEC_LOUT_Small_Gain_En
+        16   -> BSP_Ser_Printf
+        16   -> I2CWrite_Codec
+      24   CODEC_Set_Volume
+        24   -> Codec_DAC_Attenuation
+        24   -> I2CWrite_Codec
+      24   Codec_DAC_Attenuation
+        24   -> BSP_Ser_Printf
+        24   -> I2CWrite_Codec
+        24   -> __aeabi_d2f
+        24   -> __aeabi_ddiv
+        24   -> __aeabi_f2iz
+        24   -> __aeabi_ui2d
+      24   Codec_Mixer
+        24   -> TWID_Write
+      32   Codec_Read
+        32   -> TWID_Read
+       0   Codec_Read_SPI
+      16   Codec_SetFCLK
+        16   -> I2CWrite_Codec
+      32   Codec_SetMode
+        32   -> I2CWrite_Codec
+      32   Codec_Write
+        32   -> TWID_Write
+      24   Codec_Write_SPI
+        24   -> SPI_WriteBuffer_API
+      24   Get_Codec
+        24   -> Codec_Read
+        24   -> Codec_Read_SPI
+      16   I2CWrite_Codec
+        16   -> Codec_Write
+      16   I2CWrite_Codec_AIC3204
+        16   -> Codec_Write
+      40   Init_CODEC
+        40   -> CODEC_LOUT_Small_Gain_En
+        40   -> Codec_SetFCLK
+        40   -> Codec_SetMode
+        40   -> Get_Switches
+        40   -> I2CWrite_Codec
+        40   -> __aeabi_memcpy4
+      24   Set_Codec
+        24   -> Codec_Write
+        24   -> Codec_Write_SPI
+
+
+   Section sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+      32  ?<Constant "ERR: CODEC Gain Over ...">
+      40  ?<Constant "Lout Gain 24dB attenu...">
+      40  ?<Constant "Lout Gain 24dB attenu...">_1
+      20  ?<Constant {{0, 152}, {1, 0}, {4, 24}, {5, 240
+       4  ??DataTable2
+       4  ??DataTable2_1
+       4  ??DataTable2_2
+       4  ??DataTable2_3
+       4  ??DataTable2_4
+      36  ALL_POWER_OFF
+      36  ALL_POWER_ON
+     188  CODEC_LOUT_Small_Gain_En
+     256  CODEC_Set_Volume
+     184  Codec_DAC_Attenuation
+     100  Codec_Mixer
+      92  Codec_Read
+      16  Codec_Read_SPI
+     280  Codec_SetFCLK
+     400  Codec_SetMode
+      84  Codec_Write
+      64  Codec_Write_SPI
+     104  Get_Codec
+      56  I2CWrite_Codec
+      56  I2CWrite_Codec_AIC3204
+     320  Init_CODEC
+     200  Set_Codec
+       4  sr_saved
+
+ 
+     4 bytes in section .bss
+   132 bytes in section .rodata
+ 2 492 bytes in section .text
+ 
+ 2 492 bytes of CODE  memory
+   132 bytes of CONST memory
+     4 bytes of DATA  memory
+
+Errors: none
+Warnings: none

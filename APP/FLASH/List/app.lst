@@ -1,0 +1,738 @@
+###############################################################################
+#
+# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        22/May/2014  14:14:46
+# Copyright 1999-2014 IAR Systems AB.
+#
+#    Cpu mode     =  arm
+#    Endian       =  little
+#    Source file  =  E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\app.c
+#    Command line =  
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\app.c" -lcN "E:\SVN
+#        Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\" -lb "E:\SVN
+#        Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\" -o "E:\SVN
+#        Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\Obj\" --no_cse
+#        --no_unroll --no_inline --no_code_motion --no_tbaa --no_clustering
+#        --no_scheduling --debug --endian=little --cpu=ARM7TDMI -e --fpu=None
+#        --dlib_config "C:\Program Files (x86)\IAR Systems\Embedded Workbench
+#        7.0\arm\INC\c\DLib_Config_Full.h" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\BSP\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Driver\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Noah\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Shell\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uCOS-II\Source\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\uC-CPU\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-LIB\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\uCOS-II\Ports\ARM\Generic\IAR\" -I
+#        "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\RS-232\Source\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\RS-232\Ports\Atmel\AT91SAM7X\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\Source\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Plugins\uCOS-II\" -I
+#        "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Demos\Intro\Source\"
+#        --interwork --cpu_mode arm -On --use_c++_inline
+#    List file    =  
+#        E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\app.lst
+#    Object file  =  
+#        E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\Obj\app.o
+#
+###############################################################################
+
+E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\app.c
+      1          /*
+      2          *********************************************************************************************************
+      3          *                               iSAM TEST BENCH AUDIO BRIDGE BOARD APP PACKAGE
+      4          *
+      5          *                            (c) Copyright 2013 - 2016; Fortemedia Inc.; Nanjing, China
+      6          *
+      7          *                   All rights reserved.  Protected by international copyright laws.
+      8          *                   Knowledge of the source code may not be used to write a similar
+      9          *                   product.  This file may only be used in accordance with a license
+     10          *                   and should not be redistributed in any way.
+     11          *********************************************************************************************************
+     12          */
+     13          /*
+     14          *********************************************************************************************************
+     15          *
+     16          *                                             APPLICATION
+     17          *
+     18          *                                          Atmel AT91SAM7A3
+     19          *                                               on the
+     20          *                                      iSAM Audio Bridge Board
+     21          *
+     22          * Filename      : app.c
+     23          * Version       : V1.0.0
+     24          * IDE           : IAR for ARM 5.40
+     25          * Programmer(s) : PQ
+     26          *
+     27          *********************************************************************************************************
+     28          * Note(s)       :
+     29          *********************************************************************************************************
+     30          */
+     31          
+     32          
+     33          
+     34          #include <includes.h>
+     35          
+     36          /*
+     37          *********************************************************************************************************
+     38          *                                            LOCAL DEFINES
+     39          *********************************************************************************************************
+     40          */
+     41          
+     42          #define  APP_SCR_SIGN_ON                        0
+     43          #define  APP_SCR_VER_TICK_RATE                  1
+     44          #define  APP_SCR_CPU                            2
+     45          #define  APP_SCR_CTXSW                          3
+     46           
+     47          #define  APP_SCR_FIRST                    APP_SCR_SIGN_ON
+     48          #define  APP_SCR_LAST                     APP_SCR_CTXSW
+     49          
+     50          
+     51          /*
+     52          *********************************************************************************************************
+     53          *                                       LOCAL GLOBAL VARIABLES
+     54          *********************************************************************************************************
+     55          */
+     56          static  OS_STK       App_TaskStartStk[APP_CFG_TASK_START_STK_SIZE];
+     57          static  OS_STK       App_TaskUserIF_Stk[APP_CFG_TASK_USER_IF_STK_SIZE];
+     58          static  OS_STK       App_TaskJoyStk[APP_CFG_TASK_JOY_STK_SIZE];
+     59          static  OS_STK       App_TaskGenieShellStk[APP_CFG_TASK_SHELL_STK_SIZE];
+     60          
+     61          static  OS_STK       App_TaskUART_RxStk[APP_CFG_TASK_UART_RX_STK_SIZE];
+     62          static  OS_STK       App_TaskUART_TxStk[APP_CFG_TASK_UART_TX_STK_SIZE];
+     63          static  OS_STK       App_TaskUART_TxRulerStk[APP_CFG_TASK_UART_TX_RULER_STK_SIZE];
+     64          static  OS_STK       App_TaskNoahStk[APP_CFG_TASK_NOAH_STK_SIZE];
+     65          static  OS_STK       App_TaskNoahRulerStk[APP_CFG_TASK_NOAH_RULER_STK_SIZE];
+     66          static  OS_STK       App_TaskCMDParseStk[APP_CFG_TASK_CMD_PARSE_STK_SIZE];
+     67                                  
+     68          
+     69          
+     70          /*
+     71          *********************************************************************************************************
+     72          *                                          FUNCTION PROTOTYPES
+     73          *********************************************************************************************************
+     74          */
+     75          static  void  App_EventCreate            (void); 
+     76          static  void  App_TaskStart              (void        *p_arg);
+     77          static  void  App_TaskCreate             (void);
+     78                  void  App_BufferCreate           (void);
+     79          
+     80          
+     81          
+     82          
+     83          
+     84          /*
+     85          *********************************************************************************************************
+     86          *                                                main()
+     87          *
+     88          * Description : The standard entry point for C code.  It is assumed that your code will call
+     89          *               main() once you have performed all necessary initialization.
+     90          *
+     91          * Argument(s) : none.
+     92          *
+     93          * Return(s)   : none.
+     94          *********************************************************************************************************
+     95          */
+     96          
+     97          void  main(void)
+     98          {
+     99            
+    100          #if (OS_TASK_NAME_EN > 0)
+    101              CPU_INT08U  err;
+    102          #endif    
+    103              BSP_CPU_Init();   //Initializes all the CPU clk                                          
+    104             
+    105              CPU_Init();
+    106            
+    107              BSP_IntDisAll();                                            /* Disable all interrupts until we are ready to accept them */
+    108             
+    109              OSInit();                                                   /* Initialize "uC/OS-II, The Real-Time Kernel"              */
+    110            
+    111              OSTaskCreateExt((void (*)(void *)) App_TaskStart,           /* Create the start task                                    */
+    112                              (void           *) 0,
+    113                              (OS_STK         *)&App_TaskStartStk[APP_CFG_TASK_START_STK_SIZE - 1],
+    114                              (INT8U           ) APP_CFG_TASK_START_PRIO,
+    115                              (INT16U          ) APP_CFG_TASK_START_PRIO,
+    116                              (OS_STK         *)&App_TaskStartStk[0],
+    117                              (INT32U          ) APP_CFG_TASK_START_STK_SIZE,
+    118                              (void           *) 0,
+    119                              (INT16U          )(OS_TASK_OPT_STK_CHK | OS_TASK_OPT_STK_CLR));
+    120          
+    121          #if (OS_TASK_NAME_EN > 0)
+    122              OSTaskNameSet(APP_CFG_TASK_START_PRIO, "Start", &err);
+    123          #endif
+    124          
+    125              OSStart();                                                  /* Start multitasking (i.e. give control to uC/OS-II)       */
+    126          }
+    127          
+    128          
+    129          /*
+    130          *********************************************************************************************************
+    131          *                                          AppTaskStart()
+    132          *
+    133          * Description : The startup task.  The uC/OS-II ticker should only be initialize once multitasking starts.
+    134          *
+    135          * Argument(s) : p_arg       Argument passed to 'AppTaskStart()' by 'OSTaskCreate()'.
+    136          *
+    137          * Return(s)   : none.
+    138          *
+    139          * Note(s)     : (1) The first line of code is used to prevent a compiler warning because 'p_arg' is not
+    140          *                   used.  The compiler should not generate any code for this statement.
+    141          *
+    142          *               (2) Interrupts are enabled once the task starts because the I-bit of the CCR register was
+    143          *                   set to 0 by 'OSTaskCreate()'.
+    144          *********************************************************************************************************
+    145          */
+    146          
+    147          static  void  App_TaskStart (void *p_arg)
+    148          {
+    149            
+    150              (void)p_arg;
+    151              CPU_INT32U counter;
+    152              
+    153              BSP_Init();                                                 /* Initialize BSP functions                                 */
+    154              OS_CPU_InitExceptVect();                                    /* Initialize the Vectors at address 0x00                   */
+    155                  
+    156          #if (OS_TASK_STAT_EN > 0)
+    157              OSStatInit();                                               /* Determine CPU capacity                                   */
+    158          #endif
+    159              
+    160              Mem_Init();                                                 /* Initialize Memory Managment Module                       */    
+    161              Math_Init();                                                /* Initialize Mathematical     Module                       */
+    162              BSP_Ser_Init(115200);                                       /* Initialize Serial port                                   */
+    163              
+    164              
+    165          #if (APP_CFG_PROBE_COM_MODULE_EN == DEF_ENABLED) || (APP_CFG_PROBE_OS_PLUGIN_EN  == DEF_ENABLED)
+    166              App_ProbeInit();
+    167          #endif
+    168                   
+    169              
+    170              App_BufferCreate();                                           
+    171            
+    172              App_EventCreate();                                         
+    173              
+    174              App_TaskCreate();  
+    175               
+    176              
+    177              while (DEF_TRUE) {    
+    178                
+    179                         
+    180          //        LED_Set( LED_DS1 );        
+    181          //        OSTimeDlyHMSM(0, 0, 0, 30);         
+    182          //        LED_Clear( LED_DS1 );   
+    183          //        OSTimeDlyHMSM(0, 0, 0, 200);   
+    184          //        LED_Set( LED_DS1 );        
+    185          //        OSTimeDlyHMSM(0, 0, 0, 30);         
+    186          //        LED_Clear( LED_DS1 );
+    187          //        OSTimeDlyHMSM(0, 0, 1, 740); 
+    188                  
+    189                  counter++;
+    190                  if(counter&0xFF) {
+    191                      LED_Set( LED_DS1 );   
+    192                  }
+    193                  if(counter&0x3F) {
+    194                      LED_Clear( LED_DS1 );
+    195                  }
+    196                  Ruler_Port_LED_Service();
+    197          
+    198                  OSTimeDly(10); 
+    199              
+    200                  
+    201              }
+    202              
+    203          
+    204          }
+    205          
+    206          
+    207          
+    208          
+    209          
+    210          
+    211          /*
+    212          *********************************************************************************************************
+    213          *                                      App_BufferCreate()
+    214          *
+    215          * Description : Create the application uart buffer
+    216          *
+    217          * Argument(s) : none.
+    218          *
+    219          * Return(s)   : none.
+    220          *
+    221          * Caller(s)   : App_TasStart()
+    222          *
+    223          * Note(s)     : none.
+    224          *********************************************************************************************************
+    225          */
+    226          
+    227          void  App_BufferCreate (void)
+    228          {
+    229            
+    230              CPU_INT08U  err;
+    231              
+    232              APP_TRACE_INFO(("Creating Application Buffer...\r\n"));
+    233              
+    234          #if (OS_MEM_EN > 0)
+    235              
+    236               pMEM_Part_MsgUART = OSMemCreate( MemPartition_MsgUART, MsgUARTQueue_SIZE, MsgUARTBody_SIZE, &err );
+    237               if(OS_ERR_NONE != err) {
+    238                  while(1);  
+    239               }   
+    240               
+    241          #if (OS_MEM_NAME_EN > 0)
+    242             OSMemNameSet(pMEM_Part_MsgUART, "MEM_Part_MsgUART", &err); 
+    243          #endif
+    244             
+    245          #endif           
+    246                 
+    247          }
+    248          
+    249          
+    250          
+    251          /*
+    252          *********************************************************************************************************
+    253          *                                      App_TaskEvent()
+    254          *
+    255          * Description : Create the application Events
+    256          *
+    257          * Argument(s) : none.
+    258          *
+    259          * Return(s)   : none.
+    260          *
+    261          * Caller(s)   : App_TasStart()
+    262          *
+    263          * Note(s)     : none.
+    264          *********************************************************************************************************
+    265          */
+    266          
+    267          static  void  App_EventCreate (void)
+    268          {
+    269              
+    270              APP_TRACE_INFO(("Creating Application Events...\r\n"));
+    271                
+    272          #if (OS_EVENT_NAME_EN  > 0 )
+    273              CPU_INT08U  err;
+    274          #endif
+    275          
+    276              App_UserIF_Mbox     = OSMboxCreate((void *)0);   /* Create MBOX for comm between App_TaskUserIF() and App_TaskJoy()    */
+    277             // App_Noah_Ruler_Mbox = OSMboxCreate((void *)0);   /* Create MBOX for comm App_TaskUserIF()to App_TaskNoah_Ruler()       */    
+    278              ACK_Sem_PCUART      = OSSemCreate(0);            /* Create Sem for the ACK from PC, after UART data sent               */    
+    279              ACK_Sem_RulerUART   = OSSemCreate(0);            /* Create Sem for the ACK from Ruler, after UART data sent            */    
+    280              Done_Sem_RulerUART  = OSSemCreate(0);            /* Create Sem for the Ruler operation caller, after operation done    */    
+    281              EVENT_MsgQ_PCUART2Noah     = OSQCreate(&MsgQ_PCUART2Noah[0],MsgUARTQueue_SIZE);             /* Message queue from PC   */  
+    282              EVENT_MsgQ_Noah2PCUART     = OSQCreate(&MsgQ_Noah2PCUART[0],MsgUARTQueue_SIZE);             /* Message queue to PC     */  
+    283              EVENT_MsgQ_RulerUART2Noah  = OSQCreate(&MsgQ_RulerUART2Noah[0],MsgUARTQueue_SIZE);          /* Message queue from Ruler*/  
+    284              EVENT_MsgQ_Noah2RulerUART  = OSQCreate(&MsgQ_Noah2RulerUART[0],MsgUARTQueue_SIZE);          /* Message queue to Ruler  */  
+    285              EVENT_MsgQ_Noah2CMDParse   = OSQCreate(&MsgQ_Noah2CMDParse[0],MsgUARTQueue_SIZE);   /* Message queue to Task CMD Prase */ 
+    286              Bsp_Ser_Tx_Sem_lock = OSSemCreate(1); 
+    287              Bsp_Ser_Rx_Sem_lock = OSSemCreate(1); 
+    288              DBGU_Tx_Sem_lock    = OSSemCreate(1); 
+    289              DBGU_Tx_Sem_lock    = OSSemCreate(1); 
+    290              UART_MUX_Sem_lock   = OSSemCreate(1); //ruker UART MUX 
+    291              //if error then halt MCU
+    292              if( NULL == UART_MUX_Sem_lock )  while(1); //last Event creat failure means OS_MAX_EVENTS is not enough
+    293          
+    294          #if (OS_EVENT_NAME_EN > 0)    
+    295              
+    296             OSEventNameSet(App_UserIF_Mbox,      "Joy->UserI/F Mbox",   &err);
+    297            // OSEventNameSet(App_Noah_Ruler_Mbox,  "UserI/F->NoahRulerMbox",     &err);
+    298             OSEventNameSet(ACK_Sem_PCUART,       "PCUART_Tx_ACK_Sem",    &err);  
+    299             OSEventNameSet(ACK_Sem_RulerUART,    "RulerUART_Tx_ACK_Sem", &err); 
+    300             OSEventNameSet(Done_Sem_RulerUART,   "Done_Sem_RulerUART",   &err);
+    301             OSEventNameSet(EVENT_MsgQ_PCUART2Noah,      "EVENT_MsgQ_PCUART2Noah",      &err);
+    302             OSEventNameSet(EVENT_MsgQ_Noah2PCUART,      "EVENT_MsgQ_Noah2PCUART",      &err); 
+    303             OSEventNameSet(EVENT_MsgQ_RulerUART2Noah,   "EVENT_MsgQ_RulerUART2Noah",   &err);
+    304             OSEventNameSet(EVENT_MsgQ_Noah2RulerUART,   "EVENT_MsgQ_Noah2RulerUART",   &err); 
+    305             OSEventNameSet(EVENT_MsgQ_Noah2CMDParse,    "EVENT_MsgQ_Noah2CMDParse",    &err);
+    306             OSEventNameSet(Bsp_Ser_Tx_Sem_lock,  "Bsp_Ser_Tx_Sem_lock",  &err);
+    307             OSEventNameSet(Bsp_Ser_Rx_Sem_lock,  "Bsp_Ser_Tx_Sem_lock",  &err);
+    308             OSEventNameSet(DBGU_Tx_Sem_lock,     "DBGU_Tx_Sem_lock",     &err);
+    309             OSEventNameSet(DBGU_Rx_Sem_lock,     "DBGU_Rx_Sem_lock",     &err);
+    310             OSEventNameSet(UART_MUX_Sem_lock,    "UART_MUX_Sem_lock",    &err);
+    311             
+    312          #endif
+    313             
+    314          }
+    315          
+    316          
+    317          /*
+    318          *********************************************************************************************************
+    319          *                                      App_TaskCreate()
+    320          *
+    321          * Description : Create the application tasks.
+    322          *
+    323          * Argument(s) : none.
+    324          *
+    325          * Return(s)   : none.
+    326          *
+    327          * Caller(s)   : App_TasStart()
+    328          *
+    329          * Note(s)     : none.
+    330          *********************************************************************************************************
+    331          */
+    332          static  void  App_TaskCreate (void)
+    333          {
+    334              APP_TRACE_INFO(("Creating Application Tasks...\r\n"));
+    335              
+    336          #if (OS_TASK_NAME_EN > 0)
+    337              CPU_INT08U  err;
+    338          #endif
+    339          
+    340              OSTaskCreateExt((void (*)(void *)) App_TaskJoy,
+    341                              (void           *) 0,
+    342                              (OS_STK         *)&App_TaskJoyStk[APP_CFG_TASK_JOY_STK_SIZE - 1],
+    343                              (INT8U           ) APP_CFG_TASK_JOY_PRIO,
+    344                              (INT16U          ) APP_CFG_TASK_JOY_PRIO,
+    345                              (OS_STK         *)&App_TaskJoyStk[0],
+    346                              (INT32U          ) APP_CFG_TASK_JOY_STK_SIZE,
+    347                              (void *)0,
+    348                              (INT16U          )(OS_TASK_OPT_STK_CHK | OS_TASK_OPT_STK_CLR));
+    349          
+    350          #if (OS_TASK_NAME_EN > 0)
+    351              OSTaskNameSet(APP_CFG_TASK_JOY_PRIO, "Keyboard", &err);
+    352          #endif
+    353              
+    354             
+    355              OSTaskCreateExt((void (*)(void *)) App_TaskGenieShell,
+    356                              (void           *) 0,
+    357                              (OS_STK         *)&App_TaskGenieShellStk[APP_CFG_TASK_SHELL_STK_SIZE - 1],
+    358                              (INT8U           ) APP_CFG_TASK_SHELL_PRIO,
+    359                              (INT16U          ) APP_CFG_TASK_SHELL_PRIO,
+    360                              (OS_STK         *)&App_TaskGenieShellStk[0],
+    361                              (INT32U          ) APP_CFG_TASK_SHELL_STK_SIZE,
+    362                              (void *)0,
+    363                              (INT16U          )(OS_TASK_OPT_STK_CHK | OS_TASK_OPT_STK_CLR));
+    364          
+    365          #if (OS_TASK_NAME_EN > 0)
+    366              OSTaskNameSet(APP_CFG_TASK_SHELL_PRIO, "Genie_shell", &err);
+    367          #endif
+    368          
+    369              
+    370              
+    371          ////////////////////////////////////////////////////////////////////////////// 
+    372              
+    373              
+    374              OSTaskCreateExt((void (*)(void *)) App_TaskUART_Tx,
+    375                              (void           *) 0,
+    376                              (OS_STK         *)&App_TaskUART_TxStk[APP_CFG_TASK_UART_TX_STK_SIZE - 1],
+    377                              (INT8U           ) APP_CFG_TASK_UART_TX_PRIO,
+    378                              (INT16U          ) APP_CFG_TASK_UART_TX_PRIO,
+    379                              (OS_STK         *)&App_TaskUART_TxStk[0],
+    380                              (INT32U          ) APP_CFG_TASK_UART_TX_STK_SIZE,
+    381                              (void *)0,
+    382                              (INT16U          )(OS_TASK_OPT_STK_CHK | OS_TASK_OPT_STK_CLR));
+    383          
+    384          #if (OS_TASK_NAME_EN > 0)
+    385              OSTaskNameSet(APP_CFG_TASK_UART_TX_PRIO, "Uart_tx", &err);
+    386          #endif
+    387              
+    388               OSTaskCreateExt((void (*)(void *)) App_TaskUART_Rx,
+    389                              (void           *) 0,
+    390                              (OS_STK         *)&App_TaskUART_RxStk[APP_CFG_TASK_UART_RX_STK_SIZE - 1],
+    391                              (INT8U           ) APP_CFG_TASK_UART_RX_PRIO,
+    392                              (INT16U          ) APP_CFG_TASK_UART_RX_PRIO,
+    393                              (OS_STK         *)&App_TaskUART_RxStk[0],
+    394                              (INT32U          ) APP_CFG_TASK_UART_RX_STK_SIZE,
+    395                              (void *)0,
+    396                              (INT16U          )(OS_TASK_OPT_STK_CHK | OS_TASK_OPT_STK_CLR));
+    397          
+    398          #if (OS_TASK_NAME_EN > 0)
+    399              OSTaskNameSet(APP_CFG_TASK_UART_RX_PRIO, "Uart_rx", &err);
+    400          #endif
+    401              
+    402              
+    403              
+    404              
+    405              OSTaskCreateExt((void (*)(void *)) App_TaskNoah,
+    406                              (void           *) 0,
+    407                              (OS_STK         *)&App_TaskNoahStk[APP_CFG_TASK_NOAH_STK_SIZE - 1],
+    408                              (INT8U           ) APP_CFG_TASK_NOAH_PRIO,
+    409                              (INT16U          ) APP_CFG_TASK_NOAH_PRIO,
+    410                              (OS_STK         *)&App_TaskNoahStk[0],
+    411                              (INT32U          ) APP_CFG_TASK_NOAH_STK_SIZE,
+    412                              (void *)0,
+    413                              (INT16U          )(OS_TASK_OPT_STK_CHK | OS_TASK_OPT_STK_CLR));
+    414          
+    415          #if (OS_TASK_NAME_EN > 0)
+    416              OSTaskNameSet(APP_CFG_TASK_NOAH_PRIO, "Noah", &err);
+    417          #endif
+    418              
+    419                
+    420              OSTaskCreateExt((void (*)(void *)) App_TaskUserIF,
+    421                              (void           *) 0,
+    422                              (OS_STK         *)&App_TaskUserIF_Stk[APP_CFG_TASK_USER_IF_STK_SIZE - 1],
+    423                              (INT8U           ) APP_CFG_TASK_USER_IF_PRIO,
+    424                              (INT16U          ) APP_CFG_TASK_USER_IF_PRIO,
+    425                              (OS_STK         *)&App_TaskUserIF_Stk[0],
+    426                              (INT32U          ) APP_CFG_TASK_USER_IF_STK_SIZE,
+    427                              (void *)0,
+    428                              (INT16U          )(OS_TASK_OPT_STK_CHK | OS_TASK_OPT_STK_CLR));
+    429          
+    430          #if (OS_TASK_NAME_EN > 0)
+    431              OSTaskNameSet(APP_CFG_TASK_USER_IF_PRIO, "UserI/F", &err);
+    432          #endif
+    433           
+    434           
+    435           ///////////////////////////////////////////////////////////////////////////////
+    436              
+    437               OSTaskCreateExt((void (*)(void *)) App_TaskUART_Tx_Ruler,
+    438                              (void           *) 0,
+    439                              (OS_STK         *)&App_TaskUART_TxRulerStk[APP_CFG_TASK_UART_TX_RULER_STK_SIZE - 1],
+    440                              (INT8U           ) APP_CFG_TASK_UART_TX_RULER_PRIO,
+    441                              (INT16U          ) APP_CFG_TASK_UART_TX_RULER_PRIO,
+    442                              (OS_STK         *)&App_TaskUART_TxRulerStk[0],
+    443                              (INT32U          ) APP_CFG_TASK_UART_TX_RULER_STK_SIZE,
+    444                              (void *)0,
+    445                              (INT16U          )(OS_TASK_OPT_STK_CHK | OS_TASK_OPT_STK_CLR));
+    446          
+    447          #if (OS_TASK_NAME_EN > 0)
+    448              OSTaskNameSet(APP_CFG_TASK_UART_TX_RULER_PRIO, "Uart_tx_ruler", &err);
+    449          #endif
+    450              
+    451              
+    452              OSTaskCreateExt((void (*)(void *)) App_TaskNoah_Ruler,
+    453                              (void           *) 0,
+    454                              (OS_STK         *)&App_TaskNoahRulerStk[APP_CFG_TASK_NOAH_RULER_STK_SIZE - 1],
+    455                              (INT8U           ) APP_CFG_TASK_NOAH_RULER_PRIO,
+    456                              (INT16U          ) APP_CFG_TASK_NOAH_RULER_PRIO,
+    457                              (OS_STK         *)&App_TaskNoahRulerStk[0],
+    458                              (INT32U          ) APP_CFG_TASK_NOAH_RULER_STK_SIZE,
+    459                              (void *)0,
+    460                              (INT16U          )(OS_TASK_OPT_STK_CHK | OS_TASK_OPT_STK_CLR));
+    461          
+    462          #if (OS_TASK_NAME_EN > 0)
+    463              OSTaskNameSet(APP_CFG_TASK_NOAH_RULER_PRIO, "Noah_Ruler", &err);
+    464          #endif
+    465              
+    466          ////////////////////////////////////////////////////////////////////////////////
+    467              
+    468              OSTaskCreateExt((void (*)(void *)) App_TaskCMDParse,
+    469                              (void           *) 0,
+    470                              (OS_STK         *)&App_TaskCMDParseStk[APP_CFG_TASK_CMD_PARSE_STK_SIZE - 1],
+    471                              (INT8U           ) APP_CFG_TASK_CMD_PARSE_PRIO,
+    472                              (INT16U          ) APP_CFG_TASK_CMD_PARSE_PRIO,
+    473                              (OS_STK         *)&App_TaskCMDParseStk[0],
+    474                              (INT32U          ) APP_CFG_TASK_CMD_PARSE_STK_SIZE,
+    475                              (void *)0,
+    476                              (INT16U          )(OS_TASK_OPT_STK_CHK | OS_TASK_OPT_STK_CLR));
+    477          
+    478          #if (OS_TASK_NAME_EN > 0)
+    479              OSTaskNameSet(APP_CFG_TASK_CMD_PARSE_PRIO, "CMD_Parse", &err);
+    480          #endif 
+    481              
+    482              
+    483          }
+    484          
+    485          
+    486          
+    487          void Task_ReCreate_Shell( void )
+    488          {
+    489          
+    490          #if (OS_TASK_NAME_EN > 0)
+    491              CPU_INT08U  err;
+    492          #endif   
+    493              
+    494              OSTaskCreateExt((void (*)(void *)) App_TaskGenieShell,
+    495                              (void           *) 0,
+    496                              (OS_STK         *)&App_TaskGenieShellStk[APP_CFG_TASK_SHELL_STK_SIZE - 1],
+    497                              (INT8U           ) APP_CFG_TASK_SHELL_PRIO,
+    498                              (INT16U          ) APP_CFG_TASK_SHELL_PRIO,
+    499                              (OS_STK         *)&App_TaskGenieShellStk[0],
+    500                              (INT32U          ) APP_CFG_TASK_SHELL_STK_SIZE,
+    501                              (void *)0,
+    502                              (INT16U          )(OS_TASK_OPT_STK_CHK | OS_TASK_OPT_STK_CLR));
+    503          
+    504          #if (OS_TASK_NAME_EN > 0)
+    505              OSTaskNameSet(APP_CFG_TASK_SHELL_PRIO, "Genie_shell", &err);
+    506          #endif
+    507          
+    508              
+    509          }
+
+   Maximum stack usage in bytes:
+
+   .cstack Function
+   ------- --------
+       8   App_BufferCreate
+         8   -> BSP_Ser_Printf
+         8   -> OSMemCreate
+         8   -> OSMemNameSet
+       8   App_EventCreate
+         8   -> BSP_Ser_Printf
+         8   -> OSEventNameSet
+         8   -> OSMboxCreate
+         8   -> OSQCreate
+         8   -> OSSemCreate
+      32   App_TaskCreate
+        32   -> BSP_Ser_Printf
+        32   -> OSTaskCreateExt
+        32   -> OSTaskNameSet
+      16   App_TaskStart
+        16   -> App_BufferCreate
+        16   -> App_EventCreate
+        16   -> App_TaskCreate
+        16   -> BSP_Init
+        16   -> BSP_Ser_Init
+        16   -> LED_Clear
+        16   -> LED_Set
+        16   -> Math_Init
+        16   -> Mem_Init
+        16   -> OSStatInit
+        16   -> OSTimeDly
+        16   -> OS_CPU_InitExceptVect
+        16   -> Ruler_Port_LED_Service
+      32   Task_ReCreate_Shell
+        32   -> OSTaskCreateExt
+        32   -> OSTaskNameSet
+      32   main
+        32   -> BSP_CPU_Init
+        32   -> BSP_IntDisAll
+        32   -> CPU_Init
+        32   -> OSInit
+        32   -> OSStart
+        32   -> OSTaskCreateExt
+        32   -> OSTaskNameSet
+
+
+   Section sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+      20  ?<Constant "Bsp_Ser_Tx_Sem_lock">
+      12  ?<Constant "CMD_Parse">
+      36  ?<Constant "Creating Application ...">
+      36  ?<Constant "Creating Application ...">_1
+      32  ?<Constant "Creating Application ...">_2
+      20  ?<Constant "DBGU_Rx_Sem_lock">
+      20  ?<Constant "DBGU_Tx_Sem_lock">
+      20  ?<Constant "Done_Sem_RulerUART">
+      28  ?<Constant "EVENT_MsgQ_Noah2CMDParse">
+      24  ?<Constant "EVENT_MsgQ_Noah2PCUART">
+      28  ?<Constant "EVENT_MsgQ_Noah2Ruler...">
+      24  ?<Constant "EVENT_MsgQ_PCUART2Noah">
+      28  ?<Constant "EVENT_MsgQ_RulerUART2...">
+      12  ?<Constant "Genie_shell">
+      20  ?<Constant "Joy->UserI/F Mbox">
+      12  ?<Constant "Keyboard">
+      20  ?<Constant "MEM_Part_MsgUART">
+       8  ?<Constant "Noah">
+      12  ?<Constant "Noah_Ruler">
+      20  ?<Constant "PCUART_Tx_ACK_Sem">
+      24  ?<Constant "RulerUART_Tx_ACK_Sem">
+       8  ?<Constant "Start">
+      20  ?<Constant "UART_MUX_Sem_lock">
+       8  ?<Constant "Uart_rx">
+       8  ?<Constant "Uart_tx">
+      16  ?<Constant "Uart_tx_ruler">
+       8  ?<Constant "UserI/F">
+       4  ??DataTable4
+       4  ??DataTable4_1
+       4  ??DataTable4_10
+       4  ??DataTable4_11
+       4  ??DataTable4_12
+       4  ??DataTable4_13
+       4  ??DataTable4_14
+       4  ??DataTable4_15
+       4  ??DataTable4_16
+       4  ??DataTable4_17
+       4  ??DataTable4_18
+       4  ??DataTable4_19
+       4  ??DataTable4_2
+       4  ??DataTable4_20
+       4  ??DataTable4_21
+       4  ??DataTable4_22
+       4  ??DataTable4_23
+       4  ??DataTable4_24
+       4  ??DataTable4_25
+       4  ??DataTable4_26
+       4  ??DataTable4_27
+       4  ??DataTable4_28
+       4  ??DataTable4_29
+       4  ??DataTable4_3
+       4  ??DataTable4_30
+       4  ??DataTable4_31
+       4  ??DataTable4_32
+       4  ??DataTable4_33
+       4  ??DataTable4_34
+       4  ??DataTable4_35
+       4  ??DataTable4_36
+       4  ??DataTable4_37
+       4  ??DataTable4_38
+       4  ??DataTable4_39
+       4  ??DataTable4_4
+       4  ??DataTable4_40
+       4  ??DataTable4_41
+       4  ??DataTable4_42
+       4  ??DataTable4_43
+       4  ??DataTable4_44
+       4  ??DataTable4_45
+       4  ??DataTable4_46
+       4  ??DataTable4_47
+       4  ??DataTable4_48
+       4  ??DataTable4_49
+       4  ??DataTable4_5
+       4  ??DataTable4_50
+       4  ??DataTable4_51
+       4  ??DataTable4_52
+       4  ??DataTable4_53
+       4  ??DataTable4_54
+       4  ??DataTable4_55
+       4  ??DataTable4_56
+       4  ??DataTable4_57
+       4  ??DataTable4_58
+       4  ??DataTable4_59
+       4  ??DataTable4_6
+       4  ??DataTable4_60
+       4  ??DataTable4_61
+       4  ??DataTable4_62
+       4  ??DataTable4_63
+       4  ??DataTable4_64
+       4  ??DataTable4_65
+       4  ??DataTable4_66
+       4  ??DataTable4_67
+       4  ??DataTable4_68
+       4  ??DataTable4_69
+       4  ??DataTable4_7
+       4  ??DataTable4_70
+       4  ??DataTable4_71
+       4  ??DataTable4_72
+       4  ??DataTable4_73
+       4  ??DataTable4_74
+       4  ??DataTable4_75
+       4  ??DataTable4_76
+       4  ??DataTable4_8
+       4  ??DataTable4_9
+      84  App_BufferCreate
+     564  App_EventCreate
+    1024  App_TaskCMDParseStk
+     712  App_TaskCreate
+    1024  App_TaskGenieShellStk
+     256  App_TaskJoyStk
+     512  App_TaskNoahRulerStk
+     512  App_TaskNoahStk
+     104  App_TaskStart
+     512  App_TaskStartStk
+     512  App_TaskUART_RxStk
+     512  App_TaskUART_TxRulerStk
+     512  App_TaskUART_TxStk
+     512  App_TaskUserIF_Stk
+      96  Task_ReCreate_Shell
+     116  main
+
+ 
+ 5 888 bytes in section .bss
+   524 bytes in section .rodata
+ 1 984 bytes in section .text
+ 
+ 1 984 bytes of CODE  memory
+   524 bytes of CONST memory
+ 5 888 bytes of DATA  memory
+
+Errors: none
+Warnings: none

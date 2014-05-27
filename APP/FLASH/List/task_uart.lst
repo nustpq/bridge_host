@@ -1,0 +1,219 @@
+###############################################################################
+#                                                                             #
+# IAR ANSI C/C++ Compiler V5.40.0.51500/W32 for ARM     24/Nov/2011  15:44:26 #
+# Copyright (C) 1999-2009 IAR Systems AB.                                     #
+#                                                                             #
+#    Cpu mode     =  arm                                                      #
+#    Endian       =  little                                                   #
+#    Source file  =  L:\SII_UCOS\Micrium_SAM7X256\Software\APP\task_uart.c    #
+#    Command line =  L:\SII_UCOS\Micrium_SAM7X256\Software\APP\task_uart.c    #
+#                    -lcN L:\SII_UCOS\Micrium_SAM7X256\Software\APP\FLASH\Lis #
+#                    t\ -lb L:\SII_UCOS\Micrium_SAM7X256\Software\APP\FLASH\L #
+#                    ist\ -o L:\SII_UCOS\Micrium_SAM7X256\Software\APP\FLASH\ #
+#                    Obj\ --no_cse --no_unroll --no_inline --no_code_motion   #
+#                    --no_tbaa --no_clustering --no_scheduling --debug        #
+#                    --endian=little --cpu=ARM7TDMI -e --fpu=None             #
+#                    --dlib_config "D:\Program Files\IAR Systems\Embedded     #
+#                    Workbench 5.4ARM\arm\INC\DLib_Config_Normal.h" -I        #
+#                    L:\SII_UCOS\Micrium_SAM7X256\Software\APP\ -I            #
+#                    L:\SII_UCOS\Micrium_SAM7X256\Software\APP\..\uC-CPU\ARM\ #
+#                    IAR\ -I L:\SII_UCOS\Micrium_SAM7X256\Software\APP\..\BSP #
+#                    \ -I L:\SII_UCOS\Micrium_SAM7X256\Software\APP\..\DRIVER #
+#                    \ -I L:\SII_UCOS\Micrium_SAM7X256\Software\APP\..\NOAH\  #
+#                    -I L:\SII_UCOS\Micrium_SAM7X256\Software\APP\..\uCOS-II\ #
+#                    Source\ -I L:\SII_UCOS\Micrium_SAM7X256\Software\APP\..\ #
+#                    uC-CPU\ -I L:\SII_UCOS\Micrium_SAM7X256\Software\APP\..\ #
+#                    uC-LIB\ -I L:\SII_UCOS\Micrium_SAM7X256\Software\APP\..\ #
+#                    uC-CPU\ARM\IAR\ -I L:\SII_UCOS\Micrium_SAM7X256\Software #
+#                    \APP\..\uCOS-II\Ports\ARM\Generic\IAR\ -I                #
+#                    L:\SII_UCOS\Micrium_SAM7X256\Software\APP\..\uC-Probe\Ta #
+#                    rget\Communication\Generic\RS-232\Source\ -I             #
+#                    L:\SII_UCOS\Micrium_SAM7X256\Software\APP\..\uC-Probe\Ta #
+#                    rget\Communication\Generic\RS-232\Ports\Atmel\AT91SAM7X\ #
+#                     -I L:\SII_UCOS\Micrium_SAM7X256\Software\APP\..\uC-Prob #
+#                    e\Target\Communication\Generic\Source\ -I                #
+#                    L:\SII_UCOS\Micrium_SAM7X256\Software\APP\..\uC-Probe\Ta #
+#                    rget\Plugins\uCOS-II\ -I L:\SII_UCOS\Micrium_SAM7X256\So #
+#                    ftware\APP\..\uC-Probe\Target\Demos\Intro\Source\ -I     #
+#                    "D:\Program Files\IAR Systems\Embedded Workbench         #
+#                    5.4ARM\arm\INC\" --interwork --cpu_mode arm -On          #
+#    List file    =  L:\SII_UCOS\Micrium_SAM7X256\Software\APP\FLASH\List\tas #
+#                    k_uart.lst                                               #
+#    Object file  =  L:\SII_UCOS\Micrium_SAM7X256\Software\APP\FLASH\Obj\task #
+#                    _uart.o                                                  #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+L:\SII_UCOS\Micrium_SAM7X256\Software\APP\task_uart.c
+      1          /*
+      2          *********************************************************************************************************
+      3          *                                     MICIRUM BOARD SUPPORT PACKAGE
+      4          *
+      5          *                            (c) Copyright 2006-2008; Micrium, Inc.; Weston, FL
+      6          *
+      7          *                   All rights reserved.  Protected by international copyright laws.
+      8          *                   Knowledge of the source code may not be used to write a similar
+      9          *                   product.  This file may only be used in accordance with a license
+     10          *                   and should not be redistributed in any way.
+     11          *********************************************************************************************************
+     12          */
+     13          
+     14          /*
+     15          *********************************************************************************************************
+     16          *
+     17          *                                         TASK PACKAGE
+     18          *
+     19          *                                          Atmel AT91SAM7A3
+     20          *                                                on the
+     21          *                                  Fortemedia Saturn-II V2.1 Board
+     22          *
+     23          * Filename      : task_uart.c
+     24          * Version       : V1.00
+     25          * Programmer(s) : PQ
+     26          *********************************************************************************************************
+     27          * Note(s)       :
+     28          *********************************************************************************************************
+     29          */
+     30          
+     31          #include <includes.h>
+     32          
+     33          
+     34          //Mem
+     35          OS_MEM * pMEM_Part_MsgUART; //global
+     36          INT8U    MemPartition_MsgUART[MsgUARTQueue_SIZE][MsgUARTBody_SIZE];
+     37          
+     38          //Queue
+     39          void     * MsgUart2Task0Queue[MsgUart2Task0_SIZE];
+     40          void     * MsgTask02UartQueue[MsgTask02Uart_SIZE];
+     41          
+     42          OS_EVENT * EVENT_MsgTask02Uart;
+     43          OS_EVENT * EVENT_MsgUart2Task0;
+     44          
+     45          OS_EVENT * USART_Sem[3]; //sem for UART
+     46          
+     47           
+     48          
+     49          /*
+     50          *********************************************************************************************************
+     51          *                                    App_TaskUART()
+     52          *
+     53          * Description : Process UART related processing and passes messages between    .
+     54          *
+     55          * Argument(s) : p_arg   Argument passed to 'App_TaskUART()' by 'OSTaskCreate()'.
+     56          *
+     57          * Return(s)   : none.
+     58          *
+     59          * Note(s)     : (1) The first line of code is used to prevent a compiler warning because 'p_arg' is not
+     60          *                   used.  The compiler should not generate any code for this statement.
+     61          *********************************************************************************************************
+     62          */
+     63          void App_TaskUART_Tx( void *p_arg )
+     64          {  
+     65              CPU_INT08U       errCode ;
+     66              CPU_INT08U       PcCmdTxId ;         // 发送到PC的数据包 ID
+     67              CPU_INT08U      *pTaskMsgIN ;   
+     68              CPU_INT08U      *pRxID ;
+     69              PCCMD           *pPcCmd ; 
+     70              
+     71          	(void)p_arg;
+     72              pTaskMsgIN  = NULL;
+     73              pPcCmd      = NULL;	
+     74              PcCmdTxId   = 0;
+     75              
+     76           
+     77          	
+     78          	while (DEF_TRUE) { 
+     79          
+     80                  //发送Task02Uart消息
+     81                  pTaskMsgIN   = (INT8U *)OSQGet( EVENT_MsgTask02Uart, &errCode );
+     82                  
+     83              	if( pTaskMsgIN != NULL && OS_ERR_NONE == errCode )   {
+     84                      pRxID = OSMboxAccept( ACK_Sem_Mbox ); 
+     85                      if( (pRxID != NULL) && (*pRxID == PcCmdTxId) ) {
+     86                           OSQAccept( EVENT_MsgTask02Uart, &errCode ); //delete the message from queue
+     87                           OSMemPut( pMEM_Part_MsgUART, pTaskMsgIN );    //release mem 
+     88                           PcCmdTxId += 0x40;// this frame send out ok, frame ++,   //0xC0  
+     89                           
+     90                      } else {            
+     91                          pPcCmd  = (PCCMD *)(pTaskMsgIN + 2) ; //change to PCCMD type,jump 0xEB 0x90        
+     92                          if( GET_FRAME_TYPE(pPcCmd->head) == FRAM_TYPE_DATA) {//data frame
+     93                              pPcCmd->head = SET_FRAME_HEAD( PcCmdTxId, FRAM_TYPE_DATA ) ; //set frame ID for data transmit
+     94                              Queue_WriteBuf( pTaskMsgIN, (void*)UART1_Send_Buf, pPcCmd->DataLen + 5 ); //2 +2+datalen+1
+     95                              UART_WriteStart( PC_UART ); //执行Uart发送队列 
+     96                              //pending for ACK...and timeout
+     97                          
+     98                          } else { //ack/nak frame, no resend action
+     99                              Queue_WriteBuf( pTaskMsgIN,(void*)UART1_Send_Buf, 4 );
+    100                              OSQAccept( EVENT_MsgTask02Uart, &errCode ); //delete message from queue
+    101                              OSMemPut( pMEM_Part_MsgUART, pTaskMsgIN );    //release mem 
+    102                              UART_WriteStart( PC_UART ); //执行Uart发送队列 
+    103                          } 
+    104                                  
+    105                      }
+    106                  }         
+    107                  
+    108                  OSTimeDly(2);
+    109          		                                     	
+    110          	}
+    111              
+    112          }
+    113          
+    114          
+    115          void App_TaskUART_Rx( void *p_arg )
+    116          {    
+    117              CPU_INT08U       temp ;	
+    118              CPU_INT08U       counter ;	
+    119              
+    120          	(void)p_arg; 
+    121             
+    122          	
+    123          	while (DEF_TRUE) {               
+    124             
+    125                  counter = Queue_NData((void*)UART1_Rece_Buf ) ;
+    126                  while( counter-- ) {            
+    127                      Queue_Read( &temp, UART1_Rece_Buf ); 
+    128                      PC_CMD_Read( temp ) ;
+    129                      
+    130          		}           
+    131                  
+    132                  OSTimeDly(10);
+    133          		                                     	
+    134          	}
+    135              
+    136          }
+    137          
+    138          
+    139              
+
+   Maximum stack usage in bytes:
+
+     Function        .cstack
+     --------        -------
+     App_TaskUART_Rx     16
+     App_TaskUART_Tx     32
+
+
+   Section sizes:
+
+     Function/Label       Bytes
+     --------------       -----
+     pMEM_Part_MsgUART       4
+     MemPartition_MsgUART 5200
+     MsgUart2Task0Queue     64
+     MsgTask02UartQueue     64
+     EVENT_MsgTask02Uart     4
+     EVENT_MsgUart2Task0     4
+     USART_Sem              12
+     App_TaskUART_Tx       312
+     App_TaskUART_Rx        80
+
+ 
+ 5 352 bytes in section .bss
+   392 bytes in section .text
+ 
+   392 bytes of CODE memory
+ 5 352 bytes of DATA memory
+
+Errors: none
+Warnings: 1

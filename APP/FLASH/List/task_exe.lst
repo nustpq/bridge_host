@@ -1,0 +1,207 @@
+###############################################################################
+#                                                                             #
+# IAR ANSI C/C++ Compiler V6.40.1.53790/W32 for ARM     26/Aug/2013  20:04:27 #
+# Copyright 1999-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    Cpu mode     =  arm                                                      #
+#    Endian       =  little                                                   #
+#    Source file  =  F:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\task_ex #
+#                    e.c                                                      #
+#    Command line =  "F:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\task_e #
+#                    xe.c" -lcN "F:\SVN Dir\PQ\iSAM Test                      #
+#                    Bench\Bridge_Host_OS\APP\FLASH\List\" -lb "F:\SVN        #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\"   #
+#                    -o "F:\SVN Dir\PQ\iSAM Test                              #
+#                    Bench\Bridge_Host_OS\APP\FLASH\Obj\" --no_cse            #
+#                    --no_unroll --no_inline --no_code_motion --no_tbaa       #
+#                    --no_clustering --no_scheduling --debug --endian=little  #
+#                    --cpu=ARM7TDMI -e --fpu=None --dlib_config "D:\Program   #
+#                    Files\IAR Systems\Embedded Workbench                     #
+#                    6.4\arm\INC\c\DLib_Config_Normal.h" -I "F:\SVN           #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\" -I "F:\SVN   #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\ #
+#                    IAR\" -I "F:\SVN Dir\PQ\iSAM Test                        #
+#                    Bench\Bridge_Host_OS\APP\..\BSP\" -I "F:\SVN             #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\Driver\"    #
+#                    -I "F:\SVN Dir\PQ\iSAM Test                              #
+#                    Bench\Bridge_Host_OS\APP\..\Noah\" -I "F:\SVN            #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\Shell\" -I  #
+#                    "F:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uCO #
+#                    S-II\Source\" -I "F:\SVN Dir\PQ\iSAM Test                #
+#                    Bench\Bridge_Host_OS\APP\..\uC-CPU\" -I "F:\SVN          #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uC-LIB\"    #
+#                    -I "F:\SVN Dir\PQ\iSAM Test                              #
+#                    Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "F:\SVN  #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uCOS-II\Por #
+#                    ts\ARM\Generic\IAR\" -I "F:\SVN Dir\PQ\iSAM Test         #
+#                    Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communicatio #
+#                    n\Generic\RS-232\Source\" -I "F:\SVN Dir\PQ\iSAM Test    #
+#                    Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communicatio #
+#                    n\Generic\RS-232\Ports\Atmel\AT91SAM7X\" -I "F:\SVN      #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uC-Probe\Ta #
+#                    rget\Communication\Generic\Source\" -I "F:\SVN           #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uC-Probe\Ta #
+#                    rget\Plugins\uCOS-II\" -I "F:\SVN Dir\PQ\iSAM Test       #
+#                    Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Demos\Intro\ #
+#                    Source\" --interwork --cpu_mode arm -On --use_c++_inline #
+#    List file    =  F:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\L #
+#                    ist\task_exe.lst                                         #
+#    Object file  =  F:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\O #
+#                    bj\task_exe.o                                            #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+F:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\task_exe.c
+      1          /*
+      2          *********************************************************************************************************
+      3          *                                     MICIRUM BOARD SUPPORT PACKAGE
+      4          *
+      5          *                            (c) Copyright 2006-2008; Micrium, Inc.; Weston, FL
+      6          *
+      7          *                   All rights reserved.  Protected by international copyright laws.
+      8          *                   Knowledge of the source code may not be used to write a similar
+      9          *                   product.  This file may only be used in accordance with a license
+     10          *                   and should not be redistributed in any way.
+     11          *********************************************************************************************************
+     12          */
+     13          
+     14          /*
+     15          *********************************************************************************************************
+     16          *
+     17          *                                         TASK PACKAGE
+     18          *
+     19          *                                          Atmel AT91SAM7A3
+     20          *                                             on the
+     21          *                                     iSAM Audio Bridge Board
+     22          *
+     23          * Filename      : task_exe.c
+     24          * Version       : V1.00
+     25          * Programmer(s) : PQ
+     26          *********************************************************************************************************
+     27          * Note(s)       :
+     28          *********************************************************************************************************
+     29          */
+     30          
+     31          #include <includes.h>
+     32          
+     33          
+     34          CPU_INT08U          databuf[ MAXDATABUF + 10 ] ;    // exe report data buf, raw write/read buf
+     35          FUNCSTK             FuncStk[ MAXFUNCNUM + 1 ] ;     // exe function parameter buf
+     36          BUFCTR              FuncStkCtr ;                    // exe function parameter buf  Control 
+     37          DATABUFCTR          DataBufCtr ;                    // exe report data buf         Control 
+     38          
+     39          
+     40          
+     41          /*
+     42          *********************************************************************************************************
+     43          *                                    App_TaskExe()
+     44          *
+     45          * Description : based on PC Noah CMD, execute each atom functional operation .
+     46          *
+     47          * Argument(s) : p_arg   Argument passed to 'App_TaskExe()' by 'OSTaskCreate()'.
+     48          *
+     49          * Return(s)   : none.
+     50          *
+     51          * Note(s)     : (1) The first line of code is used to prevent a compiler warning because 'p_arg' is not
+     52          *                   used.  The compiler should not generate any code for this statement.
+     53          *********************************************************************************************************
+     54          */
+     55          void App_TaskExe( void *p_arg )
+     56          {  
+     57              (void)p_arg;
+     58              
+     59              CPU_INT08U      is_session ;
+     60              CPU_INT08U      err ;
+     61              CPU_INT08U      *msg ;
+     62              CPU_INT08U      AckBuf[2];  //used for PcSendData ;
+     63              CPU_INT16U      datlen;
+     64              
+     65          #if OS_CRITICAL_METHOD == 3u   /* Allocate storage for CPU status register   */
+     66              OS_CPU_SR  cpu_sr = 0u;
+     67          #endif
+     68           
+     69              err             = 0;   
+     70              msg             = NULL;
+     71              
+     72              /*******************************/
+     73              DataBufCtr.pBufStAddr = databuf ;
+     74              DataBufCtr.pBufTop    = databuf ;    
+     75              /******************************/
+     76          
+     77              while( DEF_TRUE ) {   
+     78              
+     79                  msg = (CPU_INT08U *)( OSMboxPend(App_Noah_Mbox, 0, &err) ); //execute only if Got cmd function and session in stop state   
+     80                  
+     81                  APP_TRACE_DBG((" >EXE"));
+     82                  is_session  = (*msg) & 0x01 ;
+     83                  *msg        =  0; //
+     84                  
+     85                  if( is_session == 1 )  { //in session no interruption
+     86                      OS_ENTER_CRITICAL(); 
+     87                      
+     88                  }         
+     89                  for( FuncStkCtr.BufTail = 0; FuncStkCtr.BufTail < FuncStkCtr.BufHead; )  {
+     90                    
+     91                      err = FuncStk[FuncStkCtr.BufTail].Func(  FuncStk[FuncStkCtr.BufTail].prmt  ) ;//exe func            
+     92                      if( FuncStkCtr.BufTail++ >= MAXFUNCNUM ) {
+     93                          FuncStkCtr.BufTail = 0;
+     94                      }        
+     95                      if( err != 0) {                       
+     96                          AckBuf[0] = CMDDN_ERR_RPT ;
+     97                          AckBuf[1] = err ;           
+     98                          pcSendDateToBuf( EVENT_MsgQ_Noah2PCUART, FRAM_TYPE_DATA, AckBuf, 2, 0 ) ; //no need frame ID
+     99                          break ;
+    100                      }
+    101                  }        
+    102                  if( is_session == 1 ) {
+    103                      OS_EXIT_CRITICAL(); 
+    104                      
+    105                  }        
+    106                    
+    107                  //send exe data      
+    108                  datlen = DataBufCtr.pBufTop - DataBufCtr.pBufStAddr ;
+    109                  if(datlen) {       
+    110                      pcSendDateToBuf( EVENT_MsgQ_Noah2PCUART, FRAM_TYPE_DATA, DataBufCtr.pBufStAddr, datlen, 0 ) ; 
+    111                  }
+    112                  
+    113                  //reset buffer
+    114                  FuncStkCtr.BufTail = 0 ;
+    115                  FuncStkCtr.BufHead = 0 ; 
+    116                  DataBufCtr.pBufTop      = databuf;
+    117                  DataBufCtr.pBufStAddr   = databuf;
+    118                  
+    119                  if( is_session == 1 )  {         
+    120                      AckBuf[0] = REPORT_FINISH ;         
+    121                      pcSendDateToBuf( EVENT_MsgQ_Noah2PCUART, FRAM_TYPE_DATA, AckBuf, 1, 0 ) ;  
+    122                      
+    123                  } else {
+    124                      if(datlen==0)  {
+    125                          if(err == 0) {   // no data report
+    126                              AckBuf[0] = CMDDN_ERR_RPT ;
+    127                              AckBuf[1] = 0 ;            
+    128                              pcSendDateToBuf( EVENT_MsgQ_Noah2PCUART, FRAM_TYPE_DATA, AckBuf, 2, 0 ) ;  
+    129                              
+    130                          }
+    131                      }
+    132                      
+    133                  }    
+    134                 
+    135                 ////OSTimeDly(1); 
+    136              }
+    137              
+    138              
+    139          }
+    140          
+    141          
+    142          
+    143          
+    144          
+    145          
+    146          
+    147          
+    148          
+    149              
+
+Errors: 1
+Warnings: none

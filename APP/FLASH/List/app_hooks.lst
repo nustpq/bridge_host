@@ -1,0 +1,336 @@
+###############################################################################
+#
+# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        22/May/2014  14:14:47
+# Copyright 1999-2014 IAR Systems AB.
+#
+#    Cpu mode     =  arm
+#    Endian       =  little
+#    Source file  =  
+#        E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\app_hooks.c
+#    Command line =  
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\app_hooks.c" -lcN
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\" -lb
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\" -o
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\Obj\" --no_cse
+#        --no_unroll --no_inline --no_code_motion --no_tbaa --no_clustering
+#        --no_scheduling --debug --endian=little --cpu=ARM7TDMI -e --fpu=None
+#        --dlib_config "C:\Program Files (x86)\IAR Systems\Embedded Workbench
+#        7.0\arm\INC\c\DLib_Config_Full.h" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\BSP\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Driver\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Noah\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Shell\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uCOS-II\Source\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\uC-CPU\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-LIB\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\uCOS-II\Ports\ARM\Generic\IAR\" -I
+#        "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\RS-232\Source\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\RS-232\Ports\Atmel\AT91SAM7X\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\Source\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Plugins\uCOS-II\" -I
+#        "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Demos\Intro\Source\"
+#        --interwork --cpu_mode arm -On --use_c++_inline
+#    List file    =  
+#        E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\FLASH\List\app_hooks.lst
+#    Object file  =  
+#        E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\Obj\app_hooks.o
+#
+###############################################################################
+
+E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\app_hooks.c
+      1          /*
+      2          *********************************************************************************************************
+      3          *                                              EXAMPLE CODE
+      4          *
+      5          *                          (c) Copyright 2003-2009; Micrium, Inc.; Weston, FL
+      6          *
+      7          *               All rights reserved.  Protected by international copyright laws.
+      8          *               Knowledge of the source code may NOT be used to develop a similar product.
+      9          *               Please help us continue to provide the Embedded community with the finest
+     10          *               software available.  Your honesty is greatly appreciated.
+     11          *********************************************************************************************************
+     12          */
+     13          
+     14          /*
+     15          *********************************************************************************************************
+     16          *
+     17          *                                             uC/OS-II 
+     18          *                                         Application Hooks
+     19          *
+     20          * Filename      : app_hooks.c
+     21          * Version       : V1.0.0
+     22          * Programmer(s) : FT
+     23          *********************************************************************************************************
+     24          */
+     25          
+     26          /*
+     27          *********************************************************************************************************
+     28          *                                             INCLUDE FILES
+     29          *********************************************************************************************************
+     30          */
+     31          
+     32          #include <includes.h>
+     33          
+     34          /*
+     35          *********************************************************************************************************
+     36          *                                       EXTERN  GLOBAL VARIABLES
+     37          *********************************************************************************************************
+     38          */
+     39          
+     40          
+     41          /*
+     42          *********************************************************************************************************
+     43          *                                           LOCAL CONSTANTS
+     44          *********************************************************************************************************
+     45          */
+     46          
+     47          
+     48          /*
+     49          *********************************************************************************************************
+     50          *                                          LOCAL DATA TYPES
+     51          *********************************************************************************************************
+     52          */
+     53          
+     54          /*
+     55          *********************************************************************************************************
+     56          *                                            LOCAL TABLES
+     57          *********************************************************************************************************
+     58          */
+     59          
+     60          
+     61          /*
+     62          *********************************************************************************************************
+     63          *                                       LOCAL GLOBAL VARIABLES
+     64          *********************************************************************************************************
+     65          */
+     66          
+     67          
+     68          /*
+     69          *********************************************************************************************************
+     70          *                                      LOCAL FUNCTION PROTOTYPES
+     71          *********************************************************************************************************
+     72          */
+     73          
+     74          
+     75          
+     76          /*
+     77          **********************************************************************************************************
+     78          **********************************************************************************************************
+     79          **                                        GLOBAL FUNCTIONS
+     80          **********************************************************************************************************
+     81          **********************************************************************************************************
+     82          */
+     83          
+     84          /*
+     85          *********************************************************************************************************
+     86          *********************************************************************************************************
+     87          **                                         uC/OS-II APP HOOKS
+     88          *********************************************************************************************************
+     89          *********************************************************************************************************
+     90          */
+     91          
+     92          #if (OS_APP_HOOKS_EN > 0)
+     93          
+     94          /*
+     95          *********************************************************************************************************
+     96          *                                      TASK CREATION HOOK (APPLICATION)
+     97          *
+     98          * Description : This function is called when a task is created.
+     99          *
+    100          * Argument(s) : ptcb   is a pointer to the task control block of the task being created.
+    101          *
+    102          * Note(s)     : (1) Interrupts are disabled during this call.
+    103          *********************************************************************************************************
+    104          */
+    105          
+    106          void  App_TaskCreateHook (OS_TCB *ptcb)
+    107          {
+    108          #if (APP_CFG_PROBE_OS_PLUGIN_EN == DEF_ENABLED) && (OS_PROBE_HOOKS_EN > 0)
+    109              OSProbe_TaskCreateHook(ptcb);
+    110          #endif
+    111          }
+    112          
+    113          /*
+    114          *********************************************************************************************************
+    115          *                                    TASK DELETION HOOK (APPLICATION)
+    116          *
+    117          * Description : This function is called when a task is deleted.
+    118          *
+    119          * Argument(s) : ptcb   is a pointer to the task control block of the task being deleted.
+    120          *
+    121          * Note(s)     : (1) Interrupts are disabled during this call.
+    122          *********************************************************************************************************
+    123          */
+    124          
+    125          void  App_TaskDelHook (OS_TCB *ptcb)
+    126          {
+    127              (void)ptcb;
+    128          }
+    129          
+    130          /*
+    131          *********************************************************************************************************
+    132          *                                      IDLE TASK HOOK (APPLICATION)
+    133          *
+    134          * Description : This function is called by OSTaskIdleHook(), which is called by the idle task.  This hook
+    135          *               has been added to allow you to do such things as STOP the CPU to conserve power.
+    136          *
+    137          * Argument(s) : none.
+    138          *
+    139          * Note(s)     : (1) Interrupts are enabled during this call.
+    140          *********************************************************************************************************
+    141          */
+    142          
+    143          #if OS_VERSION >= 251
+    144          void  App_TaskIdleHook (void)
+    145          {
+    146          }
+    147          #endif
+    148          
+    149          
+    150          /*
+    151          *********************************************************************************************************
+    152          *                                            TASK RETURN HOOK (APPLICATION)
+    153          *
+    154          * Description: This function is called if a task accidentally returns.  In other words, a task should
+    155          *              either be an infinite loop or delete itself when done.
+    156          *
+    157          * Arguments  : ptcb      is a pointer to the task control block of the task that is returning.
+    158          *
+    159          * Note(s)    : none
+    160          *********************************************************************************************************
+    161          */
+    162          
+    163          #if OS_VERSION >= 289
+    164          void  App_TaskReturnHook (OS_TCB  *ptcb)
+    165          {
+    166              (void)ptcb;
+    167          }
+    168          #endif
+    169          
+    170          
+    171          /*
+    172          *********************************************************************************************************
+    173          *                                        STATISTIC TASK HOOK (APPLICATION)
+    174          *
+    175          * Description : This function is called by OSTaskStatHook(), which is called every second by uC/OS-II's
+    176          *               statistics task.  This allows your application to add functionality to the statistics task.
+    177          *
+    178          * Argument(s) : none.
+    179          *********************************************************************************************************
+    180          */
+    181          
+    182          void  App_TaskStatHook (void)
+    183          {
+    184          }
+    185          
+    186          /*
+    187          *********************************************************************************************************
+    188          *                                        TASK SWITCH HOOK (APPLICATION)
+    189          *
+    190          * Description : This function is called when a task switch is performed.  This allows you to perform other
+    191          *               operations during a context switch.
+    192          *
+    193          * Argument(s) : none.
+    194          *
+    195          * Note(s)     : (1) Interrupts are disabled during this call.
+    196          *
+    197          *               (2) It is assumed that the global pointer 'OSTCBHighRdy' points to the TCB of the task that
+    198          *                   will be 'switched in' (i.e. the highest priority task) and, 'OSTCBCur' points to the
+    199          *                  task being switched out (i.e. the preempted task).
+    200          *********************************************************************************************************
+    201          */
+    202          
+    203          #if OS_TASK_SW_HOOK_EN > 0
+    204          void  App_TaskSwHook (void)
+    205          {
+    206          #if (APP_CFG_PROBE_OS_PLUGIN_EN > 0) && (OS_PROBE_HOOKS_EN > 0)
+    207              OSProbe_TaskSwHook();
+    208          #endif
+    209          }
+    210          #endif
+    211          
+    212          /*
+    213          *********************************************************************************************************
+    214          *                                     OS_TCBInit() HOOK (APPLICATION)
+    215          *
+    216          * Description : This function is called by OSTCBInitHook(), which is called by OS_TCBInit() after setting
+    217          *               up most of the TCB.
+    218          *
+    219          * Argument(s) : ptcb    is a pointer to the TCB of the task being created.
+    220          *
+    221          * Note(s)     : (1) Interrupts may or may not be ENABLED during this call.
+    222          *********************************************************************************************************
+    223          */
+    224          
+    225          #if OS_VERSION >= 204
+    226          void  App_TCBInitHook (OS_TCB *ptcb)
+    227          {
+    228              (void)ptcb;
+    229          }
+    230          #endif
+    231          
+    232          /*
+    233          *********************************************************************************************************
+    234          *                                        TICK HOOK (APPLICATION)
+    235          *
+    236          * Description : This function is called every tick.
+    237          *
+    238          * Argument(s) : none.
+    239          *
+    240          * Note(s)     : (1) Interrupts may or may not be ENABLED during this call.
+    241          *********************************************************************************************************
+    242          */
+    243          
+    244          #if OS_TIME_TICK_HOOK_EN > 0
+    245          void  App_TimeTickHook (void)
+    246          {
+    247          #if (APP_CFG_PROBE_OS_PLUGIN_EN == DEF_ENABLED) && (OS_PROBE_HOOKS_EN > 0)
+    248              OSProbe_TickHook();
+    249          #endif
+    250          }
+    251          #endif
+    252          #endif
+
+   Maximum stack usage in bytes:
+
+   .cstack Function
+   ------- --------
+       0   App_TCBInitHook
+       0   App_TaskCreateHook
+       0   App_TaskDelHook
+       0   App_TaskIdleHook
+       0   App_TaskReturnHook
+       0   App_TaskStatHook
+       0   App_TaskSwHook
+       0   App_TimeTickHook
+
+
+   Section sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       4  App_TCBInitHook
+       4  App_TaskCreateHook
+       4  App_TaskDelHook
+       4  App_TaskIdleHook
+       4  App_TaskReturnHook
+       4  App_TaskStatHook
+       4  App_TaskSwHook
+       4  App_TimeTickHook
+
+ 
+ 32 bytes in section .text
+ 
+ 32 bytes of CODE memory
+
+Errors: none
+Warnings: none

@@ -1,0 +1,691 @@
+###############################################################################
+#
+# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        22/May/2014  14:14:55
+# Copyright 1999-2014 IAR Systems AB.
+#
+#    Cpu mode     =  arm
+#    Endian       =  little
+#    Source file  =  
+#        E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\uC-Probe\Target\Communication\Generic\RS-232\Ports\Atmel\AT91SAM7X\probe_rs232c.c
+#    Command line =  
+#        "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\uC-Probe\Target\Communication\Generic\RS-232\Ports\Atmel\AT91SAM7X\probe_rs232c.c"
+#        -lcN "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\"
+#        -lb "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\" -o
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\Obj\" --no_cse
+#        --no_unroll --no_inline --no_code_motion --no_tbaa --no_clustering
+#        --no_scheduling --debug --endian=little --cpu=ARM7TDMI -e --fpu=None
+#        --dlib_config "C:\Program Files (x86)\IAR Systems\Embedded Workbench
+#        7.0\arm\INC\c\DLib_Config_Full.h" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\BSP\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Driver\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Noah\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Shell\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uCOS-II\Source\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\uC-CPU\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-LIB\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\uCOS-II\Ports\ARM\Generic\IAR\" -I
+#        "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\RS-232\Source\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\RS-232\Ports\Atmel\AT91SAM7X\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\Source\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Plugins\uCOS-II\" -I
+#        "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Demos\Intro\Source\"
+#        --interwork --cpu_mode arm -On --use_c++_inline
+#    List file    =  
+#        E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\FLASH\List\probe_rs232c.lst
+#    Object file  =  
+#        E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\FLASH\Obj\probe_rs232c.o
+#
+###############################################################################
+
+E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\uC-Probe\Target\Communication\Generic\RS-232\Ports\Atmel\AT91SAM7X\probe_rs232c.c
+      1          /*
+      2          *********************************************************************************************************
+      3          *                                       uC/Probe Communication
+      4          *
+      5          *                         (c) Copyright 2007-2008; Micrium, Inc.; Weston, FL
+      6          *
+      7          *               All rights reserved.  Protected by international copyright laws.
+      8          *               Knowledge of the source code may NOT be used to develop a similar product.
+      9          *               Please help us continue to provide the Embedded community with the finest
+     10          *               software available.  Your honesty is greatly appreciated.
+     11          *********************************************************************************************************
+     12          */
+     13          
+     14          /*
+     15          *********************************************************************************************************
+     16          *
+     17          *                                        COMMUNICATION: RS-232
+     18          *
+     19          *                                    PORT FOR THE ATMEL AT91SAM7X
+     20          *
+     21          * Filename      : probe_rs232c.c
+     22          * Version       : V2.20
+     23          * Programmer(s) : BAN
+     24          *********************************************************************************************************
+     25          */
+     26          
+     27          
+     28          /*
+     29          *********************************************************************************************************
+     30          *                                            INCLUDE FILES
+     31          *********************************************************************************************************
+     32          */
+     33          
+     34          #include  <probe_com.h>
+     35          #include  <probe_rs232.h>
+     36          
+     37          
+     38          /*
+     39          *********************************************************************************************************
+     40          *                                               ENABLE
+     41          *
+     42          * Note(s) : (1) See 'probe_rs232.h  ENABLE'.
+     43          *********************************************************************************************************
+     44          */
+     45          
+     46          #if (PROBE_COM_CFG_RS232_EN == DEF_ENABLED)                     /* See Note #1.                                         */
+     47          
+     48          
+     49          /*
+     50          *********************************************************************************************************
+     51          *                                            LOCAL DEFINES
+     52          *********************************************************************************************************
+     53          */
+     54          
+     55                                                                          /* ------------- Register Base Specifications ------------- */
+     56          #define  US0_BASE               ((CPU_INT32U)0xFFFC0000)
+     57          #define  US1_BASE               ((CPU_INT32U)0xFFFC4000)
+     58          #define  DBGU_BASE              ((CPU_INT32U)0xFFFFF200)
+     59          #define  AIC_BASE               ((CPU_INT32U)0xFFFFF000)
+     60          #define  PIOA_BASE              ((CPU_INT32U)0xFFFFF400)
+     61          #define  PMC_BASE               ((CPU_INT32U)0xFFFFFC00)
+     62          
+     63                                                                          /* -------------------- Peripheral IDs -------------------- */
+     64          #define  AT91C_ID_SYS                   1
+     65          #define  AT91C_ID_US0                   6
+     66          #define  AT91C_ID_US1                   7
+     67          
+     68                                                                          /* ----------------- US0 Register Defines ----------------- */
+     69          #define  US0_CR             (*(volatile CPU_INT32U *)(US0_BASE  + 0x0000))
+     70          #define  US0_MR             (*(volatile CPU_INT32U *)(US0_BASE  + 0x0004))
+     71          #define  US0_IER            (*(volatile CPU_INT32U *)(US0_BASE  + 0x0008))
+     72          #define  US0_IDR            (*(volatile CPU_INT32U *)(US0_BASE  + 0x000C))
+     73          #define  US0_CSR            (*(volatile CPU_INT32U *)(US0_BASE  + 0x0014))
+     74          #define  US0_RHR            (*(volatile CPU_INT32U *)(US0_BASE  + 0x0018))
+     75          #define  US0_THR            (*(volatile CPU_INT32U *)(US0_BASE  + 0x001C))
+     76          #define  US0_BRGR           (*(volatile CPU_INT32U *)(US0_BASE  + 0x0020))
+     77          
+     78                                                                          /* ----------------- US1 Register Defines ----------------- */
+     79          #define  US1_CR             (*(volatile CPU_INT32U *)(US1_BASE  + 0x0000))
+     80          #define  US1_MR             (*(volatile CPU_INT32U *)(US1_BASE  + 0x0004))
+     81          #define  US1_IER            (*(volatile CPU_INT32U *)(US1_BASE  + 0x0008))
+     82          #define  US1_IDR            (*(volatile CPU_INT32U *)(US1_BASE  + 0x000C))
+     83          #define  US1_CSR            (*(volatile CPU_INT32U *)(US1_BASE  + 0x0014))
+     84          #define  US1_RHR            (*(volatile CPU_INT32U *)(US1_BASE  + 0x0018))
+     85          #define  US1_THR            (*(volatile CPU_INT32U *)(US1_BASE  + 0x001C))
+     86          #define  US1_BRGR           (*(volatile CPU_INT32U *)(US1_BASE  + 0x0020))
+     87          
+     88                                                                          /* ----------------- DBGU Register Defines ---------------- */
+     89          #define  DBGU_CR            (*(volatile CPU_INT32U *)(DBGU_BASE + 0x0000))
+     90          #define  DBGU_MR            (*(volatile CPU_INT32U *)(DBGU_BASE + 0x0004))
+     91          #define  DBGU_IER           (*(volatile CPU_INT32U *)(DBGU_BASE + 0x0008))
+     92          #define  DBGU_IDR           (*(volatile CPU_INT32U *)(DBGU_BASE + 0x000C))
+     93          #define  DBGU_CSR           (*(volatile CPU_INT32U *)(DBGU_BASE + 0x0014))
+     94          #define  DBGU_RHR           (*(volatile CPU_INT32U *)(DBGU_BASE + 0x0018))
+     95          #define  DBGU_THR           (*(volatile CPU_INT32U *)(DBGU_BASE + 0x001C))
+     96          #define  DBGU_BRGR          (*(volatile CPU_INT32U *)(DBGU_BASE + 0x0020))
+     97          
+     98                                                                          /* ----------------- AIC Register Defines ----------------- */
+     99          #define  AIC_SMR(n)         (*(volatile CPU_INT32U *)(AIC_BASE  + 0x0000 + 4 * (n)))
+    100          #define  AIC_SVR(n)         (*(volatile CPU_INT32U *)(AIC_BASE  + 0x0080 + 4 * (n)))
+    101          #define  AIC_IVR            (*(volatile CPU_INT32U *)(AIC_BASE  + 0x0100))
+    102          #define  AIC_IECR           (*(volatile CPU_INT32U *)(AIC_BASE  + 0x0120))
+    103          #define  AIC_ICCR           (*(volatile CPU_INT32U *)(AIC_BASE  + 0x0128))
+    104          #define  AIC_EOICR          (*(volatile CPU_INT32U *)(AIC_BASE  + 0x0130))
+    105          
+    106                                                                          /* ----------------- PMC Register Defines ----------------- */
+    107          #define  PMC_PCER           (*(volatile CPU_INT32U *)(PMC_BASE  + 0x0010))
+    108          
+    109                                                                          /* ---------------- PIOA Register Defines ----------------- */
+    110          #define  PIOA_PDR           (*(volatile CPU_INT32U *)(PIOA_BASE + 0x0004))
+    111          #define  PIOA_ASR           (*(volatile CPU_INT32U *)(PIOA_BASE + 0x0070))
+    112          #define  PIOA_BSR           (*(volatile CPU_INT32U *)(PIOA_BASE + 0x0074))
+    113          
+    114                                                                          /* -------------- US_IER Register Bit Defines ------------- */
+    115          #define  AT91C_US_RXRDY                     DEF_BIT_00
+    116          #define  AT91C_US_TXRDY                     DEF_BIT_01
+    117          #define  AT91C_US_ENDRX                     DEF_BIT_03
+    118          #define  AT91C_US_ENDTX                     DEF_BIT_04
+    119          #define  AT91C_US_OVRE                      DEF_BIT_05
+    120          #define  AT91C_US_FRAME                     DEF_BIT_06
+    121          #define  AT91C_US_PARE                      DEF_BIT_07
+    122          #define  AT91C_US_TXEMPTY                   DEF_BIT_09
+    123          #define  AT91C_US_TXBUFE                    DEF_BIT_11
+    124          #define  AT91C_US_RXBUFF                    DEF_BIT_12
+    125          #define  AT91C_US_COMM_TX                   DEF_BIT_30
+    126          #define  AT91C_US_COMM_RX                   DEF_BIT_31
+    127          
+    128                                                                          /* --------------- US_CR Register Bit Defines ------------- */
+    129          #define  AT91C_US_RSTRX                     DEF_BIT_02
+    130          #define  AT91C_US_RSTTX                     DEF_BIT_03
+    131          #define  AT91C_US_RXEN                      DEF_BIT_04
+    132          #define  AT91C_US_RXDIS                     DEF_BIT_05
+    133          #define  AT91C_US_TXEN                      DEF_BIT_06
+    134          #define  AT91C_US_TXDIS                     DEF_BIT_07
+    135          #define  AT91C_US_RSTSTA                    DEF_BIT_08
+    136          
+    137                                                                          /* -------------- US_MR Register Bit Defines -------------- */
+    138          #define  AT91C_US_USMODE_NORMAL             (0x00 <<  0)
+    139          #define  AT91C_US_CLKS_CLOCK                (0x00 <<  4)
+    140          #define  AT91C_US_CHRL_8_BITS               (0x03 <<  6)
+    141          #define  AT91C_US_PAR_NONE                  (0x04 <<  9)
+    142          #define  AT91C_US_NBSTOP_1_BIT              (0x00 << 12)
+    143          
+    144                                                                          /* ------------- AIC_SMR Register Bit Defines ------------- */
+    145          #define  AT91C_AIC_SRCTYPE_EXT_HIGH_LEVEL   (0x02 <<  5)
+    146          #define  AT91C_AIC_PRIOR_LOWEST             (0x00 <<  0)
+    147          
+    148          
+    149          /*
+    150          *********************************************************************************************************
+    151          *                                       LOCAL GLOBAL VARIABLES
+    152          *********************************************************************************************************
+    153          */
+    154          
+    155          
+    156          /*
+    157          *********************************************************************************************************
+    158          *                                    EXTERNAL FUNCTION PROTOTYPES
+    159          *
+    160          * Note(s)     : (1) 'BSP_CPU_ClkFreq()' should return the Master Clock (MCK) frequency in Hz.
+    161          *********************************************************************************************************
+    162          */
+    163          
+    164          extern  CPU_INT32U  BSP_CPU_ClkFreq    (void);
+    165          
+    166          
+    167          /*
+    168          *********************************************************************************************************
+    169          *                                     LOCAL CONFIGURATION ERRORS
+    170          *********************************************************************************************************
+    171          */
+    172          
+    173          #ifndef    PROBE_RS232_CFG_COMM_SEL
+    174          
+    175            #error  "PROBE_RS232_CFG_COMM_SEL          not #define'd in 'probe_com_cfg.h'"
+    176            #error  "                                  [MUST be PROBE_RS232_UART_0   ]   "
+    177            #error  "                                  [     || PROBE_RS232_UART_1   ]   "
+    178            #error  "                                  [     || PROBE_RS232_UART_DBG ]   "
+    179          
+    180          #elif     (PROBE_RS232_CFG_COMM_SEL != PROBE_RS232_UART_0  ) && \
+    181                    (PROBE_RS232_CFG_COMM_SEL != PROBE_RS232_UART_1  ) && \
+    182                    (PROBE_RS232_CFG_COMM_SEL != PROBE_RS232_UART_DBG)
+    183          
+    184            #error  "PROBE_RS232_CFG_COMM_SEL    illegally #define'd in 'probe_com_cfg.h'"
+    185            #error  "                                  [MUST be PROBE_RS232_UART_0   ]   "
+    186            #error  "                                  [     || PROBE_RS232_UART_1   ]   "
+    187            #error  "                                  [     || PROBE_RS232_UART_DBG ]   "
+    188          #endif
+    189          
+    190          
+    191          /*
+    192          *********************************************************************************************************
+    193          *                                       ProbeRS232_InitTarget()
+    194          *
+    195          * Description : Initialize the UART for Probe communication.
+    196          *
+    197          * Argument(s) : baud_rate   Intended baud rate of the RS-232.
+    198          *
+    199          * Return(s)   : none.
+    200          *
+    201          * Caller(s)   : ProbeRS232_Init().
+    202          *
+    203          * Note(s)     : (1) The DBGU shares the system interrupt with several other peripherals (including the
+    204          *                   Periodic Interval Timer (PIT)).  Consequently, the interrupt for the DBGU is not
+    205          *                   initialized here; rather, it is assumed to be initialized in user code.  Note also
+    206          *                   that the interrupt is not cleared for the DBGU in OSView_RxTxISRHandler().  This should
+    207          *                   be done in user code as well.
+    208          *********************************************************************************************************
+    209          */
+    210          
+    211          void  ProbeRS232_InitTarget (CPU_INT32U baud_rate)
+    212          {
+    213              CPU_INT32U     pclk_freq;
+    214          
+    215          
+    216              pclk_freq             = BSP_CPU_ClkFreq();                  /* Calculate PCLK frequency                                 */
+    217          
+    218          #if (PROBE_RS232_CFG_COMM_SEL == PROBE_RS232_UART_0)
+    219                                                                          /* ------------------ CONFIGURE US0 I/Os ------------------ */
+    220                                                                          /* Set GPIOA pins 0 & 1 as US0 pins                         */
+    221              PIOA_PDR              = DEF_BIT_00 | DEF_BIT_01;
+    222              PIOA_ASR              = DEF_BIT_00 | DEF_BIT_01;
+    223          
+    224                                                                          /* ---------------------- SETUP US0 ----------------------- */
+    225              US0_IDR               = AT91C_US_RXRDY | AT91C_US_TXRDY;    /* Disable Rx & Tx interrupts                               */
+    226              US0_CR                = AT91C_US_RXEN  | AT91C_US_TXEN;     /* Enable the receiver & transmitter                        */
+    227          
+    228              US0_MR                = AT91C_US_USMODE_NORMAL              /* RS232C mode selected                                     */
+    229                                    | AT91C_US_CLKS_CLOCK                 /* USART input CLK is MCK                                   */
+    230                                    | AT91C_US_CHRL_8_BITS                /* 8 bit data to be sent                                    */
+    231                                    | AT91C_US_PAR_NONE                   /* No parity bit selected                                   */
+    232                                    | AT91C_US_NBSTOP_1_BIT;              /* 1 stop bit selected                                      */
+    233          
+    234                                                                          /* Set the USART baud rate                                  */
+    235              US0_BRGR              = (CPU_INT16U)((pclk_freq) / baud_rate / 16);
+    236          
+    237                                                                          /* ---------------- INITIALIZE AIC FOR US0 ---------------- */
+    238              AIC_SVR(AT91C_ID_US0) = (CPU_INT32U)ProbeRS232_RxTxISRHandler;
+    239              AIC_SMR(AT91C_ID_US0) = AT91C_AIC_SRCTYPE_EXT_HIGH_LEVEL | AT91C_AIC_PRIOR_LOWEST;
+    240              AIC_ICCR              = (1 << AT91C_ID_US0);
+    241              AIC_IECR              = (1 << AT91C_ID_US0);
+    242          
+    243              PMC_PCER              = (1 << AT91C_ID_US0);              /* Enable the US0 peripheral clock                            */
+    244          #endif
+    245          
+    246          #if (PROBE_RS232_CFG_COMM_SEL == PROBE_RS232_UART_1)
+    247                                                                          /* ------------------ CONFIGURE US1 I/Os ------------------ */
+    248                                                                          /* Set GPIOA pins 5 & 6 as US1 pins                         */
+    249              PIOA_PDR              = DEF_BIT_05 | DEF_BIT_06;
+    250              PIOA_ASR              = DEF_BIT_05 | DEF_BIT_06;
+    251          
+    252                                                                          /* ---------------------- SETUP US1 ----------------------- */
+    253              US1_IDR               = AT91C_US_RXRDY | AT91C_US_TXRDY;    /* Disable Rx & Tx interrupts                               */
+    254              US1_CR                = AT91C_US_RXEN  | AT91C_US_TXEN;     /* Enable the receiver & transmitter                        */
+    255          
+    256              US1_MR                = AT91C_US_USMODE_NORMAL              /* RS232C mode selected                                     */
+    257                                    | AT91C_US_CLKS_CLOCK                 /* USART input CLK is MCK                                   */
+    258                                    | AT91C_US_CHRL_8_BITS                /* 8 bit data to be sent                                    */
+    259                                    | AT91C_US_PAR_NONE                   /* No parity bit selected                                   */
+    260                                    | AT91C_US_NBSTOP_1_BIT;              /* 1 stop bit selected                                      */
+    261          
+    262                                                                          /* Set the USART baud rate                                  */
+    263              US1_BRGR              = (CPU_INT16U)((pclk_freq) / baud_rate / 16);
+    264          
+    265                                                                          /* ---------------- INITIALIZE AIC FOR US1 ---------------- */
+    266              AIC_SVR(AT91C_ID_US1) = (CPU_INT32U)ProbeRS232_RxTxISRHandler;
+    267              AIC_SMR(AT91C_ID_US1) = AT91C_AIC_SRCTYPE_EXT_HIGH_LEVEL | AT91C_AIC_PRIOR_LOWEST;
+    268              AIC_ICCR              = (1 << AT91C_ID_US1);
+    269              AIC_IECR              = (1 << AT91C_ID_US1);
+    270          
+    271              PMC_PCER              = (1 << AT91C_ID_US1);              /* Enable the US1 peripheral clock                            */
+    272          #endif
+    273          
+    274          #if (PROBE_RS232_CFG_COMM_SEL == PROBE_RS232_UART_DBG)
+    275                                                                          /* ----------------- CONFIGURE DBGU I/Os ------------------ */
+    276                                                                          /* Set GPIOA pins 27 & 28 as DBGU pins                      */
+    277              PIOA_PDR  = DEF_BIT_27 | DEF_BIT_28;
+    278              PIOA_ASR  = DEF_BIT_27 | DEF_BIT_28;
+    279          
+    280                                                                          /* --------------------- SETUP DBGU ----------------------- */
+    281              DBGU_IDR  = AT91C_US_RXRDY | AT91C_US_TXRDY;                /* Disable Rx & Tx interrupts                               */
+    282              DBGU_CR   = AT91C_US_RXEN  | AT91C_US_TXEN;                 /* Enable the receiver & transmitter                        */
+    283          
+    284              DBGU_MR   = AT91C_US_USMODE_NORMAL                          /* RS232C mode selected                                     */
+    285                        | AT91C_US_CLKS_CLOCK                             /* USART input CLK is MCK                                   */
+    286                        | AT91C_US_CHRL_8_BITS                            /* 8 bit data to be sent                                    */
+    287                        | AT91C_US_PAR_NONE                               /* No parity bit selected                                   */
+    288                        | AT91C_US_NBSTOP_1_BIT;                          /* 1 stop bit selected                                      */
+    289          
+    290                                                                          /* Set the USART baud rate                                  */
+    291              DBGU_BRGR = (CPU_INT16U)((pclk_freq) / baud_rate / 16);
+    292          
+    293                                                                          /* --------------- INITIALIZE AIC FOR DBGU ---------------- */
+    294                                                                          /* See Note (1)                                             */
+    295              PMC_PCER  = (1 << AT91C_ID_SYS);                            /* Enable the DBGU peripheral clock                         */
+    296          #endif
+    297          }
+    298          
+    299          
+    300          /*
+    301          *********************************************************************************************************
+    302          *                                     ProbeRS232_RxTxISRHandler()
+    303          *
+    304          * Description : Handle receive and transmit interrupts.
+    305          *
+    306          * Argument(s) : none.
+    307          *
+    308          * Return(s)   : none.
+    309          *
+    310          * Caller(s)   : This is an ISR.
+    311          *
+    312          * Note(s)     : (1) If DBGU is used, then this function is expected to be called by an external
+    313          *                   function which handles interrupts on the system (SYS) vector.  It is expected as well
+    314          *                   that that function will clear the SYS interrupt.
+    315          *
+    316          *               (2) The AIC End Of Interrupt Command Register (AIC_EOICR) will need to be written by the
+    317          *                   generic interrupt handler which vectored to this specific IRQ handler after this
+    318          *                   function returns.
+    319          *********************************************************************************************************
+    320          */
+    321          
+    322          void  ProbeRS232_RxTxISRHandler (void)
+    323          {
+    324              CPU_INT08U  rx_data;
+    325          
+    326          
+    327          #if (PROBE_RS232_CFG_COMM_SEL == PROBE_RS232_UART_0)
+    328              AIC_IVR   = 0;                                              /* Debug variant of IVR (protect mode is used)              */
+    329                                                                          /* If we received a byte                                    */
+    330              if ((US0_CSR & AT91C_US_RXRDY) == AT91C_US_RXRDY) {
+    331                  rx_data = (CPU_INT08U)(US0_RHR & 0x00FF);               /* Remove the data from the holding register                */
+    332                  ProbeRS232_RxHandler(rx_data);                          /* Call the generic Rx handler                              */
+    333              }
+    334          
+    335                                                                          /* If we completed transmitting a byte                      */
+    336              if ((US0_CSR & AT91C_US_TXRDY) == AT91C_US_TXRDY) {
+    337                  ProbeRS232_TxHandler();                                 /* Call the generic Tx handler                              */
+    338              }
+    339          
+    340              if ((US0_CSR  & AT91C_US_OVRE) == AT91C_US_OVRE) {
+    341                  US0_CR = AT91C_US_RSTSTA;                               /* If an overrun occurs, reset the OR flag                  */
+    342              }
+    343          
+    344              AIC_ICCR  = AT91C_ID_US0;                                   /* Clear  US0 interrupt                                     */
+    345          #endif
+    346          
+    347          #if (PROBE_RS232_CFG_COMM_SEL == PROBE_RS232_UART_1)
+    348              AIC_IVR   = 0;                                              /* Debug variant of IVR (protect mode is used)              */
+    349                                                                          /* If we received a byte                                    */
+    350              if ((US1_CSR & AT91C_US_RXRDY) == AT91C_US_RXRDY) {
+    351                  rx_data = (CPU_INT08U)(US1_RHR & 0x00FF);               /* Remove the data from the holding register                */
+    352                  ProbeRS232_RxHandler(rx_data);                          /* Call the generic Rx handler                              */
+    353              }
+    354          
+    355                                                                          /* If we completed transmitting a byte                      */
+    356              if ((US1_CSR & AT91C_US_TXRDY) == AT91C_US_TXRDY) {
+    357                  ProbeRS232_TxHandler();                                 /* Call the generic Tx handler                              */
+    358              }
+    359          
+    360              if ((US0_CSR  & AT91C_US_OVRE) == AT91C_US_OVRE) {
+    361                  US1_CR = AT91C_US_RSTSTA;                               /* If an overrun occurs, reset the OR flag                  */
+    362              }
+    363          
+    364              AIC_ICCR  = AT91C_ID_US1;                                   /* Clear  US0 interrupt                                     */
+    365          #endif
+    366          
+    367          #if (PROBE_RS232_CFG_COMM_SEL == PROBE_RS232_UART_DBG)
+    368                                                                          /* If we received a byte                                    */
+    369              if ((DBGU_CSR & AT91C_US_RXRDY) == AT91C_US_RXRDY) {
+    370                  rx_data = (CPU_INT08U)(DBGU_RHR & 0x00FF);              /* Remove the data from the holding register                */
+    371                  ProbeRS232_RxHandler(rx_data);                          /* Call the generic Rx handler                              */
+    372              }
+    373          
+    374                                                                          /* If we completed transmitting a byte                      */
+    375              if ((DBGU_CSR & AT91C_US_TXRDY) == AT91C_US_TXRDY) {
+    376                  ProbeRS232_TxHandler();                                 /* Call the generic Tx handler                              */
+    377              }
+    378          
+    379              if ((DBGU_CSR  & AT91C_US_OVRE) == AT91C_US_OVRE) {
+    380                  DBGU_CR = AT91C_US_RSTSTA;                              /* If an overrun occurs, reset the OR flag                  */
+    381              }
+    382          #endif
+    383          }
+    384          
+    385          
+    386          /*
+    387          *********************************************************************************************************
+    388          *                                      ProbeRS232_RxISRHandler()
+    389          *
+    390          * Description : Handle receive interrupts.
+    391          *
+    392          * Argument(s) : none.
+    393          *
+    394          * Return(s)   : none.
+    395          *
+    396          * Caller(s)   : This is an ISR.
+    397          *
+    398          * Note(s)     : (1) This function is empty because receive interrupts are handled by the combined receive/
+    399          *                   transmit interrupt handler, 'ProbeRS232_RxTxISRHandler()'.
+    400          *********************************************************************************************************
+    401          */
+    402          
+    403          void  ProbeRS232_RxISRHandler (void)
+    404          {
+    405          }
+    406          
+    407          
+    408          /*
+    409          *********************************************************************************************************
+    410          *                                        ProbeRS232_RxIntDis()
+    411          *
+    412          * Description : Disable receive interrupts.
+    413          *
+    414          * Argument(s) : none.
+    415          *
+    416          * Return(s)   : none.
+    417          *
+    418          * Caller(s)   : Application.
+    419          *
+    420          * Note(s)     : (1) The application should call this function to stop communication.
+    421          *********************************************************************************************************
+    422          */
+    423          
+    424          void  ProbeRS232_RxIntDis (void)
+    425          {
+    426          #if (PROBE_RS232_CFG_COMM_SEL == PROBE_RS232_UART_0)
+    427              US0_IDR  = AT91C_US_RXRDY;
+    428          #endif
+    429          
+    430          #if (PROBE_RS232_CFG_COMM_SEL == PROBE_RS232_UART_1)
+    431              US1_IDR  = AT91C_US_RXRDY;
+    432          #endif
+    433          
+    434          #if (PROBE_RS232_CFG_COMM_SEL == PROBE_RS232_UART_DBG)
+    435              DBGU_IDR = AT91C_US_RXRDY;
+    436          #endif
+    437          }
+    438          
+    439          
+    440          /*
+    441          *********************************************************************************************************
+    442          *                                        ProbeRS232_RxIntEn()
+    443          *
+    444          * Description : Enable receive interrupts.
+    445          *
+    446          * Argument(s) : none.
+    447          *
+    448          * Return(s)   : none.
+    449          *
+    450          * Caller(s)   : Application.
+    451          *
+    452          * Note(s)     : (1) The application should call this function to start communication.
+    453          *********************************************************************************************************
+    454          */
+    455          
+    456          void  ProbeRS232_RxIntEn (void)
+    457          {
+    458          #if (PROBE_RS232_CFG_COMM_SEL == PROBE_RS232_UART_0)
+    459              US0_IER  = AT91C_US_RXRDY;
+    460          #endif
+    461          
+    462          #if (PROBE_RS232_CFG_COMM_SEL == PROBE_RS232_UART_1)
+    463              US1_IER  = AT91C_US_RXRDY;
+    464          #endif
+    465          
+    466          #if (PROBE_RS232_CFG_COMM_SEL == PROBE_RS232_UART_DBG)
+    467              DBGU_IER = AT91C_US_RXRDY;
+    468          #endif
+    469          }
+    470          
+    471          
+    472          /*
+    473          *********************************************************************************************************
+    474          *                                      ProbeRS232_TxISRHandler()
+    475          *
+    476          * Description : Handle transmit interrupts.
+    477          *
+    478          * Argument(s) : none.
+    479          *
+    480          * Return(s)   : none.
+    481          *
+    482          * Caller(s)   : This is an ISR.
+    483          *
+    484          * Note(s)     : (1) This function is empty because transmit interrupts are handled by the combined receive/
+    485          *                   transmit interrupt handler, 'ProbeRS232_RxTxISRHandler()'.
+    486          *********************************************************************************************************
+    487          */
+    488          
+    489          void  ProbeRS232_TxISRHandler (void)
+    490          {
+    491          }
+    492          
+    493          
+    494          /*
+    495          *********************************************************************************************************
+    496          *                                          ProbeRS232_Tx1()
+    497          *
+    498          * Description : Transmit one byte.
+    499          *
+    500          * Argument(s) : c           The byte to transmit.
+    501          *
+    502          * Return(s)   : none.
+    503          *
+    504          * Caller(s)   : ProbeRS232_TxHandler().
+    505          *
+    506          * Note(s)     : none.
+    507          *********************************************************************************************************
+    508          */
+    509          
+    510          void  ProbeRS232_Tx1 (CPU_INT08U c)
+    511          {
+    512          #if (PROBE_RS232_CFG_COMM_SEL == PROBE_RS232_UART_0)
+    513              US0_THR  = c;
+    514          #endif
+    515          
+    516          #if (PROBE_RS232_CFG_COMM_SEL == PROBE_RS232_UART_1)
+    517              US1_THR  = c;
+    518          #endif
+    519          
+    520          #if (PROBE_RS232_CFG_COMM_SEL == PROBE_RS232_UART_DBG)
+    521              DBGU_THR = c;
+    522          #endif
+    523          }
+    524          
+    525          
+    526          /*
+    527          *********************************************************************************************************
+    528          *                                        ProbeRS232_TxIntDis()
+    529          *
+    530          * Description : Disable transmit interrupts.
+    531          *
+    532          * Argument(s) : none.
+    533          *
+    534          * Return(s)   : none.
+    535          *
+    536          * Caller(s)   : ProbeRS232_TxHandler().
+    537          *
+    538          * Note(s)     : none.
+    539          *********************************************************************************************************
+    540          */
+    541          
+    542          void  ProbeRS232_TxIntDis (void)
+    543          {
+    544          #if (PROBE_RS232_CFG_COMM_SEL == PROBE_RS232_UART_0)
+    545              US0_IDR  = AT91C_US_TXRDY;
+    546          #endif
+    547          
+    548          #if (PROBE_RS232_CFG_COMM_SEL == PROBE_RS232_UART_1)
+    549              US1_IDR  = AT91C_US_TXRDY;
+    550          #endif
+    551          
+    552          #if (PROBE_RS232_CFG_COMM_SEL == PROBE_RS232_UART_DBG)
+    553              DBGU_IDR = AT91C_US_TXRDY;
+    554          #endif
+    555          }
+    556          
+    557          
+    558          /*
+    559          *********************************************************************************************************
+    560          *                                        ProbeRS232_TxIntEn()
+    561          *
+    562          * Description : Enable transmit interrupts.
+    563          *
+    564          * Argument(s) : none.
+    565          *
+    566          * Return(s)   : none.
+    567          *
+    568          * Caller(s)   : ProbeRS232_TxStart().
+    569          *
+    570          * Note(s)     : none.
+    571          *********************************************************************************************************
+    572          */
+    573          
+    574          void  ProbeRS232_TxIntEn (void)
+    575          {
+    576          #if (PROBE_RS232_CFG_COMM_SEL == PROBE_RS232_UART_0)
+    577              US0_IER  = AT91C_US_TXRDY;
+    578          #endif
+    579          
+    580          #if (PROBE_RS232_CFG_COMM_SEL == PROBE_RS232_UART_1)
+    581              US1_IER  = AT91C_US_TXRDY;
+    582          #endif
+    583          
+    584          #if (PROBE_RS232_CFG_COMM_SEL == PROBE_RS232_UART_DBG)
+    585              DBGU_IER = AT91C_US_TXRDY;
+    586          #endif
+    587          }
+    588          
+    589          
+    590          /*
+    591          *********************************************************************************************************
+    592          *                                              ENABLE END
+    593          *
+    594          * Note(s) : See 'ENABLE  Note #1'.
+    595          *********************************************************************************************************
+    596          */
+    597          
+    598          #endif
+
+   Maximum stack usage in bytes:
+
+   .cstack Function
+   ------- --------
+      16   ProbeRS232_InitTarget
+        16   -> BSP_CPU_ClkFreq
+        16   -> __aeabi_uidiv
+       0   ProbeRS232_RxISRHandler
+       0   ProbeRS232_RxIntDis
+       0   ProbeRS232_RxIntEn
+       8   ProbeRS232_RxTxISRHandler
+         8   -> ProbeRS232_RxHandler
+         8   -> ProbeRS232_TxHandler
+       0   ProbeRS232_Tx1
+       0   ProbeRS232_TxISRHandler
+       0   ProbeRS232_TxIntDis
+       0   ProbeRS232_TxIntEn
+
+
+   Section sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+     156  ProbeRS232_InitTarget
+       4  ProbeRS232_RxISRHandler
+      20  ProbeRS232_RxIntDis
+      20  ProbeRS232_RxIntEn
+     120  ProbeRS232_RxTxISRHandler
+      24  ProbeRS232_Tx1
+       4  ProbeRS232_TxISRHandler
+      20  ProbeRS232_TxIntDis
+      20  ProbeRS232_TxIntEn
+
+ 
+ 388 bytes in section .text
+ 
+ 388 bytes of CODE memory
+
+Errors: none
+Warnings: none

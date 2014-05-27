@@ -1,0 +1,1268 @@
+###############################################################################
+#
+# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        22/May/2014  14:14:51
+# Copyright 1999-2014 IAR Systems AB.
+#
+#    Cpu mode     =  arm
+#    Endian       =  little
+#    Source file  =  
+#        E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\mem_basic.c
+#    Command line =  
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\mem_basic.c" -lcN
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\" -lb
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\" -o
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\Obj\" --no_cse
+#        --no_unroll --no_inline --no_code_motion --no_tbaa --no_clustering
+#        --no_scheduling --debug --endian=little --cpu=ARM7TDMI -e --fpu=None
+#        --dlib_config "C:\Program Files (x86)\IAR Systems\Embedded Workbench
+#        7.0\arm\INC\c\DLib_Config_Full.h" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\BSP\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Driver\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Noah\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Shell\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uCOS-II\Source\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\uC-CPU\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-LIB\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\uCOS-II\Ports\ARM\Generic\IAR\" -I
+#        "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\RS-232\Source\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\RS-232\Ports\Atmel\AT91SAM7X\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\Source\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Plugins\uCOS-II\" -I
+#        "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Demos\Intro\Source\"
+#        --interwork --cpu_mode arm -On --use_c++_inline
+#    List file    =  
+#        E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\FLASH\List\mem_basic.lst
+#    Object file  =  
+#        E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\Obj\mem_basic.o
+#
+###############################################################################
+
+E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\mem_basic.c
+      1          /*
+      2          *********************************************************************************************************
+      3          *                               iSAM TEST BENCH AUDIO BRIDGE BOARD APP PACKAGE
+      4          *
+      5          *                            (c) Copyright 2013 - 2016; Fortemedia Inc.; Nanjing, China
+      6          *
+      7          *                   All rights reserved.  Protected by international copyright laws.
+      8          *                   Knowledge of the source code may not be used to write a similar
+      9          *                   product.  This file may only be used in accordance with a license
+     10          *                   and should not be redistributed in any way.
+     11          *********************************************************************************************************
+     12          */
+     13          
+     14          /*
+     15          *********************************************************************************************************
+     16          *
+     17          *                                        FM DSP W/R RELATED OPERATIONS
+     18          *
+     19          *                                          Atmel AT91SAM7A3
+     20          *                                               on the
+     21          *                                      iSAM Audio Bridge Board
+     22          *
+     23          * Filename      : mem_basic.c
+     24          * Version       : V1.0.0
+     25          * Programmer(s) : PQ
+     26          *********************************************************************************************************
+     27          * Note(s)       :
+     28          *********************************************************************************************************
+     29          */
+     30          
+     31          
+     32          #include <includes.h>
+     33          
+     34          //FM36 unlock_mmreg is different from previous dsp
+     35          unsigned char DSP_PM_Type = 1 ;  // 1: FM36; 0 : others DSP
+     36          
+     37          
+     38          
+     39          /*******************************   Unlock PM  *******************************/ 
+     40          /**  this operation must be executed once before Read_PM() after reset DSP **/
+     41          unsigned char DM_Write( unsigned short dm_addr,unsigned short dm_val ) 
+     42          {
+     43              return DM_SingleWrite(0xC0, dm_addr, dm_val);
+     44          }
+     45          static void Unlock_PM( unsigned char dsp_type )
+     46          {
+     47              unsigned short unlock_mmreg;
+     48              
+     49              if( dsp_type == 0 ) {      
+     50                  unlock_mmreg = 0x3FD6; // the MREG address is 0x3FEE for FM31/FM32/FM33/FM34 
+     51              } else {
+     52                  unlock_mmreg = 0x3FEE; // the MREG address is 0x3FEE for FM36 
+     53              }
+     54                 
+     55              DM_Write( unlock_mmreg, 0xECF3); 
+     56              DM_Write( unlock_mmreg, 0x3807);
+     57              DM_Write( unlock_mmreg, 0x79AD);
+     58          
+     59          }
+     60          
+     61          
+     62          
+     63          
+     64          /************************  DM/ PM/ CM Single Write ******************************/
+     65          unsigned char DM_SingleWrite(unsigned char dev_addr,unsigned short dm_addr,unsigned short dm_val)
+     66          {
+     67              unsigned char state ;    
+     68              unsigned char buf[] = { FM_CMD_SYN_0, FM_CMD_SYN_1, FM_CMD_DM_WR, (dm_addr>>8)&0xFF, dm_addr&0xFF, (dm_val>>8)&0xff, dm_val&0xff};
+     69              
+     70              state =  TWID_Write( dev_addr>>1, 0, 0, buf, sizeof(buf), NULL);  
+     71             
+     72              return( state );
+     73          }
+     74          
+     75          
+     76          unsigned char PM_SingleWrite(unsigned char dev_addr,unsigned short dm_addr,unsigned char *pdata, unsigned int xor_key)
+     77          {
+     78              unsigned char state ;      
+     79              unsigned char buf[] = { FM_CMD_SYN_0, FM_CMD_SYN_1, FM_CMD_PM_WR,(dm_addr>>8)&0xFF, dm_addr&0xFF, *(pdata++)^(xor_key>>16), *(pdata++)^(xor_key>>8),*(pdata++)^(xor_key) };
+     80              
+     81              state =  TWID_Write( dev_addr>>1, 0, 0, buf, sizeof(buf), NULL); 
+     82              
+     83              return(state);
+     84          }
+     85          
+     86          
+     87          unsigned char CM_SingleWrite(unsigned char dev_addr,unsigned short dm_addr,unsigned char *pdata)
+     88          {
+     89              unsigned char state ;   
+     90              unsigned char buf[] = { FM_CMD_SYN_0, FM_CMD_SYN_1, FM_CMD_CM_WR, (dm_addr>>8)&0xFF, dm_addr&0xFF, *(pdata++),*(pdata++) };
+     91              
+     92              state =  TWID_Write(  dev_addr>>1, 0, 0, buf, sizeof(buf), NULL); 
+     93             
+     94              return(state);
+     95          }
+     96          
+     97          
+     98          
+     99          /************************  DM/ PM/ CM Single Read *****************************/
+    100          unsigned char DM_LegacyRead(unsigned char dev_addr, unsigned short dm_addr,unsigned char *pVal)
+    101          {
+    102              unsigned char state ;    
+    103              //APP_TRACE_INFO( ("\r\nRead DM [0x%4X] = ", dm_addr) ); //some    
+    104              unsigned char buf[] = { FM_CMD_SYN_0, FM_CMD_SYN_1, FM_CMD_DM_RD,(dm_addr>>8)&0xFF, dm_addr&0xFF};
+    105              
+    106              state =  TWID_Write(  dev_addr>>1, 0, 0, buf, sizeof(buf), NULL);     
+    107              if (state != SUCCESS)
+    108              {
+    109                  return(state) ;
+    110              }    
+    111          
+    112              buf[2] = FM_CMD_HOST_RD;
+    113              buf[3] = 0x25; 
+    114              state =  TWID_Write(  dev_addr>>1, 0, 0, buf, 4, NULL); 
+    115              if (state != SUCCESS)
+    116              {
+    117                  return(state) ;
+    118              }   
+    119              state =  TWID_Read( dev_addr>>1, 0, 0, pVal++, 1, NULL) ;
+    120              if (state != SUCCESS)
+    121              {
+    122                  return(state) ;
+    123              }
+    124                 
+    125              buf[3] = 0x26; 
+    126              state =  TWID_Write(  dev_addr>>1, 0, 0, buf, 4, NULL); 
+    127              if (state != SUCCESS)
+    128              {
+    129                  return(state) ;
+    130              }   
+    131              state =  TWID_Read( dev_addr>>1, 0, 0, pVal++,1, NULL) ;
+    132              if (state != SUCCESS)
+    133              {
+    134                  return(state) ;
+    135              }
+    136              
+    137              //APP_TRACE_INFO( (  " 0x%4X \r\n", *(unsigned short *)(pVal-2)  ) ); //some    
+    138              return(state);
+    139          }
+    140          
+    141          
+    142          //not support
+    143          unsigned char DM_LegacyReadReStart(unsigned char dev_addr, unsigned short dm_addr,unsigned char *pVal)
+    144          {       
+    145              return DM_LegacyRead( dev_addr, dm_addr, pVal ) ; 
+    146          }
+    147          
+    148          
+    149          unsigned char PM_LegacyRead(unsigned char dev_addr, unsigned short dm_addr,unsigned char *pVal)
+    150          {
+    151              unsigned char state ;   
+    152              unsigned char buf[] = { FM_CMD_SYN_0, FM_CMD_SYN_1, FM_CMD_PM_RD, (dm_addr>>8)&0xFF, dm_addr&0xFF}; 
+    153              
+    154              Unlock_PM(DSP_PM_Type);    
+    155                
+    156              state =  TWID_Write(  dev_addr>>1, 0, 0, buf, sizeof(buf), NULL);     
+    157              if (state != SUCCESS)
+    158              {
+    159                  return(state) ;
+    160              }
+    161          
+    162              buf[2] = FM_CMD_HOST_RD;
+    163              buf[3] = 0x24; 
+    164              state =  TWID_Write(  dev_addr>>1, 0, 0, buf, 4, NULL); 
+    165              if (state != SUCCESS)
+    166              {
+    167                  return(state) ;
+    168              }   
+    169              state =  TWID_Read( dev_addr>>1, 0, 0, pVal++,1, NULL) ;
+    170              if (state != SUCCESS)
+    171              {
+    172                  return(state) ;
+    173              }
+    174             
+    175              buf[3] = 0x25;
+    176              state =  TWID_Write(  dev_addr>>1, 0, 0, buf, 4, NULL); 
+    177              if (state != SUCCESS)
+    178              {
+    179                  return(state) ;
+    180              }   
+    181              state =  TWID_Read( dev_addr>>1, 0, 0, pVal++,1, NULL) ;
+    182              if (state != SUCCESS)
+    183              {
+    184                  return(state) ;
+    185              }
+    186          
+    187              buf[3] = 0x26;
+    188              state =  TWID_Write(  dev_addr>>1, 0, 0, buf, 4, NULL); 
+    189              if (state != SUCCESS)
+    190              {
+    191                  return(state) ;
+    192              }   
+    193              state =  TWID_Read( dev_addr>>1, 0, 0, pVal++,1, NULL) ;
+    194              if (state != SUCCESS)
+    195              {
+    196                  return(state) ;
+    197              }    
+    198          
+    199              return(state);
+    200          }
+    201          
+    202              
+    203          unsigned char CM_LegacyRead(unsigned char dev_addr, unsigned short dm_addr,unsigned char *pVal)
+    204          {
+    205              unsigned char state ;    
+    206              unsigned char buf[] = { FM_CMD_SYN_0, FM_CMD_SYN_1, FM_CMD_CM_RD, (dm_addr>>8)&0xFF, dm_addr&0xFF}; 
+    207              
+    208              state =  TWID_Write(  dev_addr>>1, 0, 0, buf, sizeof(buf), NULL);     
+    209              if (state != SUCCESS)
+    210              {
+    211                  return(state) ;
+    212              }
+    213          
+    214              buf[2] = FM_CMD_HOST_RD;
+    215              buf[3] = 0x25;
+    216              state =  TWID_Write(  dev_addr>>1, 0, 0, buf, 4, NULL); 
+    217              if (state != SUCCESS)
+    218              {
+    219                  return(state) ;
+    220              }   
+    221              state =  TWID_Read(  dev_addr>>1, 0, 0, pVal++,1, NULL) ;
+    222              if (state != SUCCESS)
+    223              {
+    224                  return(state) ;
+    225              }
+    226          
+    227              buf[3] = 0x26;
+    228              state =  TWID_Write(  dev_addr>>1, 0, 0, buf, 4, NULL); 
+    229              if (state != SUCCESS)
+    230              {
+    231                  return(state) ;
+    232              }   
+    233              state =  TWID_Read( dev_addr>>1, 0, 0, pVal++,1, NULL) ;
+    234              if (state != SUCCESS)
+    235              {
+    236                  return(state) ;
+    237              }  
+    238              
+    239              *pVal = 0 ;   // CM  only use high two bytes
+    240              return(state);
+    241          }
+    242          
+    243          
+    244          
+    245          /*********************     DM / PM Burst Read / Write     **********************/
+    246          unsigned char DM_BurstWrite(  unsigned char dev_addr,
+    247                                        struct{unsigned short dm_addr;unsigned short dm_val;} *pDat,
+    248                                        unsigned char DatNum )
+    249          {
+    250             
+    251              unsigned char state ;
+    252              unsigned char i ;
+    253             
+    254              unsigned char buf[] = { 0x00, 0x1C,0,0 };
+    255              state =  TWID_Write( dev_addr>>1, 0, 0 , buf, 2, NULL);                 
+    256              if (state != SUCCESS) {
+    257                  return(state);
+    258              }
+    259              
+    260              for( i=0; (i < DatNum)&&(state == SUCCESS);  i++ )  { 
+    261                  buf[0] = (pDat[i].dm_addr>>8)&0xFF;
+    262                  buf[1] = pDat[i].dm_addr&0xFF ;
+    263                  buf[2] = (pDat[i].dm_val>>8)&0xFF ;
+    264                  buf[3] = pDat[i].dm_val&0xFF ;
+    265                  state =  TWID_Write(  dev_addr>>1, 0xFCF33B, 3 , buf, sizeof(buf), NULL);         
+    266              }
+    267             
+    268              return(state);	
+    269          }
+    270          
+    271          
+    272          unsigned char DM_BurstWrite_s(unsigned char dev_addr,unsigned short StAddr,unsigned char DatNum,void *pDat)
+    273          {
+    274              unsigned char state ;
+    275              unsigned char *pDmDat   = (unsigned char *)pDat ; 
+    276              unsigned short data_num = (DatNum-1) * 2 - 1; 
+    277          
+    278              unsigned char buf[] = {0x3F, 0xE8, (data_num>>8)&0xFF, data_num&0xFF}; //????
+    279              state =  TWID_Write(  dev_addr>>1, 0xFCF33B, 3 , buf, sizeof(buf), NULL);   
+    280              if (state != SUCCESS) {
+    281                  return(state);
+    282              } 
+    283              
+    284              buf[0] =(StAddr>>8)&0xFF;
+    285              buf[1] =(StAddr)&0xFF;
+    286              buf[2] =*pDmDat++;
+    287              buf[3] =*pDmDat++;
+    288          
+    289              state =  TWID_Write(  dev_addr>>1, 0xFCF33B, 3 , buf, sizeof(buf), NULL);
+    290              if (state != SUCCESS) {
+    291                  return(state);
+    292              }    
+    293          
+    294              state =  TWID_Write(  dev_addr>>1, 0xFCF3B8, 3 , pDmDat, data_num +1 , NULL);     
+    295              if (state != SUCCESS) {
+    296                  return(state);
+    297              }
+    298          
+    299              return(state);	
+    300          }
+    301          
+    302          
+    303          
+    304          unsigned char PM_BurstWrite_s(unsigned char dev_addr,unsigned short StAddr,unsigned char DatNum,void *pDat) //fake burst
+    305          {
+    306              unsigned char state ;
+    307              unsigned char *pDmDat = (unsigned char *)pDat ; 
+    308              unsigned short data_num = (DatNum-1) * 3 - 1; 
+    309          
+    310              unsigned char buf[] = {0x3F, 0xE8, (data_num>>8)&0xFF, data_num&0xFF,0};
+    311              state =  TWID_Write(  dev_addr>>1, 0xFCF33B, 3 , buf, 4, NULL);   
+    312              if (state != SUCCESS) {
+    313                  return(state);
+    314              } 
+    315              
+    316              buf[0] =(StAddr>>8)&0xFF; 
+    317              buf[1] =(StAddr)&0xFF;
+    318              buf[2] = *pDmDat++;
+    319              buf[3] = *pDmDat++;
+    320              buf[4] = *pDmDat++;    
+    321              state =  TWID_Write(  dev_addr>>1, 0xFCF30D, 3 , buf, sizeof(buf), NULL);
+    322              if (state != SUCCESS) {
+    323                  return(state);
+    324              }    
+    325          
+    326              state =  TWID_Write(  dev_addr>>1, 0xFCF388, 3 , pDmDat, data_num + 1 , NULL);     
+    327              if (state != SUCCESS) {
+    328                  return(state);
+    329              }
+    330          
+    331              return(state);	
+    332          }
+    333          
+    334          
+    335          /*********************     DM / PM Fast Read / Write     **********************/
+    336          unsigned char PM_FastWrite_s(unsigned char dev_addr,unsigned short StAddr,unsigned char DatNum,void *pDat )
+    337          {
+    338              unsigned char state ;
+    339              unsigned char *pDmDat   = (unsigned char *)pDat ; 
+    340              unsigned short data_num = (DatNum) * 3   ;   
+    341              
+    342              state = HOST_SingleWrite_2(dev_addr, 0x0F, data_num);      
+    343              if (state != SUCCESS) {
+    344                  return(state);
+    345              }    
+    346              
+    347              unsigned char buf[] = { FM_CMD_SYN_0, FM_CMD_SYN_1, FM_CMD_PM_WR,(StAddr>>8)&0xFF, (StAddr)&0xFF, *(pDmDat++),*(pDmDat++),*(pDmDat++) } ; //??
+    348              state =  TWID_Write( dev_addr>>1, 0, 0, buf, sizeof(buf), NULL);  //???
+    349              
+    350              if (state != SUCCESS) {
+    351                  return(state);
+    352              }   
+    353          
+    354              return(state);	
+    355          }
+    356          
+    357          
+    358          
+    359          unsigned char DM_FastRead(unsigned char dev_addr, unsigned short dm_addr,unsigned char *pVal)
+    360          {
+    361              unsigned char state ;
+    362              unsigned char buf[] = { FM_CMD_SYN_0, FM_CMD_SYN_1, FM_CMD_DM_RD,(dm_addr>>8)&0xFF, dm_addr&0xFF};    
+    363              
+    364              state =  TWID_Write(  dev_addr>>1, 0, 0, buf, sizeof(buf), NULL);     
+    365              if (state != SUCCESS) {
+    366                  return(state) ;
+    367              }      
+    368              state =  TWID_Read( dev_addr>>1, 0, 0, pVal,2, NULL) ;
+    369               
+    370              return(state);
+    371          }
+    372          
+    373          
+    374          // not support specially, just used the previous one
+    375          unsigned char DM_FastReadReStart(unsigned char dev_addr, unsigned short dm_addr,unsigned char *pVal) 
+    376          {
+    377              return DM_FastRead(dev_addr, dm_addr,pVal); 
+    378          }
+    379          
+    380          
+    381          
+    382          
+    383          //check DSP IDMA control port stauts, wait until not busy
+    384          unsigned char Check_IDMA( unsigned char dev_addr )
+    385          {
+    386               unsigned char i;
+    387               unsigned char temp;
+    388               unsigned char state ;
+    389               const unsigned char timeout = 100 ;
+    390               
+    391               for ( i = 0; i< timeout ; i++ ) {
+    392                  state = HOST_LegacyRead( dev_addr, 0x20, &temp ) ;
+    393                  if( state != 0 ) return state ; //host read error
+    394                  if(!( temp&0x02) ) break ;  
+    395                  
+    396               }     
+    397               
+    398               if(i == timeout ) {
+    399                  return 0x44 ;//error timeout
+    400                  
+    401               }else{         
+    402                  return 0 ; 
+    403                  
+    404               }
+    405              
+    406          }
+    407          
+    408          
+    409          /*****************     DM / PM / CM  MEM_Block_Read / Write [I2C]    **********/
+    410          
+    411          //read
+    412          unsigned char MEM_Block_LegacyRead(     unsigned char dev_addr, 
+    413                                                  unsigned char mem_type, 
+    414                                                  unsigned short start_addr,
+    415                                                  unsigned char num, 
+    416                                                  unsigned char *pVal     )
+    417          {
+    418             
+    419              unsigned char state = 0xFF ;
+    420              unsigned char i     = 0;
+    421              unsigned int cmd[]  = {FM_CMD_DM_RD, FM_CMD_PM_RD, FM_CMD_CM_RD}; //cmd for read : DM, PM, CM 
+    422              unsigned char buf[] = {FM_CMD_SYN_0, FM_CMD_SYN_1, 0,(start_addr>>8)&0xFF, start_addr&0xFF};  
+    423               
+    424              if( mem_type == MEM_TYPE_PM ) {      
+    425                  Unlock_PM(DSP_PM_Type);
+    426              }
+    427              
+    428              buf[2] = cmd[mem_type] ;
+    429              
+    430              for(i = 0; i < num ; i++) {  
+    431                
+    432                  buf[0] = (start_addr>>8)&0xFF;
+    433                  buf[1] = start_addr&0xFF ; 
+    434                  start_addr ++ ;
+    435                  
+    436                  state =  TWID_Write(  dev_addr>>1, 0, 0, buf, sizeof(buf), NULL);     
+    437                  if (state != SUCCESS) {          
+    438                      return(state) ;
+    439                  }
+    440                  
+    441                  buf[2] = FM_CMD_HOST_RD;
+    442                  buf[3] = 0x26;      
+    443                  state =  TWID_Write(  dev_addr>>1, 0, 0, buf, 4, NULL); 
+    444                  if (state != SUCCESS) {
+    445                      return(state) ;
+    446                  }   
+    447                  state =  TWID_Read( dev_addr>>1, 0, 0, pVal++,1, NULL) ;
+    448                  if (state != SUCCESS) {
+    449                      return(state) ;
+    450                  }
+    451                  
+    452                  buf[3] = 0x25;
+    453                  state =  TWID_Write(  dev_addr>>1, 0, 0, buf, 4, NULL); 
+    454                  if (state != SUCCESS) {
+    455                      return(state) ;
+    456                  }   
+    457                  state =  TWID_Read( dev_addr>>1, 0, 0, pVal++,1, NULL) ;
+    458                  if (state != SUCCESS) {
+    459                      return(state) ;
+    460                  }
+    461                  
+    462                  //////////////////////////////////////////
+    463                  if( mem_type == MEM_TYPE_PM ) {
+    464                    
+    465                      buf[3] = 0x24;
+    466                      state =  TWID_Write(  dev_addr>>1, 0, 0, buf, 4, NULL); 
+    467                      if (state != SUCCESS) {
+    468                          return(state) ;
+    469                      }   
+    470                      state =  TWID_Read( dev_addr>>1, 0, 0, pVal++,1, NULL) ;
+    471                      if (state != SUCCESS) {
+    472                          return(state) ;
+    473                      }    
+    474                  }
+    475                  
+    476              }
+    477              
+    478              return (state);
+    479              
+    480          }
+    481          
+    482          
+    483          //write
+    484          unsigned char MEM_Block_SingleWrite(    unsigned char dev_addr,                                        
+    485                                                  unsigned char mem_type, 
+    486                                                  unsigned short start_addr,
+    487                                                  unsigned char num, 
+    488                                                  unsigned char *pVal )
+    489          {
+    490          
+    491              unsigned char state ;
+    492              unsigned char i     ;
+    493              unsigned int cmd[]   = { FM_CMD_DM_WR, FM_CMD_PM_WR, FM_CMD_CM_WR }; //cmd for write : DM, PM, CM 
+    494              unsigned char buf[8] ;
+    495              unsigned char  data_length  = 2; //for PM 3, CM 2, DM 2
+    496              
+    497              buf[0] = FM_CMD_SYN_0  ;
+    498              buf[1] = FM_CMD_SYN_1  ;
+    499              buf[2] = cmd[mem_type] ;
+    500                  
+    501              for(i = 0; i < num ; i++)  { 
+    502                  
+    503                  buf[3] = (start_addr>>8)&0xFF;
+    504                  buf[4] = start_addr&0xFF;
+    505                  buf[5] = *pVal++;
+    506                  buf[6] = *pVal++;
+    507                  if( mem_type == MEM_TYPE_PM ){
+    508                      buf[7] = *pVal++;
+    509                      data_length  = 3;
+    510                  }
+    511                 
+    512                  state =  TWID_Write( dev_addr>>1, 0, 0 , buf, data_length+5, NULL);       
+    513                  if (state != SUCCESS) {
+    514                      return(state) ;
+    515                  } 
+    516                  start_addr++ ;
+    517                  //OSTimeDly(10); //fixed issue on fast write DSP
+    518              }    
+    519              return (state);    
+    520          
+    521          }
+    522          
+    523          
+    524          
+    525          
+    526          
+    527          
+    528          /*********************     HOST Register Read / Write     *********************/
+    529          unsigned char HOST_SingleWrite_1(unsigned char dev_addr,unsigned char host_addr,unsigned char host_val)
+    530          {
+    531               unsigned char state ;    
+    532               unsigned char buf[] = { FM_CMD_SYN_0, FM_CMD_SYN_1, FM_CMD_HOST_WR_1, host_addr, host_val};  
+    533               
+    534               state =  TWID_Write(  dev_addr>>1, 0, 0, buf, sizeof(buf), NULL);       
+    535               
+    536               return(state);
+    537          }
+    538          
+    539          
+    540          unsigned char HOST_SingleWrite_2(unsigned char dev_addr,unsigned char host_addr,unsigned short host_val)
+    541          {
+    542              unsigned char state ;
+    543              unsigned char buf[] = { FM_CMD_SYN_0, FM_CMD_SYN_1, FM_CMD_HOST_WR_2, host_addr, (host_val>>8)&0xff, host_val&0xff}; 
+    544              
+    545              state =  TWID_Write(  dev_addr>>1, 0, 0, buf, sizeof(buf), NULL);   
+    546               
+    547              return(state);
+    548          }
+    549          
+    550          
+    551          unsigned char HOST_LegacyRead(unsigned char dev_addr, unsigned char host_addr,unsigned char *pVal)
+    552          {
+    553              unsigned char state;   
+    554              unsigned char buf[] = { FM_CMD_SYN_0, FM_CMD_SYN_1, FM_CMD_HOST_RD, host_addr};
+    555              
+    556              state =  TWID_Write(  dev_addr>>1, 0, 0, buf, sizeof(buf), NULL);  
+    557              if (state != SUCCESS)
+    558              {
+    559                  return(state) ;
+    560              }   
+    561              state =  TWID_Read( dev_addr>>1, 0, 0, pVal,1, NULL) ;
+    562              if (state != SUCCESS)
+    563              {
+    564                  return(state) ;
+    565              }
+    566              
+    567              return(state);
+    568          }
+    569          
+    570          
+    571          /*********************     DSP Register Read / Write     **********************/
+    572          unsigned char DSP_SingleWrite_1(unsigned char dev_addr,unsigned char dsp_addr,unsigned char dsp_val)
+    573          {
+    574              unsigned char state ;
+    575             
+    576              unsigned char buf[] = { FM_CMD_SYN_0, FM_CMD_SYN_1, FM_CMD_DSP_WR_1, dsp_addr, dsp_val};    
+    577              state =  TWID_Write(  dev_addr>>1, 0, 0, buf, sizeof(buf), NULL);  
+    578               
+    579              return(state);
+    580          }
+    581          
+    582          
+    583          unsigned char DSP_SingleWrite_2(unsigned char dev_addr,unsigned char dsp_addr,unsigned short dsp_val)
+    584          {
+    585              unsigned char state ;
+    586              
+    587              unsigned char buf[] = { FM_CMD_SYN_0, FM_CMD_SYN_1, FM_CMD_DSP_WR_2, dsp_addr, (dsp_val>>8)&0xff, dsp_val&0xff};    
+    588              state =  TWID_Write(  dev_addr>>1, 0, 0, buf, sizeof(buf), NULL);  
+    589               
+    590              return(state);
+    591          }
+    592          
+    593          
+    594          unsigned char DSP_LegacyRead(unsigned char dev_addr, unsigned char dsp_addr,unsigned char *pVal)
+    595          {  
+    596              unsigned char state;    
+    597              unsigned char buf[] = { FM_CMD_SYN_0, FM_CMD_SYN_1, FM_CMD_DSP_RD, dsp_addr}; 
+    598              
+    599              state =  TWID_Write(  dev_addr>>1, 0, 0, buf, sizeof(buf), NULL);     
+    600              if (state != SUCCESS) {
+    601                  return(state) ;
+    602              }  
+    603               
+    604              buf[2] = FM_CMD_HOST_RD;
+    605              buf[3] = 0x4B;      
+    606              state =  TWID_Write(  dev_addr>>1, 0, 0, buf, 4, NULL); 
+    607              if (state != SUCCESS) {
+    608                  return(state) ;
+    609              }   
+    610              state =  TWID_Read( dev_addr>>1, 0, 0, pVal++,1, NULL) ;
+    611              if (state != SUCCESS) {
+    612                  return(state) ;
+    613              }
+    614                  
+    615              buf[3] = 0x4A;      
+    616              state =  TWID_Write(  dev_addr>>1, 0, 0, buf, 4, NULL); 
+    617              if (state != SUCCESS) {
+    618                  return(state) ;
+    619              }   
+    620              state =  TWID_Read( dev_addr>>1, 0, 0, pVal,1, NULL) ;
+    621              if (state != SUCCESS) {
+    622                  return(state) ;
+    623              } 
+    624               
+    625              return(state);
+    626            
+    627          }
+    628          
+    629           
+    630          
+    631          
+    632          
+    633          
+    634          
+    635          
+    636          /******************    USART Read/ Write Related    **************************/
+    637          
+    638          unsigned char DM_SingleWrite_uart(unsigned char dev_addr,unsigned short dm_addr,unsigned short dm_val)
+    639          {  
+    640              unsigned char buf[] = { FM_CMD_SYN_0,FM_CMD_SYN_1,FM_CMD_DM_WR,(dm_addr>>8)&0xff,dm_addr&0xff,(dm_val>>8)&0xff,dm_val&0xff };    
+    641              dev_addr = dev_addr ;    
+    642             
+    643              DBGU_Write_Buffer( buf, sizeof(buf) ) ;
+    644            
+    645              return( 0 );
+    646              
+    647          }
+    648          
+    649          
+    650          unsigned char DM_LegacyRead_uart(unsigned char dev_addr, unsigned short dm_addr,unsigned char *pVal)
+    651          {
+    652              
+    653              unsigned char buf[]    = { FM_CMD_SYN_0,FM_CMD_SYN_1,FM_CMD_DM_RD, (dm_addr>>8)&0xFF, dm_addr&0xFF };
+    654              unsigned char err_code = 0 ;
+    655              dev_addr = dev_addr ;   
+    656              
+    657              DBGU_Read_NULL_RHR();
+    658              
+    659              DBGU_Write_Buffer( buf, sizeof(buf) ) ;        
+    660              
+    661              buf[2]  = FM_CMD_HOST_RD ;     
+    662              buf[3]  = 0x25 ;    
+    663              DBGU_Write_Buffer( buf, 4 ) ;      
+    664              err_code = DBGU_Read_Byte( pVal++, 1000);    
+    665              if(err_code != 0 ) {
+    666                return( err_code ); 
+    667              }
+    668                  
+    669              buf[3] = 0x26 ;
+    670              DBGU_Write_Buffer( buf, 4 ) ;      
+    671              err_code = DBGU_Read_Byte( pVal,1000);  
+    672              
+    673              return( err_code );       
+    674              
+    675          }
+    676          
+    677          
+    678          unsigned char PM_SingleWrite_uart(unsigned char dev_addr,unsigned short dm_addr,unsigned char *pdata, unsigned int xor_key)
+    679          {
+    680             
+    681              unsigned char buf[] = { FM_CMD_SYN_0,FM_CMD_SYN_1,FM_CMD_PM_WR,(dm_addr>>8)&0xFF, dm_addr&0xFF, *(pdata++)^(xor_key>>16),*(pdata++)^(xor_key>>8),*(pdata++)^(xor_key)};   
+    682              dev_addr = dev_addr ;    
+    683             
+    684              DBGU_Write_Buffer( buf, sizeof(buf) ) ;
+    685            
+    686              return( 0 );    
+    687           
+    688          }
+    689          
+    690          
+    691          unsigned char PM_LegacyRead_uart( unsigned char dev_addr, unsigned short dm_addr,unsigned char *pVal)
+    692          {
+    693            
+    694              unsigned char buf[]    = { FM_CMD_SYN_0,FM_CMD_SYN_1,FM_CMD_PM_RD, (dm_addr>>8)&0xFF, dm_addr&0xFF };
+    695              unsigned char err_code = 0 ;
+    696            
+    697              dev_addr = dev_addr ;   
+    698              
+    699              Unlock_PM(DSP_PM_Type);
+    700               
+    701              DBGU_Read_NULL_RHR();
+    702              
+    703              DBGU_Write_Buffer( buf, sizeof(buf) ) ;        
+    704              
+    705              buf[2]  = FM_CMD_HOST_RD ;     
+    706              buf[3]  = 0x26 ;    
+    707              DBGU_Write_Buffer( buf, 4 ) ;      
+    708              err_code = DBGU_Read_Byte( pVal++, 1000);    
+    709              if(err_code != 0 ) {
+    710                return( err_code ); 
+    711              }
+    712                  
+    713              buf[3] = 0x25 ;
+    714              DBGU_Write_Buffer( buf, 4 ) ;      
+    715              err_code = DBGU_Read_Byte( pVal++,1000);  
+    716              if(err_code != 0 ) {
+    717                return( err_code ); 
+    718              }
+    719              
+    720              buf[3] = 0x24 ;
+    721              DBGU_Write_Buffer( buf, 4 ) ;      
+    722              err_code = DBGU_Read_Byte( pVal,1000); 
+    723              
+    724              return( err_code ); 
+    725              
+    726              
+    727          
+    728          }
+    729          
+    730          
+    731          
+    732          unsigned char CM_SingleWrite_uart(unsigned char dev_addr,unsigned short dm_addr,unsigned char *pdata)
+    733          {
+    734             
+    735              unsigned char buf[] = { FM_CMD_SYN_0,FM_CMD_SYN_1,FM_CMD_CM_WR,(dm_addr>>8)&0xFF, dm_addr&0xFF, *(pdata++),*(pdata++) };
+    736              dev_addr = dev_addr ;    
+    737             
+    738              DBGU_Write_Buffer( buf, sizeof(buf) ) ;
+    739            
+    740              return( 0 );   
+    741              
+    742          }
+    743          
+    744           
+    745          
+    746          unsigned char CM_LegacyRead_uart(unsigned char dev_addr, unsigned short dm_addr,unsigned char *pVal)
+    747          {
+    748                 
+    749              unsigned char buf[]    = { FM_CMD_SYN_0,FM_CMD_SYN_1,FM_CMD_CM_RD, (dm_addr>>8)&0xFF, dm_addr&0xFF };
+    750              unsigned char err_code = 0 ;
+    751            
+    752              dev_addr = dev_addr ;   
+    753             
+    754               
+    755              DBGU_Read_NULL_RHR();
+    756              
+    757              DBGU_Write_Buffer( buf, sizeof(buf) ) ;        
+    758              
+    759              buf[2]  = FM_CMD_HOST_RD ;     
+    760              buf[3]  = 0x25 ;    
+    761              DBGU_Write_Buffer( buf, 4 ) ;      
+    762              err_code = DBGU_Read_Byte( pVal++, 1000);    
+    763              if(err_code != 0 ) {
+    764                return( err_code ); 
+    765              }
+    766                  
+    767              buf[3] = 0x26 ;
+    768              DBGU_Write_Buffer( buf, 4 ) ;      
+    769              err_code = DBGU_Read_Byte( pVal++,1000);  
+    770              
+    771              *pVal = 0 ; // CM  only use high two bytes
+    772              
+    773              return( err_code ); 
+    774          }
+    775          
+    776          
+    777          
+    778          
+    779           
+    780          unsigned char HOST_SingleWrite_1_uart(unsigned char dev_addr,unsigned char host_addr,unsigned char host_val)
+    781          {  
+    782            
+    783              unsigned char buf[] = { FM_CMD_SYN_0,FM_CMD_SYN_1,FM_CMD_HOST_WR_1,host_addr, host_val};    
+    784              dev_addr = dev_addr ;    
+    785             
+    786              DBGU_Write_Buffer( buf, sizeof(buf) ) ;
+    787            
+    788              return( 0 );
+    789              
+    790          }
+    791          
+    792          
+    793          unsigned char HOST_SingleWrite_2_uart(unsigned char dev_addr,unsigned char host_addr,unsigned short host_val)
+    794          {
+    795            
+    796              unsigned char buf[] = { FM_CMD_SYN_0,FM_CMD_SYN_1,FM_CMD_HOST_WR_2,host_addr, (host_val>>8)&0xff, host_val&0xff};    
+    797              dev_addr = dev_addr ;    
+    798             
+    799              DBGU_Write_Buffer( buf, sizeof(buf) ) ;
+    800            
+    801              return( 0 );    
+    802              
+    803          }
+    804          
+    805          
+    806          unsigned char HOST_LegacyRead_uart(unsigned char dev_addr, unsigned char host_addr,unsigned char *pVal)
+    807          {
+    808            
+    809              unsigned char buf[]    = { FM_CMD_SYN_0,FM_CMD_SYN_1,FM_CMD_HOST_RD, host_addr };
+    810              unsigned char err_code = 0 ;
+    811              dev_addr = dev_addr ;   
+    812              
+    813              DBGU_Read_NULL_RHR();    
+    814              DBGU_Write_Buffer( buf, sizeof(buf) ) ;  
+    815             
+    816              err_code = DBGU_Read_Byte( pVal, 1000);    
+    817              
+    818              return( err_code );     
+    819              
+    820          }
+    821          
+    822          
+    823           
+    824          unsigned char DSP_SingleWrite_1_uart(unsigned char dev_addr,unsigned char dsp_addr,unsigned char dsp_val)
+    825          {
+    826            
+    827              unsigned char buf[] = { FM_CMD_SYN_0,FM_CMD_SYN_1,FM_CMD_DSP_WR_1, dsp_addr, dsp_val};    
+    828              dev_addr = dev_addr ;    
+    829             
+    830              DBGU_Write_Buffer( buf, sizeof(buf) ) ;
+    831            
+    832              return( 0 );
+    833              
+    834          }
+    835          
+    836          
+    837          unsigned char DSP_SingleWrite_2_uart(unsigned char dev_addr,unsigned char dsp_addr,unsigned short dsp_val)
+    838          {
+    839          
+    840              unsigned char buf[] = { FM_CMD_SYN_0,FM_CMD_SYN_1,FM_CMD_DSP_WR_2, dsp_addr, (dsp_val>>8)&0xff, dsp_val&0xff};     
+    841              dev_addr = dev_addr ;    
+    842             
+    843              DBGU_Write_Buffer( buf, sizeof(buf) ) ;
+    844            
+    845              return( 0 ); 
+    846              
+    847          }
+    848          
+    849          
+    850          unsigned char DSP_LegacyRead_uart(unsigned char dev_addr, unsigned char dsp_addr,unsigned char *pVal)
+    851          {  
+    852              
+    853              unsigned char buf[]    = { FM_CMD_SYN_0,FM_CMD_SYN_1,FM_CMD_DSP_RD, dsp_addr };
+    854              unsigned char err_code = 0 ;
+    855              dev_addr = dev_addr ;   
+    856              
+    857              DBGU_Read_NULL_RHR();
+    858              
+    859              DBGU_Write_Buffer( buf, sizeof(buf) ) ;        
+    860              
+    861              buf[2]  = FM_CMD_HOST_RD ;     
+    862              buf[3]  = 0x4B ;    
+    863              DBGU_Write_Buffer( buf, 4 ) ;      
+    864              err_code = DBGU_Read_Byte( pVal++, 1000);    
+    865              if(err_code != 0 ) {
+    866                return( err_code ); 
+    867              }
+    868                  
+    869              buf[3] = 0x4A ;
+    870              DBGU_Write_Buffer( buf, 4 ) ;      
+    871              err_code = DBGU_Read_Byte( pVal,1000);  
+    872              
+    873              return( err_code ); 
+    874            
+    875          }
+    876          
+    877          
+    878          
+    879          
+    880           
+    881              
+    882          /*****************     DM / PM / CM  MEM_Block_Read / Write [UART]   **********/
+    883          
+    884          unsigned char MEM_Block_LegacyRead_uart( unsigned char  dev_addr, 
+    885                                                   unsigned char  mem_type, 
+    886                                                   unsigned short start_addr,
+    887                                                   unsigned char  num, 
+    888                                                   unsigned char *pVal     )
+    889          {
+    890             
+    891              unsigned char err_code  = 0 ;
+    892              unsigned char i         = 0;
+    893              unsigned int cmd[]      = { FM_CMD_DM_RD, FM_CMD_PM_RD, FM_CMD_CM_RD}; //cmd for read : DM, PM, CM 
+    894              unsigned char buf[]     = { FM_CMD_SYN_0, FM_CMD_SYN_1, 0, 0, 0};  
+    895              
+    896              dev_addr = dev_addr ;  
+    897              
+    898              DBGU_Read_NULL_RHR();
+    899              
+    900              if( mem_type == MEM_TYPE_PM ) {      
+    901                  Unlock_PM(DSP_PM_Type);
+    902              }    
+    903                  
+    904              for(i = 0; i < num ; i++) { 
+    905                
+    906                  buf[2]  =  cmd[mem_type] ;
+    907                  buf[3]  = (start_addr>>8)&0xFF;
+    908                  buf[4]  =  start_addr&0xFF ; 
+    909                  start_addr ++ ;
+    910                  DBGU_Write_Buffer( buf, 5 ) ;        
+    911              
+    912                  buf[2]  = FM_CMD_HOST_RD ;     
+    913                  buf[3]  = 0x26 ;          
+    914                  DBGU_Write_Buffer( buf, 4 ) ;      
+    915                  err_code = DBGU_Read_Byte( pVal++, 1000);    
+    916                  if(err_code != 0 ) {
+    917                      return( err_code ); 
+    918                  }
+    919                  
+    920                  buf[3] = 0x25 ;
+    921                  DBGU_Write_Buffer( buf, 4 ) ;      
+    922                  err_code = DBGU_Read_Byte( pVal++,1000);  
+    923                  if(err_code != 0 ) {
+    924                      return( err_code ); 
+    925                  }
+    926                  
+    927                  if( mem_type == MEM_TYPE_PM ) {
+    928                      buf[3] = 0x24 ;
+    929                      DBGU_Write_Buffer( buf, 4 ) ;      
+    930                      err_code = DBGU_Read_Byte( pVal++,1000); 
+    931                      if(err_code != 0 ) {
+    932                          return( err_code ); 
+    933                      }
+    934                  }
+    935              
+    936              }
+    937              
+    938              return( err_code ); 
+    939                
+    940              
+    941          }
+    942          
+    943          
+    944          //write
+    945          unsigned char MEM_Block_SingleWrite_uart(   unsigned char dev_addr,                                             
+    946                                                      unsigned char mem_type, 
+    947                                                      unsigned short start_addr,
+    948                                                      unsigned char num, 
+    949                                                      unsigned char *pVal )
+    950          {
+    951              
+    952              unsigned char i            = 0;
+    953              unsigned int cmd[]         = {FM_CMD_DM_RD, FM_CMD_PM_RD, FM_CMD_CM_RD}; //cmd for write : DM, PM, CM 
+    954              unsigned char buf[]        = { FM_CMD_SYN_0, FM_CMD_SYN_1, 0, 0, 0, 0, 0, 0};
+    955              unsigned char data_length  = 7;
+    956              
+    957              dev_addr = dev_addr ;    
+    958              buf[2] = cmd[mem_type] ;
+    959                
+    960              for(i = 0; i < num ; i++)  {
+    961                  
+    962                  buf[3] = (start_addr>>8)&0xFF;
+    963                  buf[4] = start_addr&0xFF;
+    964                  buf[5] = *pVal++;
+    965                  buf[6] = *pVal++;
+    966                  if( mem_type == MEM_TYPE_PM ){
+    967                      buf[7] = *pVal++;
+    968                      data_length  = 8;
+    969                  }
+    970                  start_addr++ ;
+    971                  DBGU_Write_Buffer( buf, data_length ) ;
+    972              }
+    973              
+    974              return( 0 );  
+    975          
+    976          }
+    977          
+    978          
+    979          
+
+   Maximum stack usage in bytes:
+
+   .cstack Function
+   ------- --------
+      40   CM_LegacyRead
+        40   -> TWID_Read
+        40   -> TWID_Write
+      32   CM_LegacyRead_uart
+        32   -> DBGU_Read_Byte
+        32   -> DBGU_Read_NULL_RHR
+        32   -> DBGU_Write_Buffer
+      40   CM_SingleWrite
+        40   -> TWID_Write
+      24   CM_SingleWrite_uart
+        24   -> DBGU_Write_Buffer
+      24   Check_IDMA
+        24   -> HOST_LegacyRead
+      40   DM_BurstWrite
+        40   -> TWID_Write
+      48   DM_BurstWrite_s
+        48   -> TWID_Write
+      40   DM_FastRead
+        40   -> TWID_Read
+        40   -> TWID_Write
+      16   DM_FastReadReStart
+        16   -> DM_FastRead
+      40   DM_LegacyRead
+        40   -> TWID_Read
+        40   -> TWID_Write
+      16   DM_LegacyReadReStart
+        16   -> DM_LegacyRead
+      32   DM_LegacyRead_uart
+        32   -> DBGU_Read_Byte
+        32   -> DBGU_Read_NULL_RHR
+        32   -> DBGU_Write_Buffer
+      40   DM_SingleWrite
+        40   -> TWID_Write
+      24   DM_SingleWrite_uart
+        24   -> DBGU_Write_Buffer
+      16   DM_Write
+        16   -> DM_SingleWrite
+      32   DSP_LegacyRead
+        32   -> TWID_Read
+        32   -> TWID_Write
+      24   DSP_LegacyRead_uart
+        24   -> DBGU_Read_Byte
+        24   -> DBGU_Read_NULL_RHR
+        24   -> DBGU_Write_Buffer
+      40   DSP_SingleWrite_1
+        40   -> TWID_Write
+      24   DSP_SingleWrite_1_uart
+        24   -> DBGU_Write_Buffer
+      40   DSP_SingleWrite_2
+        40   -> TWID_Write
+      24   DSP_SingleWrite_2_uart
+        24   -> DBGU_Write_Buffer
+      32   HOST_LegacyRead
+        32   -> TWID_Read
+        32   -> TWID_Write
+      24   HOST_LegacyRead_uart
+        24   -> DBGU_Read_Byte
+        24   -> DBGU_Read_NULL_RHR
+        24   -> DBGU_Write_Buffer
+      40   HOST_SingleWrite_1
+        40   -> TWID_Write
+      24   HOST_SingleWrite_1_uart
+        24   -> DBGU_Write_Buffer
+      40   HOST_SingleWrite_2
+        40   -> TWID_Write
+      24   HOST_SingleWrite_2_uart
+        24   -> DBGU_Write_Buffer
+      64   MEM_Block_LegacyRead
+        64   -> TWID_Read
+        64   -> TWID_Write
+        64   -> Unlock_PM
+      56   MEM_Block_LegacyRead_uart
+        56   -> DBGU_Read_Byte
+        56   -> DBGU_Read_NULL_RHR
+        56   -> DBGU_Write_Buffer
+        56   -> Unlock_PM
+      64   MEM_Block_SingleWrite
+        64   -> TWID_Write
+      56   MEM_Block_SingleWrite_uart
+        56   -> DBGU_Write_Buffer
+      48   PM_BurstWrite_s
+        48   -> TWID_Write
+      48   PM_FastWrite_s
+        48   -> HOST_SingleWrite_2
+        48   -> TWID_Write
+      40   PM_LegacyRead
+        40   -> TWID_Read
+        40   -> TWID_Write
+        40   -> Unlock_PM
+      32   PM_LegacyRead_uart
+        32   -> DBGU_Read_Byte
+        32   -> DBGU_Read_NULL_RHR
+        32   -> DBGU_Write_Buffer
+        32   -> Unlock_PM
+      40   PM_SingleWrite
+        40   -> TWID_Write
+      32   PM_SingleWrite_uart
+        32   -> DBGU_Write_Buffer
+      16   Unlock_PM
+        16   -> DM_Write
+
+
+   Section sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       4  ?<Constant {0, 28, 0, 0}>
+       8  ?<Constant {252, 243, 0, 0, 0, 0, 0, 0}>
+       8  ?<Constant {252, 243, 0, 0, 0}>
+       8  ?<Constant {252, 243, 0, 0, 0}>_1
+       8  ?<Constant {252, 243, 104, 0, 0}>
+       8  ?<Constant {252, 243, 104, 0, 0}>_1
+       8  ?<Constant {252, 243, 106, 0, 0, 0}>
+       8  ?<Constant {252, 243, 106, 0, 0, 0}>_1
+       8  ?<Constant {252, 243, 13, 0, 0, 0, 0, 0}>
+       8  ?<Constant {252, 243, 13, 0, 0, 0, 0, 0}>_1
+       8  ?<Constant {252, 243, 13, 0, 0, 0, 0, 0}>_2
+       8  ?<Constant {252, 243, 39, 0, 0}>
+       8  ?<Constant {252, 243, 39, 0, 0}>_1
+       8  ?<Constant {252, 243, 43, 0, 0, 0, 0}>
+       8  ?<Constant {252, 243, 43, 0, 0, 0, 0}>_1
+       8  ?<Constant {252, 243, 55, 0, 0}>
+       8  ?<Constant {252, 243, 55, 0, 0}>_1
+       8  ?<Constant {252, 243, 55, 0, 0}>_2
+       8  ?<Constant {252, 243, 59, 0, 0, 0, 0}>
+       8  ?<Constant {252, 243, 59, 0, 0, 0, 0}>_1
+       8  ?<Constant {252, 243, 7, 0, 0}>
+       8  ?<Constant {252, 243, 7, 0, 0}>_1
+       4  ?<Constant {252, 243, 86, 0}>
+       4  ?<Constant {252, 243, 86, 0}>_1
+       8  ?<Constant {252, 243, 88, 0, 0}>
+       8  ?<Constant {252, 243, 88, 0, 0}>_1
+       8  ?<Constant {252, 243, 90, 0, 0, 0}>
+       8  ?<Constant {252, 243, 90, 0, 0, 0}>_1
+       4  ?<Constant {252, 243, 96, 0}>
+       4  ?<Constant {252, 243, 96, 0}>_1
+      12  ?<Constant {55, 7, 39}>
+      12  ?<Constant {55, 7, 39}>_1
+      12  ?<Constant {55, 7, 39}>_2
+      12  ?<Constant {59, 13, 43}>
+       8  ?<Constant {63, 232, 0, 0, 0}>
+       4  ?<Constant {63, 232, 0, 0}>
+       4  ??DataTable10
+       4  ??DataTable10_1
+       4  ??DataTable10_2
+       4  ??DataTable10_3
+       4  ??DataTable11
+       4  ??DataTable12
+       4  ??DataTable16
+       4  ??DataTable17
+       4  ??DataTable19
+       4  ??DataTable19_1
+       4  ??DataTable21
+       4  ??DataTable21_1
+       4  ??DataTable22
+       4  ??DataTable23
+       4  ??DataTable23_1
+       4  ??DataTable25
+       4  ??DataTable29
+       4  ??DataTable30
+       4  ??DataTable32
+       4  ??DataTable32_1
+       4  ??DataTable32_10
+       4  ??DataTable32_11
+       4  ??DataTable32_12
+       4  ??DataTable32_13
+       4  ??DataTable32_14
+       4  ??DataTable32_15
+       4  ??DataTable32_16
+       4  ??DataTable32_17
+       4  ??DataTable32_18
+       4  ??DataTable32_19
+       4  ??DataTable32_2
+       4  ??DataTable32_20
+       4  ??DataTable32_21
+       4  ??DataTable32_22
+       4  ??DataTable32_23
+       4  ??DataTable32_3
+       4  ??DataTable32_4
+       4  ??DataTable32_5
+       4  ??DataTable32_6
+       4  ??DataTable32_7
+       4  ??DataTable32_8
+       4  ??DataTable32_9
+     484  CM_LegacyRead
+     224  CM_LegacyRead_uart
+     152  CM_SingleWrite
+     108  CM_SingleWrite_uart
+     144  Check_IDMA
+     332  DM_BurstWrite
+     376  DM_BurstWrite_s
+     200  DM_FastRead
+      52  DM_FastReadReStart
+     476  DM_LegacyRead
+      52  DM_LegacyReadReStart
+     212  DM_LegacyRead_uart
+     148  DM_SingleWrite
+     104  DM_SingleWrite_uart
+      52  DM_Write
+     440  DSP_LegacyRead
+     184  DSP_LegacyRead_uart
+       1  DSP_PM_Type
+     116  DSP_SingleWrite_1
+      72  DSP_SingleWrite_1_uart
+     132  DSP_SingleWrite_2
+      88  DSP_SingleWrite_2_uart
+     196  HOST_LegacyRead
+      88  HOST_LegacyRead_uart
+     116  HOST_SingleWrite_1
+      72  HOST_SingleWrite_1_uart
+     132  HOST_SingleWrite_2
+      88  HOST_SingleWrite_2_uart
+     796  MEM_Block_LegacyRead
+     456  MEM_Block_LegacyRead_uart
+     312  MEM_Block_SingleWrite
+     256  MEM_Block_SingleWrite_uart
+     392  PM_BurstWrite_s
+     268  PM_FastWrite_s
+     644  PM_LegacyRead
+     292  PM_LegacyRead_uart
+     188  PM_SingleWrite
+     152  PM_SingleWrite_uart
+     132  Unlock_PM
+
+ 
+     1 byte  in section .data
+   280 bytes in section .rodata
+ 8 896 bytes in section .text
+ 
+ 8 896 bytes of CODE  memory
+   280 bytes of CONST memory
+     1 byte  of DATA  memory
+
+Errors: none
+Warnings: none

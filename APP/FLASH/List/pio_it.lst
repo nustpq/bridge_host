@@ -1,0 +1,514 @@
+###############################################################################
+#
+# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        22/May/2014  14:14:54
+# Copyright 1999-2014 IAR Systems AB.
+#
+#    Cpu mode     =  arm
+#    Endian       =  little
+#    Source file  =  
+#        E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Driver\pio_it.c
+#    Command line =  
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Driver\pio_it.c" -lcN
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\" -lb
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\" -o
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\Obj\" --no_cse
+#        --no_unroll --no_inline --no_code_motion --no_tbaa --no_clustering
+#        --no_scheduling --debug --endian=little --cpu=ARM7TDMI -e --fpu=None
+#        --dlib_config "C:\Program Files (x86)\IAR Systems\Embedded Workbench
+#        7.0\arm\INC\c\DLib_Config_Full.h" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\BSP\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Driver\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Noah\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Shell\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uCOS-II\Source\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\uC-CPU\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-LIB\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\uCOS-II\Ports\ARM\Generic\IAR\" -I
+#        "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\RS-232\Source\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\RS-232\Ports\Atmel\AT91SAM7X\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\Source\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Plugins\uCOS-II\" -I
+#        "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Demos\Intro\Source\"
+#        --interwork --cpu_mode arm -On --use_c++_inline
+#    List file    =  
+#        E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\pio_it.lst
+#    Object file  =  
+#        E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\Obj\pio_it.o
+#
+###############################################################################
+
+E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Driver\pio_it.c
+      1          /* ----------------------------------------------------------------------------
+      2           *         ATMEL Microcontroller Software Support 
+      3           * ----------------------------------------------------------------------------
+      4           * Copyright (c) 2008, Atmel Corporation
+      5           *
+      6           * All rights reserved.
+      7           *
+      8           * Redistribution and use in source and binary forms, with or without
+      9           * modification, are permitted provided that the following conditions are met:
+     10           *
+     11           * - Redistributions of source code must retain the above copyright notice,
+     12           * this list of conditions and the disclaimer below.
+     13           *
+     14           * Atmel's name may not be used to endorse or promote products derived from
+     15           * this software without specific prior written permission.
+     16           *
+     17           * DISCLAIMER: THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR
+     18           * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+     19           * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT ARE
+     20           * DISCLAIMED. IN NO EVENT SHALL ATMEL BE LIABLE FOR ANY DIRECT, INDIRECT,
+     21           * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+     22           * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
+     23           * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+     24           * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+     25           * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+     26           * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+     27           * ----------------------------------------------------------------------------
+     28           */
+     29          
+     30          /// Disable traces for this file
+     31          #ifndef NOTRACE
+     32             // #define NOTRACE
+     33          #endif
+     34          
+     35          //------------------------------------------------------------------------------
+     36          //         Headers
+     37          //------------------------------------------------------------------------------
+     38          
+     39          #include <bsp.h>
+     40          
+     41          
+     42          //------------------------------------------------------------------------------
+     43          //         Local definitions
+     44          //------------------------------------------------------------------------------
+     45          
+     46          /// Returns the current value of a register.
+     47          #define READ(peripheral, register)          (peripheral->register)
+     48          /// Modifies the current value of a register.
+     49          #define WRITE(peripheral, register, value)  (peripheral->register = value)
+     50          
+     51          /// Maximum number of interrupt sources that can be defined.
+     52          #define MAX_INTERRUPT_SOURCES       7
+     53          
+     54          //------------------------------------------------------------------------------
+     55          //         Local types
+     56          //------------------------------------------------------------------------------
+     57          
+     58          /// Describes a PIO interrupt source, including the PIO instance triggering the
+     59          /// interrupt and the associated interrupt handler.
+     60          typedef struct _InterruptSource {
+     61          
+     62              /// Interrupt source pin.
+     63              const Pin *pPin;
+     64          
+     65              /// Interrupt handler.
+     66              void (*handler)(const Pin *);
+     67          
+     68          } InterruptSource;
+     69          
+     70          //------------------------------------------------------------------------------
+     71          //         Local variables
+     72          //------------------------------------------------------------------------------
+     73          
+     74          /// List of interrupt sources.
+     75          static InterruptSource pSources[MAX_INTERRUPT_SOURCES];
+     76          
+     77          /// Number of currently defined interrupt sources.
+     78          static unsigned int numSources;
+     79          
+     80          //------------------------------------------------------------------------------
+     81          //         Local functions
+     82          //------------------------------------------------------------------------------
+     83          
+     84          //------------------------------------------------------------------------------
+     85          /// Handles all interrupts on the given PIO controller.
+     86          /// \param id  PIO controller ID.
+     87          /// \param pBase  PIO controller base address.
+     88          //------------------------------------------------------------------------------
+     89          void PioInterruptHandler(unsigned int id, AT91S_PIO *pBase)
+     90          {
+     91              unsigned int status;
+     92              unsigned int i;
+     93          
+     94              // Check PIO controller status
+     95              status = pBase->PIO_ISR;
+     96              status &= pBase->PIO_IMR;
+     97              if (status != 0) {
+     98          
+     99                  //trace_LOG(trace_DEBUG, "-D- PIO interrupt on PIO controller #%d\n\r", id);
+    100          
+    101                  // Check all sources
+    102                  i = 0;
+    103                  while (status != 0) {
+    104          
+    105                      // There cannot be an unconfigured source enabled.
+    106                      //SANITY_CHECK(i < numSources);
+    107          
+    108                      // Source if configured on PIOA
+    109                      if (pSources[i].pPin->id == id) {
+    110          
+    111                          // Source has PIOs which have changed
+    112                          if ((status & pSources[i].pPin->mask) != 0) {
+    113          
+    114                              //trace_LOG(trace_DEBUG, "-D- Interrupt source #%d triggered\n\r", i);
+    115          
+    116                              pSources[i].handler(pSources[i].pPin);
+    117                              status &= ~(pSources[i].pPin->mask);
+    118                          }
+    119                      }
+    120                      i++;
+    121                  }
+    122              }
+    123          }
+    124          
+    125          //------------------------------------------------------------------------------
+    126          /// Generic PIO interrupt handler. Single entry point for interrupts coming
+    127          /// from any PIO controller (PIO A, B, C ...). Dispatches the interrupt to
+    128          /// the user-configured handlers.
+    129          //------------------------------------------------------------------------------
+    130          void InterruptHandler()
+    131          {
+    132          #if defined(AT91C_ID_PIOA)
+    133              // Treat PIOA interrupts
+    134              PioInterruptHandler(AT91C_ID_PIOA, AT91C_BASE_PIOA);
+    135          #endif
+    136          
+    137          #if defined(AT91C_ID_PIOB)
+    138              // Treat PIOB interrupts
+    139              PioInterruptHandler(AT91C_ID_PIOB, AT91C_BASE_PIOB);
+    140          #endif
+    141          
+    142          #if defined(AT91C_ID_PIOC)
+    143              // Treat PIOC interrupts
+    144              PioInterruptHandler(AT91C_ID_PIOC, AT91C_BASE_PIOC);
+    145          #endif
+    146          
+    147          #if defined(AT91C_ID_PIOD)
+    148              // Treat PIOD interrupts
+    149              PioInterruptHandler(AT91C_ID_PIOD, AT91C_BASE_PIOD);
+    150          #endif
+    151          
+    152          #if defined(AT91C_ID_PIOE)
+    153              // Treat PIOE interrupts
+    154              PioInterruptHandler(AT91C_ID_PIOE, AT91C_BASE_PIOE);
+    155          #endif
+    156          
+    157          #if defined(AT91C_ID_PIOABCD)
+    158              // Treat PIOABCD interrupts
+    159              #if !defined(AT91C_ID_PIOA)
+    160                  PioInterruptHandler(AT91C_ID_PIOABCD, AT91C_BASE_PIOA);
+    161              #endif
+    162              #if !defined(AT91C_ID_PIOB)
+    163                  PioInterruptHandler(AT91C_ID_PIOABCD, AT91C_BASE_PIOB);
+    164              #endif
+    165              #if !defined(AT91C_ID_PIOC)
+    166                  PioInterruptHandler(AT91C_ID_PIOABCD, AT91C_BASE_PIOC);
+    167              #endif
+    168              #if !defined(AT91C_ID_PIOD)
+    169                  PioInterruptHandler(AT91C_ID_PIOABCD, AT91C_BASE_PIOD);
+    170              #endif
+    171          #endif
+    172          
+    173          #if defined(AT91C_ID_PIOABCDE)
+    174              // Treat PIOABCDE interrupts
+    175              #if !defined(AT91C_ID_PIOA)
+    176                  PioInterruptHandler(AT91C_ID_PIOABCDE, AT91C_BASE_PIOA);
+    177              #endif
+    178              #if !defined(AT91C_ID_PIOB)
+    179                  PioInterruptHandler(AT91C_ID_PIOABCDE, AT91C_BASE_PIOB);
+    180              #endif
+    181              #if !defined(AT91C_ID_PIOC)
+    182                  PioInterruptHandler(AT91C_ID_PIOABCDE, AT91C_BASE_PIOC);
+    183              #endif
+    184              #if !defined(AT91C_ID_PIOD)
+    185                  PioInterruptHandler(AT91C_ID_PIOABCDE, AT91C_BASE_PIOD);
+    186              #endif
+    187              #if !defined(AT91C_ID_PIOE)
+    188                  PioInterruptHandler(AT91C_ID_PIOABCDE, AT91C_BASE_PIOE);
+    189              #endif
+    190          #endif
+    191          
+    192          #if defined(AT91C_ID_PIOCDE)
+    193              // Treat PIOCDE interrupts
+    194              #if !defined(AT91C_ID_PIOC)
+    195                  PioInterruptHandler(AT91C_ID_PIOCDE, AT91C_BASE_PIOC);
+    196              #endif
+    197              #if !defined(AT91C_ID_PIOD)
+    198                  PioInterruptHandler(AT91C_ID_PIOCDE, AT91C_BASE_PIOD);
+    199              #endif
+    200              #if !defined(AT91C_ID_PIOE)
+    201                  PioInterruptHandler(AT91C_ID_PIOCDE, AT91C_BASE_PIOE);
+    202              #endif
+    203          #endif
+    204          
+    205          }
+    206          
+    207          //------------------------------------------------------------------------------
+    208          //         Global functions
+    209          //------------------------------------------------------------------------------
+    210          
+    211          //------------------------------------------------------------------------------
+    212          /// Initializes the PIO interrupt management logic.
+    213          /// \param priority  PIO controller interrupts priority.
+    214          //------------------------------------------------------------------------------
+    215          void PIO_InitializeInterrupts(unsigned int priority)
+    216          {
+    217              //trace_LOG(trace_DEBUG, "-D- PIO_Initialize()\n\r");
+    218          
+    219              //SANITY_CHECK((priority & ~AT91C_AIC_PRIOR) == 0);
+    220          
+    221              // Reset sources
+    222              numSources = 0;
+    223          
+    224          #ifdef AT91C_ID_PIOA
+    225              // Configure PIO interrupt sources
+    226              //trace_LOG(trace_DEBUG, "-D- PIO_Initialize: Configuring PIOA\n\r");
+    227              AT91C_BASE_PMC->PMC_PCER = 1 << AT91C_ID_PIOA;
+    228              AT91C_BASE_PIOA->PIO_ISR;
+    229              AT91C_BASE_PIOA->PIO_IDR = 0xFFFFFFFF;    
+    230              BSP_IntVectSet( AT91C_ID_PIOA,
+    231                              (CPU_INT08U   )priority,
+    232                              (CPU_INT08U   )BSP_INT_SCR_TYPE_EXT_LOW_LEVEL_SENSITIVE, //ruler insert toggle low
+    233                              (CPU_FNCT_VOID)InterruptHandler);        
+    234              BSP_IntClr(AT91C_ID_PIOA );     
+    235              BSP_IntEn(AT91C_ID_PIOA);     
+    236          #endif
+    237          
+    238          #ifdef AT91C_ID_PIOB
+    239              //trace_LOG(trace_DEBUG, "-D- PIO_Initialize: Configuring PIOB\n\r");
+    240              AT91C_BASE_PMC->PMC_PCER = 1 << AT91C_ID_PIOB;
+    241              AT91C_BASE_PIOB->PIO_ISR;
+    242              AT91C_BASE_PIOB->PIO_IDR = 0xFFFFFFFF;
+    243              BSP_IntVectSet( AT91C_ID_PIOB,
+    244                              (CPU_INT08U   )priority,
+    245                              (CPU_INT08U   )BSP_INT_SCR_TYPE_INT_HIGH_LEVEL_SENSITIVE,
+    246                              (CPU_FNCT_VOID)InterruptHandler);        
+    247              BSP_IntClr(AT91C_ID_PIOB );     
+    248              BSP_IntEn(AT91C_ID_PIOB); 
+    249          #endif
+    250          
+    251          #ifdef AT91C_ID_PIOC
+    252              //trace_LOG(trace_DEBUG, "-D- PIO_Initialize: Configuring PIOC\n\r");
+    253              AT91C_BASE_PMC->PMC_PCER = 1 << AT91C_ID_PIOC;
+    254              AT91C_BASE_PIOC->PIO_ISR;
+    255              AT91C_BASE_PIOC->PIO_IDR = 0xFFFFFFFF;
+    256              BSP_IntVectSet( AT91C_ID_PIOC,
+    257                              (CPU_INT08U   )priority,
+    258                              (CPU_INT08U   )BSP_INT_SCR_TYPE_INT_HIGH_LEVEL_SENSITIVE,
+    259                              (CPU_FNCT_VOID)InterruptHandler);        
+    260              BSP_IntClr(AT91C_ID_PIOC );     
+    261              BSP_IntEn(AT91C_ID_PIOC); 
+    262          #endif
+    263          
+    264          #ifdef AT91C_ID_PIOD
+    265              //trace_LOG(trace_DEBUG, "-D- PIO_Initialize: Configuring PIOD\n\r");
+    266              AT91C_BASE_PMC->PMC_PCER = 1 << AT91C_ID_PIOD;
+    267              AT91C_BASE_PIOC->PIO_ISR;
+    268              AT91C_BASE_PIOC->PIO_IDR = 0xFFFFFFFF;
+    269              BSP_IntVectSet( AT91C_ID_PIOD,
+    270                              (CPU_INT08U   )priority,
+    271                              (CPU_INT08U   )BSP_INT_SCR_TYPE_INT_HIGH_LEVEL_SENSITIVE,
+    272                              (CPU_FNCT_VOID)InterruptHandler);        
+    273              BSP_IntClr(AT91C_ID_PIOD );     
+    274              BSP_IntEn(AT91C_ID_PIOD); 
+    275          #endif
+    276          
+    277          #ifdef AT91C_ID_PIOE
+    278              //trace_LOG(trace_DEBUG, "-D- PIO_Initialize: Configuring PIOE\n\r");
+    279              AT91C_BASE_PMC->PMC_PCER = 1 << AT91C_ID_PIOE;
+    280              AT91C_BASE_PIOC->PIO_ISR;
+    281              AT91C_BASE_PIOC->PIO_IDR = 0xFFFFFFFF;
+    282              BSP_IntVectSet( AT91C_ID_PIOE,
+    283                              (CPU_INT08U   )priority,
+    284                              (CPU_INT08U   )BSP_INT_SCR_TYPE_INT_HIGH_LEVEL_SENSITIVE,
+    285                              (CPU_FNCT_VOID)InterruptHandler);        
+    286              BSP_IntClr(AT91C_ID_PIOE );     
+    287              BSP_IntEn(AT91C_ID_PIOE); 
+    288          #endif
+    289          
+    290          #if defined(AT91C_ID_PIOABCD)
+    291              // Treat PIOABCD interrupts
+    292              #if !defined(AT91C_ID_PIOA) \
+    293               && !defined(AT91C_ID_PIOB) \
+    294               && !defined(AT91C_ID_PIOC) \
+    295               && !defined(AT91C_ID_PIOD)
+    296          
+    297                  //trace_LOG(trace_DEBUG, "-D- PIO_Initialize: Configuring PIOABCD\n\r");
+    298                  AT91C_BASE_PMC->PMC_PCER = 1 << AT91C_ID_PIOABCD;
+    299                  AT91C_BASE_PIOA->PIO_ISR;
+    300                  AT91C_BASE_PIOA->PIO_IDR = 0xFFFFFFFF;
+    301              BSP_IntVectSet( AT91C_ID_PIOABCD,
+    302                              (CPU_INT08U   )priority,
+    303                              (CPU_INT08U   )BSP_INT_SCR_TYPE_INT_HIGH_LEVEL_SENSITIVE,
+    304                              (CPU_FNCT_VOID)InterruptHandler);        
+    305              BSP_IntClr(AT91C_ID_PIOABCD );     
+    306              BSP_IntEn(AT91C_ID_PIOABCD); 
+    307              #endif
+    308          #endif
+    309          
+    310          #if defined(AT91C_ID_PIOABCDE)
+    311              // Treat PIOABCDE interrupts
+    312              #if !defined(AT91C_ID_PIOA) \
+    313               && !defined(AT91C_ID_PIOB) \
+    314               && !defined(AT91C_ID_PIOC) \
+    315               && !defined(AT91C_ID_PIOD) \
+    316               && !defined(AT91C_ID_PIOE)
+    317          
+    318                  //trace_LOG(trace_DEBUG, "-D- PIO_Initialize: Configuring PIOABCDE\n\r");
+    319                  AT91C_BASE_PMC->PMC_PCER = 1 << AT91C_ID_PIOABCDE;
+    320                  AT91C_BASE_PIOA->PIO_ISR;
+    321                  AT91C_BASE_PIOA->PIO_IDR = 0xFFFFFFFF;
+    322              BSP_IntVectSet( AT91C_ID_PIOABCDE,
+    323                              (CPU_INT08U   )priority,
+    324                              (CPU_INT08U   )BSP_INT_SCR_TYPE_INT_HIGH_LEVEL_SENSITIVE,
+    325                              (CPU_FNCT_VOID)InterruptHandler);        
+    326              BSP_IntClr(AT91C_ID_PIOABCDE );     
+    327              BSP_IntEn(AT91C_ID_PIOABCDE); 
+    328              #endif
+    329          #endif
+    330          
+    331          #if defined(AT91C_ID_PIOCDE)
+    332              // Treat PIOCDE interrupts
+    333              #if !defined(AT91C_ID_PIOC) \
+    334               && !defined(AT91C_ID_PIOD) \
+    335               && !defined(AT91C_ID_PIOE)
+    336          
+    337                  //trace_LOG(trace_DEBUG, "-D- PIO_Initialize: Configuring PIOC\n\r");
+    338                  AT91C_BASE_PMC->PMC_PCER = 1 << AT91C_ID_PIOCDE;
+    339                  AT91C_BASE_PIOC->PIO_ISR;
+    340                  AT91C_BASE_PIOC->PIO_IDR = 0xFFFFFFFF;
+    341               BSP_IntVectSet( AT91C_ID_PIOCDE,
+    342                              (CPU_INT08U   )priority,
+    343                              (CPU_INT08U   )BSP_INT_SCR_TYPE_INT_HIGH_LEVEL_SENSITIVE,
+    344                              (CPU_FNCT_VOID)InterruptHandler);        
+    345              BSP_IntClr(AT91C_ID_PIOCDE );     
+    346              BSP_IntEn(AT91C_ID_PIOCDE);
+    347              #endif
+    348          #endif
+    349          }
+    350          
+    351          //------------------------------------------------------------------------------
+    352          /// Configures an interrupt source.
+    353          /// \param pPin  Interrupt source.
+    354          /// \param handler  Desired interrupt handler for the source.
+    355          //------------------------------------------------------------------------------
+    356          void PIO_ConfigureIt(const Pin *pPin, void (*handler)(const Pin *))
+    357          {
+    358              InterruptSource *pSource;
+    359          
+    360              //trace_LOG(trace_DEBUG, "-D- PIO_ConfigureIt()\n\r");
+    361          
+    362              //SANITY_CHECK(pPin);
+    363              //ASSERT(numSources < MAX_INTERRUPT_SOURCES,
+    364                    // "-F- PIO_ConfigureIt: Increase MAX_INTERRUPT_SOURCES\n\r");
+    365          
+    366              // Define new source
+    367              //trace_LOG(trace_DEBUG, "-D- PIO_ConfigureIt: Defining new source #%d.\n\r", numSources);
+    368              unsigned int i ;
+    369              for(i=0;i<numSources;i++)
+    370              {
+    371                  pSource = &(pSources[i]);
+    372                  if(pSource->pPin == pPin)
+    373                  {
+    374                      pSource->handler = handler;
+    375                      return ;
+    376                  }
+    377              }
+    378              pSource = &(pSources[numSources]);
+    379              pSource->pPin = pPin;
+    380              pSource->handler = handler;
+    381              numSources++;
+    382          }
+    383          
+    384          //------------------------------------------------------------------------------
+    385          /// Enables the given interrupt source if it has been configured.
+    386          /// \param pPin  Interrupt source to enable.
+    387          //------------------------------------------------------------------------------
+    388          void PIO_EnableIt(const Pin *pPin)
+    389          {
+    390              //trace_LOG(trace_DEBUG, "-D- PIO_EnableIt()\n\r");
+    391          
+    392              //SANITY_CHECK(pPin);
+    393          
+    394          #ifndef NOASSERT
+    395              unsigned int i = 0;
+    396              unsigned char found = 0;
+    397              while ((i < numSources) && !found) {
+    398          
+    399                  if (pSources[i].pPin == pPin) {
+    400          
+    401                      found = 1;
+    402                  }
+    403                  i++;
+    404              }
+    405              //ASSERT(found, "-F- PIO_EnableIt: Interrupt source has not been configured\n\r");
+    406          #endif
+    407          
+    408              pPin->pio->PIO_ISR;
+    409              pPin->pio->PIO_IER = pPin->mask;
+    410          }
+    411          
+    412          //------------------------------------------------------------------------------
+    413          /// Disables a given interrupt source.
+    414          /// \param pPin  Interrupt source to disable.
+    415          //------------------------------------------------------------------------------
+    416          void PIO_DisableIt(const Pin *pPin)
+    417          {
+    418              //SANITY_CHECK(pPin);
+    419          
+    420              //trace_LOG(trace_DEBUG, "-D- PIO_DisableIt()\n\r");
+    421          
+    422              pPin->pio->PIO_IDR = pPin->mask;
+    423          }
+    424          
+
+   Maximum stack usage in bytes:
+
+   .cstack Function
+   ------- --------
+       8   InterruptHandler
+         8   -> PioInterruptHandler
+       4   PIO_ConfigureIt
+       0   PIO_DisableIt
+       4   PIO_EnableIt
+      16   PIO_InitializeInterrupts
+        16   -> BSP_IntClr
+        16   -> BSP_IntEn
+        16   -> BSP_IntVectSet
+      24   PioInterruptHandler
+        24   -- Indirect call
+
+
+   Section sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       4  ??DataTable3
+       4  ??DataTable3_1
+      44  InterruptHandler
+     132  PIO_ConfigureIt
+      16  PIO_DisableIt
+     108  PIO_EnableIt
+     196  PIO_InitializeInterrupts
+     172  PioInterruptHandler
+       4  numSources
+      56  pSources
+
+ 
+  60 bytes in section .bss
+ 676 bytes in section .text
+ 
+ 676 bytes of CODE memory
+  60 bytes of DATA memory
+
+Errors: none
+Warnings: none

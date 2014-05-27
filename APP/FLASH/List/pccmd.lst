@@ -1,0 +1,766 @@
+###############################################################################
+#                                                                             #
+# IAR ANSI C/C++ Compiler V5.40.0.51500/W32 for ARM     25/Jun/2012  10:12:53 #
+# Copyright (C) 1999-2009 IAR Systems AB.                                     #
+#                                                                             #
+#    Cpu mode     =  arm                                                      #
+#    Endian       =  little                                                   #
+#    Source file  =  G:\SVN Dir\PQ\Saturn II Platform\Saturn_II_Host_OS\Noah\ #
+#                    pccmd.c                                                  #
+#    Command line =  "G:\SVN Dir\PQ\Saturn II Platform\Saturn_II_Host_OS\Noah #
+#                    \pccmd.c" -lcN "G:\SVN Dir\PQ\Saturn II                  #
+#                    Platform\Saturn_II_Host_OS\APP\FLASH\List\" -lb "G:\SVN  #
+#                    Dir\PQ\Saturn II Platform\Saturn_II_Host_OS\APP\FLASH\Li #
+#                    st\" -o "G:\SVN Dir\PQ\Saturn II                         #
+#                    Platform\Saturn_II_Host_OS\APP\FLASH\Obj\" --no_cse      #
+#                    --no_unroll --no_inline --no_code_motion --no_tbaa       #
+#                    --no_clustering --no_scheduling --debug --endian=little  #
+#                    --cpu=ARM7TDMI -e --fpu=None --dlib_config "D:\Program   #
+#                    Files\IAR Systems\Embedded Workbench                     #
+#                    5.4ARM\arm\INC\DLib_Config_Normal.h" -I "G:\SVN          #
+#                    Dir\PQ\Saturn II Platform\Saturn_II_Host_OS\APP\" -I     #
+#                    "G:\SVN Dir\PQ\Saturn II Platform\Saturn_II_Host_OS\APP\ #
+#                    ..\uC-CPU\ARM\IAR\" -I "G:\SVN Dir\PQ\Saturn II          #
+#                    Platform\Saturn_II_Host_OS\APP\..\BSP\" -I "G:\SVN       #
+#                    Dir\PQ\Saturn II Platform\Saturn_II_Host_OS\APP\..\Drive #
+#                    r\" -I "G:\SVN Dir\PQ\Saturn II                          #
+#                    Platform\Saturn_II_Host_OS\APP\..\Noah\" -I "G:\SVN      #
+#                    Dir\PQ\Saturn II Platform\Saturn_II_Host_OS\APP\..\Shell #
+#                    \" -I "G:\SVN Dir\PQ\Saturn II                           #
+#                    Platform\Saturn_II_Host_OS\APP\..\uCOS-II\Source\" -I    #
+#                    "G:\SVN Dir\PQ\Saturn II Platform\Saturn_II_Host_OS\APP\ #
+#                    ..\uC-CPU\" -I "G:\SVN Dir\PQ\Saturn II                  #
+#                    Platform\Saturn_II_Host_OS\APP\..\uC-LIB\" -I "G:\SVN    #
+#                    Dir\PQ\Saturn II Platform\Saturn_II_Host_OS\APP\..\uC-CP #
+#                    U\ARM\IAR\" -I "G:\SVN Dir\PQ\Saturn II                  #
+#                    Platform\Saturn_II_Host_OS\APP\..\uCOS-II\Ports\ARM\Gene #
+#                    ric\IAR\" -I "G:\SVN Dir\PQ\Saturn II                    #
+#                    Platform\Saturn_II_Host_OS\APP\..\uC-Probe\Target\Commun #
+#                    ication\Generic\RS-232\Source\" -I "G:\SVN               #
+#                    Dir\PQ\Saturn II Platform\Saturn_II_Host_OS\APP\..\uC-Pr #
+#                    obe\Target\Communication\Generic\RS-232\Ports\Atmel\AT91 #
+#                    SAM7X\" -I "G:\SVN Dir\PQ\Saturn II                      #
+#                    Platform\Saturn_II_Host_OS\APP\..\uC-Probe\Target\Commun #
+#                    ication\Generic\Source\" -I "G:\SVN Dir\PQ\Saturn II     #
+#                    Platform\Saturn_II_Host_OS\APP\..\uC-Probe\Target\Plugin #
+#                    s\uCOS-II\" -I "G:\SVN Dir\PQ\Saturn II                  #
+#                    Platform\Saturn_II_Host_OS\APP\..\uC-Probe\Target\Demos\ #
+#                    Intro\Source\" -I "D:\Program Files\IAR                  #
+#                    Systems\Embedded Workbench 5.4ARM\arm\INC\" --interwork  #
+#                    --cpu_mode arm -On                                       #
+#    List file    =  G:\SVN Dir\PQ\Saturn II Platform\Saturn_II_Host_OS\APP\F #
+#                    LASH\List\pccmd.lst                                      #
+#    Object file  =  G:\SVN Dir\PQ\Saturn II Platform\Saturn_II_Host_OS\APP\F #
+#                    LASH\Obj\pccmd.o                                         #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+G:\SVN Dir\PQ\Saturn II Platform\Saturn_II_Host_OS\Noah\pccmd.c
+      1          #include <includes.h>
+      2          
+      3          
+      4          #define MAXBUFLEN  MsgUARTBody_SIZE
+      5          
+      6          
+      7          static void FuncLoad( CPU_INT08U (*pFunc)(void *prmt) , void *prmt );
+      8          
+      9          
+     10          static CPU_INT08U   state_mac       = CMD_STAT_SYNC1 ;
+     11          static CPU_INT08U  *pRecvPtr        = NULL;
+     12          static CPU_INT16U   PcCmdCounter    = 0;
+     13          static CPU_INT16U   PcCmdDataLen    = 0;
+     14          
+     15          
+     16          void PC_CMD_Read( CPU_INT08U ch )
+     17          {   
+     18            
+     19              CPU_INT08U   err;    
+     20              OS_MEM_DATA  MemInfo ;
+     21              PCCMD       *pPcCmd ; 
+     22              
+     23              pPcCmd  = NULL ; 
+     24              
+     25              switch( state_mac ) {      
+     26                  case CMD_STAT_SYNC1 :        
+     27                      if(ch == CMD_DATA_SYNC1)  {
+     28                          state_mac = CMD_STAT_SYNC2 ;
+     29                      }
+     30                  break;
+     31                  
+     32                  case CMD_STAT_SYNC2 :
+     33                      if(ch == CMD_DATA_SYNC2)  {             
+     34                          err =   OSMemQuery( pMEM_Part_MsgUART,&MemInfo );	                
+     35                          if( MemInfo.OSNFree > 1 && OS_ERR_NONE == err )  {
+     36                              pRecvPtr = (void *)OSMemGet(pMEM_Part_MsgUART,&err);
+     37                              if( NULL != pRecvPtr && OS_ERR_NONE == err )  {
+     38                                  state_mac     =  CMD_STAT_FLAG;
+     39                                  PcCmdCounter  = 0 ;                        
+     40                              }
+     41                          } 
+     42                          
+     43                      } else {
+     44                        
+     45                          state_mac = CMD_STAT_SYNC1;                
+     46                      }
+     47                  break ;
+     48                  
+     49                  case CMD_STAT_FLAG :            
+     50                      *( pRecvPtr + PcCmdCounter++ ) = ch; //save in buf
+     51                 
+     52                      switch( GET_FRAME_TYPE(ch) )  {
+     53                              case FRAM_TYPE_DATA :
+     54                              case FRAM_TYPE_GDD_IIC :
+     55                                  state_mac =  CMD_STAT_LENGTH ;
+     56                                  break ;                
+     57                              case FRAM_TYPE_ACK :
+     58                              case FRAM_TYPE_NAK :
+     59                              case FRAM_TYPE_EST :
+     60                              case FRAM_TYPE_ESTA :
+     61                                  *( pRecvPtr + PcCmdCounter++ ) = 0; //set datalen = 0
+     62                                  state_mac =  CMD_STAT_CHECKSUM ;
+     63                                  break;                    
+     64                              default :
+     65                                  break ;                        
+     66                      }
+     67                   
+     68                  break ;
+     69                  
+     70                  case CMD_STAT_LENGTH :            
+     71                      *( pRecvPtr + PcCmdCounter++ ) = ch;      
+     72                       PcCmdDataLen = ch ; // global
+     73                       state_mac    = CMD_STAT_DATA ;
+     74                    
+     75                  break ;
+     76                  
+     77                  case CMD_STAT_DATA :
+     78                      *( pRecvPtr + PcCmdCounter++ ) = ch;
+     79                      if( PcCmdCounter >= MAXBUFLEN ) { //check verflow             
+     80                         state_mac = CMD_STAT_SYNC1; 
+     81                         OSMemPut( pMEM_Part_MsgUART, pRecvPtr ); 
+     82                      } else if(PcCmdCounter >= PcCmdDataLen + 2) { // data over, the check sum will be followed              
+     83                          state_mac =  CMD_STAT_CHECKSUM ;
+     84                      }
+     85                  break ;
+     86                  
+     87                  case CMD_STAT_CHECKSUM :   
+     88                      pPcCmd = (PCCMD *)pRecvPtr;             
+     89                      pPcCmd->checkSum = ch ;   //get check sum data            
+     90                      
+     91                      if( PcCmdCounter >= MAXBUFLEN ) { //check verflow            
+     92                          state_mac = CMD_STAT_SYNC1; 
+     93                          OSMemPut( pMEM_Part_MsgUART, pRecvPtr );
+     94                          
+     95                      }  else {         
+     96                          state_mac    = CMD_STAT_SYNC1 ; //reset state machine  
+     97                          PcCmdCounter = 0 ;  
+     98                          PcCmdDataLen = 0 ;
+     99                          err          = OSQPost( EVENT_MsgUart2Noah, pRecvPtr );  //Send valid CMD inf to Uart2task0 Messege Queue
+    100                          if( OS_ERR_NONE == err )  {              
+    101                             pRecvPtr  = NULL;                 
+    102                          } else {  
+    103                             OSMemPut( pMEM_Part_MsgUART, pRecvPtr );              
+    104                          }
+    105                      }
+    106                  break ;
+    107                  
+    108                  case CMD_STAT_FRAM :               // 数据包正在处理中,数据被丢失 ?
+    109                  break;
+    110                  
+    111                  default :
+    112                      state_mac     = CMD_STAT_SYNC1;
+    113                      PcCmdCounter  = 0 ;
+    114                  break ;
+    115              }
+    116              
+    117          }
+    118          
+    119          
+    120          
+    121          
+    122          //Check sum
+    123          CPU_INT08U CheckSum( CPU_INT08U init_data, CPU_INT08U *pdata, CPU_INT16U length)
+    124          {
+    125              CPU_INT16U i;
+    126              CPU_INT08U checksum;
+    127              
+    128              checksum = init_data;   
+    129              
+    130              for( i = 0; i < length; i++ ) {
+    131                
+    132          	    if (checksum & 0x01) {
+    133                	    checksum = (checksum >> 1) + 0x80 ;
+    134                  } else {
+    135                      checksum >>= 1;
+    136                  }
+    137          	    checksum += *pdata++;
+    138                  
+    139              }
+    140              
+    141              return( checksum ) ;
+    142          }
+    143          
+    144          
+    145          
+    146          
+    147          
+    148          //注意重入性问题！
+    149          CPU_INT08U pcSendDateToBuf( CPU_INT08U frame_head, CPU_INT08U *pdat, CPU_INT08U data_length, CPU_INT08U msg_post_mode )
+    150          {
+    151              CPU_INT08U  *pSendPtr;
+    152              CPU_INT08U  *pMemPtr;
+    153              OS_MEM_DATA MemInfo ;
+    154              CPU_INT08U  err;
+    155              CPU_INT08U opt;
+    156              CPU_INT08U frame_type;    
+    157              
+    158              err         = 0;  
+    159              pSendPtr    = NULL;
+    160              pMemPtr     = NULL;
+    161              opt         = ( msg_post_mode == 0 ) ? OS_POST_OPT_NONE : OS_POST_OPT_FRONT ; 
+    162              frame_type  = GET_FRAME_TYPE( frame_head );
+    163              
+    164              if( (data_length == 0 || pdat == NULL)  &&  frame_type == FRAM_TYPE_DATA  ) {
+    165                  err = 0xff;    
+    166                  
+    167              } else {         
+    168                  err =  OSMemQuery( pMEM_Part_MsgUART,&MemInfo );	                
+    169                  if( MemInfo.OSNFree > 1 && OS_ERR_NONE == err )  {
+    170                      pMemPtr = (void *)OSMemGet(pMEM_Part_MsgUART,&err);
+    171                      if( NULL == pMemPtr || OS_ERR_NONE != err )  {
+    172                          return err;        
+    173                          
+    174                      }
+    175                  }
+    176                  pSendPtr  =  pMemPtr  ;   
+    177                
+    178                  if( frame_type == FRAM_TYPE_DATA) {      
+    179                      *pSendPtr++ = frame_head;
+    180                      *pSendPtr++ = data_length;    
+    181                      while(data_length-- > 0) {
+    182                          *pSendPtr++ = *pdat++ ; 
+    183                          
+    184                      }    
+    185                      *pSendPtr++ = 0; // here use 0 as checksum, and will do calcute sum in task uart tx  
+    186                      
+    187                  } else {
+    188                      *pSendPtr++ = frame_head;   
+    189                      *pSendPtr++ = frame_head; 
+    190                      
+    191                  } 
+    192                    
+    193                  err = OSQPostOpt( EVENT_MsgNoah2Uart, pMemPtr, opt );   //send data to Uart2task0 message queue   
+    194               
+    195                  if( OS_ERR_NONE == err )  {              
+    196                      pRecvPtr     = NULL;   
+    197                      
+    198                  } else {  
+    199                      OSMemPut( pMEM_Part_MsgUART, pMemPtr ); 
+    200                      
+    201                  }
+    202                  
+    203              }
+    204              
+    205              return  err;
+    206              
+    207          }
+    208          
+    209          
+    210          
+    211          
+    212          
+    213          CPU_INT08U Noah_CMD_Parse(CPU_INT08U  *pCmdDat, CPU_INT32U datalen, CPU_INT08U *SessionDone)
+    214          {
+    215              PCCMDDATA   *pPcCmdData;
+    216              BUFFUNCPRMT BufFuncPrmt;
+    217              CPU_INT16U  i,j;
+    218              CPU_INT16U  *pd;
+    219              CPU_INT08U  *pData;
+    220              CPU_INT08U  *pp;
+    221              CPU_INT08U  temp;
+    222              CPU_INT08U  err;
+    223              
+    224              pPcCmdData  = (PCCMDDATA *)pCmdDat;
+    225              pd          = NULL ;
+    226              pData       = NULL ;
+    227              pp          = NULL ;
+    228              err         = 0 ;   
+    229          
+    230              
+    231              //CheckMCUEndian(); 
+    232              switch( pPcCmdData->CmdType )  {
+    233           
+    234                  case GPIO_WRITE_CMD :                      
+    235                      BufFuncPrmt.GpioWrite.PinDefine = pPcCmdData->CmdData.GpioCmd.PinDefine ;
+    236                      BufFuncPrmt.GpioWrite.PinData   = pPcCmdData->CmdData.GpioCmd.PinData ;          
+    237                      FuncLoad(CTR_GpioWrite, &BufFuncPrmt);    
+    238                  break ;
+    239                  
+    240                  case GPIO_HIGHTZ_CMD :
+    241                      BufFuncPrmt.GpioWrite.PinDefine = pPcCmdData->CmdData.GpioCmd.PinDefine ;
+    242                      FuncLoad(CTR_GpioDirSet, &BufFuncPrmt);  
+    243                  break ;
+    244                  
+    245                  case GPIO_READ_CMD :   //not support yet
+    246                      FuncLoad(CTR_GpioRead, (void *)0);     
+    247                  break ;
+    248                  
+    249                  case DM_SINGLE_WRITE_CMD  :
+    250                      if((Mem_Ctr.WriteMode == SINGLE_WRITE_MODE)||(Mem_Ctr.WriteMode ==MMX_WRITE_MODE)||(Mem_Ctr.WriteMode ==MMX_REG_WRITE_MODE)) {
+    251                          pd = (unsigned short *)&pPcCmdData->CmdData.DmCmd.Data ;                    
+    252                          for(i=0;i<pPcCmdData->CmdData.DmCmd.DmNum;i++) {
+    253                              BufFuncPrmt.DmSgWrite.StAddr = *pd++ ;
+    254                              BufFuncPrmt.DmSgWrite.Data   = *pd++ ;
+    255                              FuncLoad(CTR_DmSingWrite, &BufFuncPrmt);
+    256                          }
+    257                      } else if (Mem_Ctr.WriteMode == BURST_WRITE_MODE) {         
+    258                          if( *SessionDone == 0 ) {
+    259                             // 在session 里不支持 bust mode
+    260                              err = BUST_DM_IN_SESS ;
+    261                          } else {
+    262                              BufFuncPrmt.DmBustWrite.DatNum = pPcCmdData->CmdData.DmCmd.DmNum ;
+    263                              unsigned char *pp = (unsigned char *)&pPcCmdData->CmdData.DmCmd.Data ;                
+    264                              BufFuncPrmt.DmBustWrite.pDat = DataBufCtr.pBufStAddr; 
+    265                              for(j=0,i=0;j< BufFuncPrmt.DmBustWrite.DatNum;j++) {
+    266                                  BufFuncPrmt.DmBustWrite.pDat[i++] = *pp++ ;
+    267                                  BufFuncPrmt.DmBustWrite.pDat[i++] = *pp++ ;
+    268                                  BufFuncPrmt.DmBustWrite.pDat[i++] = *pp++ ;
+    269                                  BufFuncPrmt.DmBustWrite.pDat[i++] = *pp++ ;
+    270                              }
+    271                              FuncLoad(CTR_DmBustWrite, &BufFuncPrmt);
+    272                          }
+    273                      } else {   
+    274                          err = MODE_NOT_SOPORT ;  //I2C port not initilaized
+    275                      }      
+    276                  break ;
+    277                  case DM_BURST_WRITE_CMD  :
+    278                      if( *SessionDone == 0 ) {
+    279                        // 在session 里不支持 bust mode
+    280                          err = BUST_DM_IN_SESS ;
+    281                          
+    282                      } else {
+    283                          BufFuncPrmt.DmBustWrite.DatNum = pPcCmdData->CmdData.DmCmd.DmNum ;
+    284                          BufFuncPrmt.DmBustWrite.StAddr = pPcCmdData->CmdData.DmCmd.Data ;
+    285                          BufFuncPrmt.DmBustWrite.pDat   = DataBufCtr.pBufStAddr;
+    286                          
+    287                          pp = (unsigned char *)&pPcCmdData->CmdData.DmCmd.Data ;
+    288                          pp += 2 ;            
+    289                                     
+    290                          for(j=0,i=0;j< BufFuncPrmt.DmBustWrite.DatNum;j++)  {          
+    291                             temp  = *pp++ ;  //check endian
+    292                             BufFuncPrmt.DmBustWrite.pDat[i++] = *pp++ ;                    
+    293                             BufFuncPrmt.DmBustWrite.pDat[i++] = temp ;
+    294                              
+    295                          }
+    296                          FuncLoad(CTR_DmBustWrite_s, &BufFuncPrmt);
+    297                      }      
+    298                  break ;
+    299                  
+    300                  case DM_SINGLE_READ_CMD  :
+    301                      pd = (unsigned short *)&pPcCmdData->CmdData.DmCmd.Data ;
+    302          
+    303                      for(i=0;i<pPcCmdData->CmdData.DmCmd.DmNum;i++) {            
+    304                          BufFuncPrmt.DmSgRead.LdAddr = *pd++ ;
+    305                          FuncLoad(CTR_DmSingRead, &BufFuncPrmt);
+    306                          
+    307                      }      
+    308                  break ;
+    309               
+    310                   /////////////////////////////////////////
+    311                  case PM_SINGLE_READ_CMD  :  
+    312                      pd = (unsigned short *)&pPcCmdData->CmdData.PmCmd.Data ;
+    313          
+    314                      for(i=0;i<pPcCmdData->CmdData.PmCmd.PmNum;i++)
+    315                      {
+    316                          BufFuncPrmt.PmSgRead.LdAddr = *pd++ ;
+    317                          FuncLoad(CTR_PmSingRead, &BufFuncPrmt);
+    318                      }         
+    319                  break ;
+    320                  
+    321                  case PM_BURST_WRITE_CMD  : //never reach here cause Noah issue, PM_BURST_WRITE_CMD == DM_SINGLE_WRITE_CMD
+    322                      if( *SessionDone == 0)
+    323                      {   // 在session 里不支持 bust mode
+    324                          err = BUST_DM_IN_SESS ;
+    325                      }
+    326                      else
+    327                      {
+    328                          BufFuncPrmt.PmBustWrite.DatNum = pPcCmdData->CmdData.DmCmd.DmNum ;
+    329                          BufFuncPrmt.PmBustWrite.StAddr = pPcCmdData->CmdData.DmCmd.Data ;
+    330                          BufFuncPrmt.DmBustWrite.pDat   = DataBufCtr.pBufStAddr;
+    331                          
+    332                          pp = (unsigned char *)&pPcCmdData->CmdData.DmCmd.Data ;
+    333                          pp += 2 ;                                               
+    334                          for(j=0,i=0;j< BufFuncPrmt.PmBustWrite.DatNum;j++)
+    335                          {
+    336                              BufFuncPrmt.PmBustWrite.pDat[i++] = *pp++ ;
+    337                              BufFuncPrmt.PmBustWrite.pDat[i++] = *pp++ ;
+    338                              BufFuncPrmt.PmBustWrite.pDat[i++] = *pp++ ;
+    339                          }
+    340                          FuncLoad(CTR_PmBustWrite_s, &BufFuncPrmt);
+    341                      }        
+    342                  break ;
+    343                  
+    344                  case PM_SINGLE_WRITE_CMD :
+    345                      pData = (unsigned char *)&pPcCmdData->CmdData.PmCmd.Data ;            
+    346                         
+    347                      for(i=0;i<pPcCmdData->CmdData.PmCmd.PmNum;i++)
+    348                      {
+    349                          BufFuncPrmt.PmSgWrite.StAddr = *(unsigned short *)pData ;
+    350                          pData += 2 ;
+    351                          BufFuncPrmt.PmSgWrite.data[0]   = *pData++  ;
+    352                          BufFuncPrmt.PmSgWrite.data[1]   = *pData++ ;
+    353                          BufFuncPrmt.PmSgWrite.data[2]   = *pData++ ;
+    354                          FuncLoad(CTR_PmSingWrite, &BufFuncPrmt);
+    355                      }      
+    356                  break ;
+    357                  
+    358                  ////////////////////////////////////////////////////////   
+    359                  
+    360                  case CM_SINGLE_READ_CMD  :
+    361                      
+    362                      pd = (unsigned short *)&pPcCmdData->CmdData.PmCmd.Data ;
+    363          
+    364                      for(i=0;i<pPcCmdData->CmdData.PmCmd.PmNum;i++)
+    365                      {
+    366                          BufFuncPrmt.PmSgRead.LdAddr = *pd++ ;
+    367                          FuncLoad(CTR_CmSingRead, &BufFuncPrmt);
+    368                      }
+    369                      
+    370                  break ;
+    371                 
+    372                  case CM_SINGLE_WRITE_CMD :
+    373                      pData = (unsigned char *)&pPcCmdData->CmdData.PmCmd.Data ;            
+    374                         
+    375                      for(i=0;i<pPcCmdData->CmdData.PmCmd.PmNum;i++)
+    376                      {
+    377                          BufFuncPrmt.PmSgWrite.StAddr = *(unsigned short *)pData ;
+    378                          pData += 2 ;
+    379                          BufFuncPrmt.PmSgWrite.data[0]   = *pData++  ;
+    380                          BufFuncPrmt.PmSgWrite.data[1]   = *pData++ ;
+    381                          BufFuncPrmt.PmSgWrite.data[2]   = *pData++ ;
+    382                          FuncLoad(CTR_CmSingWrite, &BufFuncPrmt);
+    383                      }
+    384                     
+    385                  break ;
+    386                         
+    387          
+    388                  case HR_WRITE_CMD_1 :
+    389                  case DR_WRITE_CMD_1 :
+    390                      pData = (unsigned char *)&pPcCmdData->CmdData.HdrCmd.Data ;            
+    391                         
+    392                      for(i=0;i<pPcCmdData->CmdData.HdrCmd.HdrNum;i++)
+    393                      {
+    394                          BufFuncPrmt.HdrWrite1.StAddr = *(unsigned short *)pData ;
+    395                          pData += 2 ;
+    396                          BufFuncPrmt.HdrWrite1.Data  = *pData++  ;
+    397                          if(pPcCmdData->CmdType == HR_WRITE_CMD_1)
+    398                          {
+    399                              FuncLoad(CTR_HrWrite_1, &BufFuncPrmt); 
+    400                          }
+    401                          else
+    402                          {
+    403                              FuncLoad(CTR_DrWrite_1, &BufFuncPrmt); 
+    404                          }
+    405                      }           
+    406                  break ;
+    407                  case HR_WRITE_CMD_2 :
+    408                  case DR_WRITE_CMD_2 :
+    409                      pd = (unsigned short *)&pPcCmdData->CmdData.HdrCmd.Data ;             
+    410                         
+    411                      for(i=0;i<pPcCmdData->CmdData.HdrCmd.HdrNum;i++)
+    412                      {
+    413                          BufFuncPrmt.HdrWrite2.StAddr = *pd++ ;
+    414                          BufFuncPrmt.HdrWrite2.Data   = *pd++ ;
+    415                          if(pPcCmdData->CmdType == HR_WRITE_CMD_2)
+    416                          {
+    417                              FuncLoad(CTR_HrWrite_2, &BufFuncPrmt);
+    418                          }
+    419                          else
+    420                          {
+    421                              FuncLoad(CTR_DrWrite_2, &BufFuncPrmt);
+    422                          }
+    423                      }         
+    424                  break ;
+    425                  case HR_READ_CMD :
+    426                  case DR_READ_CMD :
+    427                      pd = (unsigned short *)&pPcCmdData->CmdData.HdrCmd.Data ;
+    428          
+    429                      for(i=0;i<pPcCmdData->CmdData.HdrCmd.HdrNum;i++)
+    430                      {
+    431                          BufFuncPrmt.HdrRead.StAddr = *pd++ ;
+    432                          if(pPcCmdData->CmdType == HR_READ_CMD)
+    433                          {
+    434                              FuncLoad(CTR_HR_Read, &BufFuncPrmt);
+    435                          }
+    436                          else
+    437                          {
+    438                              FuncLoad(CTR_DR_Read, &BufFuncPrmt);
+    439                          }
+    440                      }     
+    441                  break ;
+    442                  
+    443                  case INTERFACE_CTR_CMD :
+    444                      BufFuncPrmt.InterFaceCtr.DeviceAddr = pPcCmdData->CmdData.InterfaceCmd.DeviceId ;
+    445                      BufFuncPrmt.InterFaceCtr.BaudRate   = pPcCmdData->CmdData.InterfaceCmd.Speed ;
+    446                      BufFuncPrmt.InterFaceCtr.WorkMode   = pPcCmdData->CmdData.InterfaceCmd.Mode ;
+    447                      FuncLoad(CTR_SetInterFace, &BufFuncPrmt);          
+    448                  break ;
+    449                  
+    450                  case AD_READ_CMD   :
+    451                      BufFuncPrmt.Adc.Ch             = pPcCmdData->CmdData.AdcDefine.AdcCh ;
+    452                      BufFuncPrmt.Adc.mult           = pPcCmdData->CmdData.AdcDefine.mult ;
+    453                      //if(BufFuncPrmt.Adc.Ch < 4)
+    454                      //{
+    455                      //    if(BufFuncPrmt.Adc.mult == 0x0f)
+    456                      //    {
+    457                      //        FuncLoad(CTR_AutoAdcReadCurrent, &BufFuncPrmt);
+    458                      //    }
+    459                      //    else
+    460                      //    {
+    461                      //        FuncLoad(CTR_AdcReadCurrent, &BufFuncPrmt);
+    462                      //    }
+    463                      //}
+    464                      //else
+    465                      //{
+    466                          FuncLoad(CTR_AdcReadVoltage, &BufFuncPrmt);
+    467                      //}       
+    468                  break ;
+    469                  
+    470                  case RELAY_CTR_CMD  :
+    471                      BufFuncPrmt.Relay.RelayDefine = pPcCmdData->CmdData.RelayCmd.RelayDefine ;
+    472                      BufFuncPrmt.Relay.RelayState  = pPcCmdData->CmdData.RelayCmd.RelayState ;
+    473                      FuncLoad(CTR_RelayCtr, &BufFuncPrmt);          
+    474                  break ;
+    475                  
+    476                  case SESSION_CTR_CMD  :            
+    477                      if(pPcCmdData->CmdData.SessionType == 0) {   // session start         
+    478                          *SessionDone  = 0 ;                         
+    479                      } else {   // session stop:  action in session execute only after session flag set stop satate, SessionDone = 1 
+    480                          *SessionDone  = 1 ;
+    481                      }
+    482                      break ;
+    483                      
+    484                  case DELAY_CTR_CMD  : //session delay only ???
+    485                      switch(pPcCmdData->CmdData.Delay.Unit)
+    486                      {
+    487                          case 0: //us                    
+    488                              if(pPcCmdData->CmdData.Delay.Time <=1000) {
+    489                                  BufFuncPrmt.DelayTime = pPcCmdData->CmdData.Delay.Time ;
+    490                                  FuncLoad(CTR_DelayCtr_us, &BufFuncPrmt);
+    491                                  
+    492                              } else {
+    493                                  BufFuncPrmt.DelayTime = pPcCmdData->CmdData.Delay.Time / 1000;
+    494                                  FuncLoad(CTR_DelayCtr_ms, &BufFuncPrmt);
+    495                                  
+    496                              }
+    497                              break ;
+    498                              
+    499                          case 1: //ms                   
+    500                              BufFuncPrmt.DelayTime = pPcCmdData->CmdData.Delay.Time ;
+    501                              FuncLoad(CTR_DelayCtr_ms, &BufFuncPrmt);
+    502                              break ;
+    503                              
+    504                          case 2 : //s
+    505                              BufFuncPrmt.DelayTime = pPcCmdData->CmdData.Delay.Time ;
+    506                              FuncLoad(CTR_DelayCtr_s, &BufFuncPrmt);
+    507                              break ;
+    508                              
+    509                          default :
+    510                              break ;
+    511                    }
+    512                   
+    513                  break ;
+    514                  case POWER_ADJ_CMD :
+    515                      BufFuncPrmt.PowerAdj.Ch      = pPcCmdData->CmdData.PowerAdjCmd.Ch ;
+    516                      BufFuncPrmt.PowerAdj.Voltage = pPcCmdData->CmdData.PowerAdjCmd.Voltage;
+    517                      FuncLoad(CTR_PowerAdj, &BufFuncPrmt);       
+    518                  break ;
+    519                  case POWER_CTR_CMD :
+    520                      BufFuncPrmt.PowerCtr.define  = pPcCmdData->CmdData.PowerCtrCmd.define ;
+    521                      BufFuncPrmt.PowerCtr.Ctr     = pPcCmdData->CmdData.PowerCtrCmd.Ctr;
+    522                      FuncLoad(CTR_PowerCtr, &BufFuncPrmt);         
+    523                  break ;
+    524                  case FRQ_ADJ_CMD :
+    525                      BufFuncPrmt.FrqAdj.Ch      = pPcCmdData->CmdData.FrqAdjCmd.Ch ;
+    526                      BufFuncPrmt.FrqAdj.FrqType = pPcCmdData->CmdData.FrqAdjCmd.FrqType ;
+    527                      BufFuncPrmt.FrqAdj.Frq     = pPcCmdData->CmdData.FrqAdjCmd.Frq ;
+    528                      BufFuncPrmt.FrqAdj.Volt    = pPcCmdData->CmdData.FrqAdjCmd.Volt ;
+    529                      FuncLoad(CTR_FrqAdj, &BufFuncPrmt);        
+    530                  break ;
+    531                  case FRQ_CTR_CMD :
+    532                      BufFuncPrmt.FrqCtr.Ch      = pPcCmdData->CmdData.FrqCtrCmd.Ch ;
+    533                      BufFuncPrmt.FrqCtr.Ctr     = pPcCmdData->CmdData.FrqCtrCmd.Ctr ;
+    534                      FuncLoad(CTR_FrqCtr, &BufFuncPrmt) ;          
+    535                  break ;
+    536                  case SPECIAL_CTR_CMD :
+    537                     
+    538                  break ;
+    539                  case REPEAT_CTR_CMD : //how to translate this action  PQPQ??????????????
+    540                      /*
+    541                      if(pPcCmdData->CmdData.RepeatCmd.Flage == 1)
+    542                      {
+    543                          BufFuncPrmt.RepeatCtr.RepeatRsvTimes = 0;
+    544                          BufFuncPrmt.RepeatCtr.RepeatCmdState = REPEAT_STATE_STOP ;
+    545                          REPEATCTR  *pPrmt ;
+    546                          
+    547                          for(i=FuncStkCtr.BufHead;i>=FuncStkCtr.BufTail;i--)
+    548                          {
+    549                              pPrmt = (REPEATCTR  *)FuncStk[i].prmt ;
+    550                              if(pPrmt->RepeatCmdState == REPEAT_STATE_SINGLE)
+    551                              {      // 搜索本次循环的开始位置
+    552                                  pPrmt->RepeatCmdState = REPEAT_STATE_DOUBLE ;
+    553                                  BufFuncPrmt.RepeatCtr.RepeatStart = i ;
+    554                                  BufFuncPrmt.RepeatCtr.RepeatTimes = pPrmt->RepeatTimes ;
+    555                                  pPrmt->RepeatTimes = 0;
+    556                                  FuncLoad(CTR_RepeatCtr, &BufFuncPrmt);
+    557                                  break ;
+    558                              }
+    559                          }
+    560                      }
+    561                      else
+    562                      {
+    563                          if(pPcCmdData->CmdData.RepeatCmd.Times > 0)
+    564                          {
+    565                              BufFuncPrmt.RepeatCtr.RepeatTimes = pPcCmdData->CmdData.RepeatCmd.Times - 1 ;
+    566                              BufFuncPrmt.RepeatCtr.RepeatCmdState = REPEAT_STATE_SINGLE ; 
+    567                              FuncLoad(CTR_RepeatCtr, &BufFuncPrmt);
+    568                          }
+    569                          else
+    570                          {
+    571                              err = REPEAD_CMD_ERR ;
+    572                          }
+    573                      }
+    574                    */
+    575                  break ;
+    576                  case RAW_WRITE_CMD :            
+    577                      memcpy(databuf,pPcCmdData->CmdData.RawWriteCmd.Data, pPcCmdData->CmdData.RawWriteCmd.DataLen);
+    578                      BufFuncPrmt.RawWrite.pData    =  databuf;    
+    579                      BufFuncPrmt.RawWrite.DataLen  = pPcCmdData->CmdData.RawWriteCmd.DataLen;
+    580                      FuncLoad(CTR_RawWrite, &BufFuncPrmt); 
+    581                      
+    582                  break ;
+    583                  
+    584                  case RAW_READ_CMD :
+    585                      BufFuncPrmt.RawWrite.DataLen  = pPcCmdData->CmdData.RawWriteCmd.DataLen;         
+    586                      BufFuncPrmt.RawWrite.pData    = pPcCmdData->CmdData.RawWriteCmd.Data;           
+    587                      FuncLoad(CTR_RawRead, &BufFuncPrmt); 
+    588                    
+    589                  break ;
+    590                  
+    591                  case EM_WRITE_CMD:
+    592                        
+    593                      BufFuncPrmt.EmWrite.DataLen  = pPcCmdData->CmdData.EpWriteCmd.DataLen;
+    594                      BufFuncPrmt.EmWrite.DataAddr = pPcCmdData->CmdData.EpWriteCmd.DataAddr;
+    595                      BufFuncPrmt.EmWrite.pData    = pPcCmdData->CmdData.EpWriteCmd.Data;
+    596                     
+    597                      FuncLoad(CTR_EmWrite, &BufFuncPrmt); 
+    598                    
+    599                  break ;
+    600                  
+    601                  case EM_READ_CMD:
+    602                      BufFuncPrmt.EmWrite.DataLen  = pPcCmdData->CmdData.EpWriteCmd.DataLen;
+    603                      BufFuncPrmt.EmWrite.DataAddr = pPcCmdData->CmdData.EpWriteCmd.DataAddr;
+    604                     
+    605                      FuncLoad(CTR_EmRead, &BufFuncPrmt); 
+    606                    
+    607                  break ;
+    608                  
+    609                  case GPIO_RECORDE_CMD :
+    610                      BufFuncPrmt.GpioRecordeCtr.PinDefine = pPcCmdData->CmdData.GpioRecordeCmd.PinDefine ;
+    611                      BufFuncPrmt.GpioRecordeCtr.TimeCyc = pPcCmdData->CmdData.GpioRecordeCmd.TimeCyc ;
+    612                      BufFuncPrmt.GpioRecordeCtr.TimeDlay = \
+    613                          (pPcCmdData->CmdData.GpioRecordeCmd.TimeDlay & 0x80) ? \
+    614                          (pPcCmdData->CmdData.GpioRecordeCmd.TimeDlay & 0x7f) * 1000 : \
+    615                          (pPcCmdData->CmdData.GpioRecordeCmd.TimeDlay * 10)  ;                 
+    616                      FuncLoad(Ctr_GpioMonit, &BufFuncPrmt); 
+    617                      
+    618                  break ;
+    619                  
+    620                  case REG_TIME_CMD :
+    621                      BufFuncPrmt.RegTimeCtr.DmAddr = pPcCmdData->CmdData.RegTimeCmd.DmAddr ;
+    622                      BufFuncPrmt.RegTimeCtr.DmGate = pPcCmdData->CmdData.RegTimeCmd.DmGate ;   
+    623                      FuncLoad(Ctr_TimeTest, &BufFuncPrmt); 
+    624                     
+    625                  break ;
+    626                  
+    627                  default :
+    628                      err = CMD_NOT_SURRPORT ;
+    629                  break ;
+    630                  
+    631              }
+    632              
+    633              return( err ) ;
+    634              
+    635          }
+    636          
+    637          
+    638          
+    639          
+    640          
+    641          void FuncLoad( CPU_INT08U (*pFunc)(void *prmt) , void *prmt )
+    642          {
+    643            
+    644              CPU_INT08U i;
+    645              CPU_INT08U prmtlen ;
+    646              
+    647              prmtlen = sizeof(FuncStk[FuncStkCtr.BufHead].prmt);
+    648              FuncStk[FuncStkCtr.BufHead].Func = pFunc;
+    649              
+    650              for(i=0;i<prmtlen;i++) {
+    651                  FuncStk[FuncStkCtr.BufHead].prmt[i] =  *((unsigned char *)prmt + i);
+    652                  
+    653              }
+    654              if(FuncStkCtr.BufHead++ >= MAXFUNCNUM) {
+    655                  FuncStkCtr.BufHead = 0;
+    656                  
+    657              }
+    658              
+    659          }
+    660          
+    661          
+    662          
+    663          
+    664          
+    665            
+    666              
+    667          
+    668          
+
+   Maximum stack usage in bytes:
+
+     Function        .cstack
+     --------        -------
+     CheckSum             4
+     FuncLoad            12
+     Noah_CMD_Parse      64
+     PC_CMD_Read         40
+     memcpy              16
+     pcSendDateToBuf     64
+
+
+   Section sizes:
+
+     Function/Label  Bytes
+     --------------  -----
+     memcpy            44
+     state_mac          1
+     pRecvPtr           4
+     PcCmdCounter       2
+     PcCmdDataLen       2
+     PC_CMD_Read      888
+     CheckSum         108
+     pcSendDateToBuf  412
+     Noah_CMD_Parse  3192
+     FuncLoad         180
+     ??DataTable19      4
+     ??DataTable20      4
+
+ 
+     9 bytes in section .bss
+ 4 832 bytes in section .text
+ 
+ 4 788 bytes of CODE memory (+ 44 bytes shared)
+     9 bytes of DATA memory
+
+Errors: none
+Warnings: 12

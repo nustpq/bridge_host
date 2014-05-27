@@ -1,0 +1,174 @@
+###############################################################################
+#                                                                             #
+# IAR ANSI C/C++ Compiler V6.40.1.53790/W32 for ARM     14/Jun/2013  13:57:36 #
+# Copyright 1999-2012 IAR Systems AB.                                         #
+#                                                                             #
+#    Cpu mode     =  arm                                                      #
+#    Endian       =  little                                                   #
+#    Source file  =  G:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Driver\adc_ #
+#                    ctr.C                                                    #
+#    Command line =  "G:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Driver\adc #
+#                    _ctr.C" -lcN "G:\SVN Dir\PQ\iSAM Test                    #
+#                    Bench\Bridge_Host_OS\APP\FLASH\List\" -lb "G:\SVN        #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\"   #
+#                    -o "G:\SVN Dir\PQ\iSAM Test                              #
+#                    Bench\Bridge_Host_OS\APP\FLASH\Obj\" --no_cse            #
+#                    --no_unroll --no_inline --no_code_motion --no_tbaa       #
+#                    --no_clustering --no_scheduling --debug --endian=little  #
+#                    --cpu=ARM7TDMI -e --fpu=None --dlib_config "D:\Program   #
+#                    Files\IAR Systems\Embedded Workbench                     #
+#                    6.4\arm\INC\c\DLib_Config_Normal.h" -I "G:\SVN           #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\" -I "G:\SVN   #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\ #
+#                    IAR\" -I "G:\SVN Dir\PQ\iSAM Test                        #
+#                    Bench\Bridge_Host_OS\APP\..\BSP\" -I "G:\SVN             #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\Driver\"    #
+#                    -I "G:\SVN Dir\PQ\iSAM Test                              #
+#                    Bench\Bridge_Host_OS\APP\..\Noah\" -I "G:\SVN            #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\Shell\" -I  #
+#                    "G:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uCO #
+#                    S-II\Source\" -I "G:\SVN Dir\PQ\iSAM Test                #
+#                    Bench\Bridge_Host_OS\APP\..\uC-CPU\" -I "G:\SVN          #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uC-LIB\"    #
+#                    -I "G:\SVN Dir\PQ\iSAM Test                              #
+#                    Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "G:\SVN  #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uCOS-II\Por #
+#                    ts\ARM\Generic\IAR\" -I "G:\SVN Dir\PQ\iSAM Test         #
+#                    Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communicatio #
+#                    n\Generic\RS-232\Source\" -I "G:\SVN Dir\PQ\iSAM Test    #
+#                    Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communicatio #
+#                    n\Generic\RS-232\Ports\Atmel\AT91SAM7X\" -I "G:\SVN      #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uC-Probe\Ta #
+#                    rget\Communication\Generic\Source\" -I "G:\SVN           #
+#                    Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\..\uC-Probe\Ta #
+#                    rget\Plugins\uCOS-II\" -I "G:\SVN Dir\PQ\iSAM Test       #
+#                    Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Demos\Intro\ #
+#                    Source\" --interwork --cpu_mode arm -On --use_c++_inline #
+#    List file    =  G:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\L #
+#                    ist\adc_ctr.lst                                          #
+#    Object file  =  G:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\O #
+#                    bj\adc_ctr.o                                             #
+#                                                                             #
+#                                                                             #
+###############################################################################
+
+G:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Driver\adc_ctr.C
+      1          /*
+      2          *********************************************************************************************************
+      3          *                                           Atmel AT91SAM7A3
+      4          *                                                on the
+      5          *                                        iSAM Audio Bridge Board V1.0
+      6          *
+      7          *                          (c) Copyright 2003-2011; Fortemedia(Nanjing) Co., Ltd
+      8          *
+      9          *               All rights reserved.  Protected by international copyright laws.
+     10          *               Knowledge of the source code may NOT be used to develop a similar product.
+     11          *               Please help us continue to provide the Embedded community with the finest
+     12          *               software available.  Your honesty is greatly appreciated.
+     13          *********************************************************************************************************
+     14          */
+     15          /*
+     16          *********************************************************************************************************
+     17          *
+     18          *                                         On Chip ADC control related
+     19          *
+     20          *                                          Atmel AT91SAM7A3
+     21          *                                                on the
+     22          *                                      iSAM Audio Bridge Board
+     23          *
+     24          * Filename      : adc_trc.c
+     25          * Version       : V1.00
+     26          * Programmer(s) : PQ
+     27          *********************************************************************************************************
+     28          * Note(s)       :
+     29          *********************************************************************************************************
+     30          */
+     31          
+     32          #include <board.h>
+     33          #include <pio.h>
+     34          #include <gpio.h>
+     35          #include <adc.h>
+     36          #include <adc_ctr.h>
+     37          
+     38          
+     39          #define BOARD_ADC_FREQ     1000000
+     40          
+     41          static const Pin pinsADC = PIN_ADC0_ADC4 ; //use adc4
+     42          
+     43          
+     44          
+     45          //set 16 to 1 MUX channel
+     46          static void Set_ADC_MUX_Channel( unsigned char adc_channel )
+     47          {    
+     48              unsigned char i; 
+     49              
+     50              for(i=0; i<4; i++) {
+     51                
+     52                  if( adc_channel & (0x01<<i) ) {
+     53                     PIO_Set( &pinsControls[2+i] );
+     54                     
+     55                  } else {
+     56                     PIO_Clear( &pinsControls[2+i] );
+     57                     
+     58                  }        
+     59              }  
+     60            
+     61          }
+     62          
+     63          
+     64          
+     65          void Init_ADC_Voltage( void )
+     66          {  
+     67            
+     68              PIO_Configure( &pinsADC, 1 );
+     69                
+     70              ADC_Initialize(   AT91C_BASE_ADC0,
+     71                                AT91C_ID_ADC0,
+     72                                AT91C_ADC_TRGEN_DIS,
+     73                                0,
+     74                                AT91C_ADC_SLEEP_NORMAL_MODE,
+     75                                AT91C_ADC_LOWRES_10_BIT,
+     76                                BOARD_MCK,
+     77                                BOARD_ADC_FREQ,
+     78                                20,
+     79                                2000);
+     80          
+     81              ADC_EnableChannel(AT91C_BASE_ADC0, ADC_CHANNEL_4);//init adc channel 4
+     82              
+     83          }
+     84          
+     85          
+     86          
+     87          unsigned int Get_Voltage( unsigned char times, unsigned char adc_channel )
+     88          {
+     89              unsigned int total_data = 0;
+     90              unsigned int i ;
+     91              
+     92              
+     93              Set_ADC_MUX_Channel( adc_channel ); //set 16 to 1 MUX channel
+     94              
+     95              for( i=0; i<times; i++ ) {
+     96                
+     97                  ADC_StartConversion( AT91C_BASE_ADC0 );        
+     98                  while(!( ADC_GetStatus(AT91C_BASE_ADC0) & AT91C_ADC_EOC4 ) ) ;         
+     99                  total_data = total_data + ADC_GetConvertedData(AT91C_BASE_ADC0, ADC_CHANNEL_4);
+    100                  
+    101              }   
+    102              
+    103              total_data = total_data / times ;
+    104              //printf("voltage_adc_data = 0x%8X, times:: %d \r\n", total_data,times );
+    105              
+    106              return  total_data;
+    107           
+    108          }
+    109          
+    110          
+    111            
+    112          
+    113          
+    114          
+    115          
+    116          
+
+Errors: 2
+Warnings: none

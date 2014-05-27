@@ -1,0 +1,1068 @@
+###############################################################################
+#
+# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        22/May/2014  14:14:48
+# Copyright 1999-2014 IAR Systems AB.
+#
+#    Cpu mode     =  arm
+#    Endian       =  little
+#    Source file  =  E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\dsp.c
+#    Command line =  
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\dsp.c" -lcN "E:\SVN
+#        Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\" -lb "E:\SVN
+#        Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\" -o "E:\SVN
+#        Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\Obj\" --no_cse
+#        --no_unroll --no_inline --no_code_motion --no_tbaa --no_clustering
+#        --no_scheduling --debug --endian=little --cpu=ARM7TDMI -e --fpu=None
+#        --dlib_config "C:\Program Files (x86)\IAR Systems\Embedded Workbench
+#        7.0\arm\INC\c\DLib_Config_Full.h" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\BSP\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Driver\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Noah\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Shell\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uCOS-II\Source\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\uC-CPU\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-LIB\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\uCOS-II\Ports\ARM\Generic\IAR\" -I
+#        "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\RS-232\Source\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\RS-232\Ports\Atmel\AT91SAM7X\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\Source\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Plugins\uCOS-II\" -I
+#        "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Demos\Intro\Source\"
+#        --interwork --cpu_mode arm -On --use_c++_inline
+#    List file    =  
+#        E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\dsp.lst
+#    Object file  =  
+#        E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\Obj\dsp.o
+#
+###############################################################################
+
+E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\dsp.c
+      1          /*
+      2          *********************************************************************************************************
+      3          *                               iSAM TEST BENCH AUDIO BRIDGE BOARD APP PACKAGE
+      4          *
+      5          *                            (c) Copyright 2013 - 2016; Fortemedia Inc.; Nanjing, China
+      6          *
+      7          *                   All rights reserved.  Protected by international copyright laws.
+      8          *                   Knowledge of the source code may not be used to write a similar
+      9          *                   product.  This file may only be used in accordance with a license
+     10          *                   and should not be redistributed in any way.
+     11          *********************************************************************************************************
+     12          */
+     13          
+     14          /*
+     15          *********************************************************************************************************
+     16          *
+     17          *                                        FM36 DSP Based Signal Path Setup
+     18          *
+     19          *                                          Atmel AT91SAM7A3
+     20          *                                               on the
+     21          *                                      iSAM Audio Bridge Board
+     22          *
+     23          * Filename      : dsp.c
+     24          * Version       : V1.0.0
+     25          * Programmer(s) : PQ
+     26          *********************************************************************************************************
+     27          * Note(s)       :
+     28          *********************************************************************************************************
+     29          */
+     30          
+     31          
+     32          #include <includes.h>
+     33          
+     34          
+     35          
+     36          static void Revert_patch_Endien( unsigned int *pData )
+     37          {
+     38              
+     39             unsigned char temp, *pChar;    
+     40             
+     41             pChar  = (unsigned char *)pData;   
+     42             temp   = *pChar;
+     43             *pChar = *(pChar+2);
+     44             *(pChar+2) = temp;
+     45             
+     46          }
+     47          
+     48          
+     49          ////////////////////    for FM36-36D0 on AB01          /////////////////////////
+     50          
+     51          static unsigned int fm36_patch_code_1[] = 
+     52          {
+     53                0x003F00,  
+     54                0x92FFFA,
+     55                0x82266A,
+     56                0x93FEDA,
+     57                0x83FCFA,           
+     58                0x23AA5F,           
+     59                0x23B29F,           
+     60                0x93FCFA,           
+     61                0x82267A,           
+     62                0x93FD5A,           
+     63                0x82268A,            
+     64                0x93FD6A,           
+     65                0x82269A,           
+     66                0x93FCCA,           
+     67                0x8226AA,           
+     68                0x93FCDA,           
+     69                0x8226BA,           
+     70                0x93FCBA,           
+     71                0x83FD7A,           
+     72                0x23A21F,           
+     73                0x23A25F,           
+     74                0x93FD7A,           
+     75                0x82FFFA,           
+     76                0x93F90A,           
+     77                0x18466F  
+     78          };
+     79          
+     80          static unsigned short int fm36_para_table_1[][2] = 
+     81          {   
+     82            {0x3FA0, 0x8437},
+     83            {0x3FB0, 0x0452},
+     84            {0x3FA1, 0x8465},
+     85            {0x3FB1, 0x3F00},
+     86            
+     87            //{0x2260, 0x78df},//16bit TDM
+     88            //{0x2260, 0x78ff},//32bit TDM
+     89            //{0x2260, 0x7AFF},//32bit TDM,MSB first,Left alignment
+     90            {0x2260, 0x7AFD},//32bit TDM,MSB first,Left alignment
+     91            {0x2266, 0x0013}, //3.072Hz
+     92            //{0x2266, 0x001B}, //2.048M
+     93            {0x2267, 0xBB80}, //3.072Hz
+     94            //{0x2267, 0x7d00}, //2.048M
+     95            {0x2268, 0xBB80}, //48k
+     96            
+     97            {0x2264, 0x01A0},
+     98            {0x2265, 0x0000},
+     99            {0x2288, 0x0000},
+    100            {0x2289, 0x7FFF},
+    101            {0x2290, 0x7FFF},
+    102            {0x22FD, 0x009E},
+    103          
+    104            {0x2273, 0x0AAA},
+    105            //{0x2274, 0x0001},//mic revert
+    106            {0x2303, 0x8000},
+    107            {0x2304, 0x4000},
+    108            {0x2305, 0x0000},
+    109            {0x226E, 0x0006},//OSC= 12.288MHz. PLL
+    110            {0x2272, 0x003F},
+    111            {0x2278, 0x0000},
+    112            {0x22C1, 0x3FD9},
+    113            {0x22C2, 0x3FDB},
+    114            {0x22C3, 0x3FDD},
+    115            {0x22C4, 0x3FDF},
+    116            {0x22C5, 0x3FE1},
+    117            {0x22C6, 0x3FE3}, 
+    118          
+    119            {0x22FB, 0     },
+    120          //  {0x3FCF, 0x0220}, //Bit9 : Enable inner LDO. Bit5: Enable PDM ADC CLK 
+    121          //  {0x3FED, 0x0013}, //set PDM CLK = 3.072MHz
+    122          //    
+    123          //  //fix PDM issue
+    124          //  {0x3F90, 0xFF }, //power down mic
+    125          //  {0x3F90, 0x00 }, //power down mic  
+    126          
+    127          } ;
+    128          
+    129          
+    130          /////////////////////    for FM36-600C on AB02     /////////////////////////////
+    131          
+    132          static unsigned int fm36_patch_code_2[] = 
+    133          {
+    134              0x003F00,  
+    135              0x3C0065,
+    136              0x43700A,
+    137              0x377201,
+    138              0x17F05E,
+    139              0x6800A5,
+    140              0x22629F,
+    141              0x44000A,
+    142              0x19E78F,
+    143              0x81012A,
+    144              0x877200,
+    145              0x6800A1,
+    146              0x977200,
+    147              0x81013A,
+    148              0x877220,
+    149              0x6800A1,
+    150              0x977220,
+    151              0x81014A,
+    152              0x877240,
+    153              0x6800A1,
+    154              0x977240,
+    155              0x81011A,
+    156              0x19BFCF,
+    157              0x877210,
+    158              0x6000A1,
+    159              0x977210,
+    160              0x9101DA,
+    161              0x877230,
+    162              0x6000A1,
+    163              0x977230,
+    164              0x9101EA,
+    165              0x877250,
+    166              0x6000A1,
+    167              0x977250,
+    168              0x9101FA,
+    169              0x862450,
+    170              0x19C27F
+    171          };
+    172          
+    173          static unsigned short int fm36_para_table_2[][2] = 
+    174          {
+    175             
+    176            {0x3FA0, 0x9E77},
+    177            {0x3FB0, 0x3F00},
+    178            {0x3FA1, 0x9BFB},
+    179            {0x3FB1, 0x3F08},
+    180            {0x3FA2, 0x9C26},
+    181            {0x3FB2, 0x3F16},  
+    182          
+    183            //{0x2260, 0x78df},//16bit TDM
+    184            //{0x2260, 0x78ff},//32bit TDM
+    185            //{0x2260, 0x7AFF},//32bit TDM,MSB first,Left alignment,8 slot 
+    186            {0x2260, 0x7AFD},//32bit TDM,MSB first,Left alignment,6 slot 
+    187            {0x2266, 0x0013}, //3.072Hz
+    188            //{0x2266, 0x001B}, //2.048M
+    189            {0x2267, 0xBB80}, //3.072Hz
+    190            //{0x2267, 0x7d00}, //2.048M 
+    191            
+    192            {0x2268, 0xBB80}, 
+    193            {0x2264, 0x01A0},
+    194            {0x2265, 0x0000},
+    195            {0x2288, 0x0000},
+    196            {0x2289, 0x7FFF},
+    197            {0x2290, 0x7FFF},
+    198            {0x22FD, 0x009E},  
+    199          
+    200            //{0x2274, 0x0001},//mic revert
+    201            
+    202            //{0x2303, 0x8000},
+    203            //{0x2304, 0x4000},
+    204            //{0x2305, 0x0000},
+    205            {0x22FC, 0x8000},
+    206            {0x226E, 0x0006}, //PLL  12.288MHz OSC 
+    207            
+    208            {0x22D7, 0x0000},
+    209            {0x22D8, 0x0001},
+    210            {0x22D9, 0x0002},
+    211            {0x22DA, 0x0003},
+    212            {0x22DB, 0x0004},
+    213            {0x22DC, 0x0005}, 
+    214            
+    215            {0x22B2, 0x0001},
+    216            {0x22B3, 0x0001},
+    217            {0x22B4, 0x0001},  
+    218          
+    219            {0x2282, 0x0000},
+    220            {0x2283, 0x0001},
+    221            {0x2284, 0x0002},
+    222            {0x2285, 0x0003},
+    223            {0x2286, 0x0004},
+    224            {0x2287, 0x0005}, 
+    225            
+    226            {0x22EB, 0x0006}, 
+    227            
+    228            {0x22C1, 0x101A},
+    229            {0x22C2, 0x101B},
+    230            {0x22C3, 0x101C},
+    231            {0x22C4, 0x101D},
+    232            {0x22C5, 0x101E},
+    233            {0x22C6, 0x101F},
+    234            
+    235            //{0x2278, 0x0000}, //MIC Gain = 0dB
+    236            
+    237            {0x22FB, 0 },  
+    238            
+    239            {0x3F91, 0x0000}, //MEMS MIC TYPE
+    240            //{0x3F92, 0x0000} //MEMS MIC gain = 0dB
+    241            //{0x3F92, 0x0155} //MEMS MIC gain = 6dB
+    242            //{0x3F92, 0x0AAA} //MEMS MIC gain = 12dB //SW default setting
+    243            //{0x3F92, 0x03FF} //MEMS MIC gain = 18dB
+    244            
+    245          
+    246          } ;
+    247          
+    248          
+    249          
+    250          /*
+    251            //{0x3FC6, 0} //MIC0/1 volume
+    252            //{0x3FC7, 0} //MIC2/3 volume
+    253            //{0x3FC8, 0} //MIC4/5 volume
+    254            //the real volume is volume/100
+    255          unsigned char Set_Mic_Volume( unsigned float vol )
+    256          {
+    257              
+    258              if( vol <= 0 && vol >= -143.25 ) {
+    259                  temp 
+    260              } else if( vol <= 24 && vol >0 ) {
+    261                  
+    262              } else {
+    263                  
+    264              }
+    265              
+    266          }
+    267          */
+    268          
+    269          
+    270          
+    271          ////////////////////////    for FM36-600C on AB03      ////////////////////////
+    272          
+    273          static unsigned int fm36_patch_code_3[] = 
+    274          {
+    275              0x003F00,  
+    276              0x3C0065,  
+    277              0x43700A,  
+    278              0x377201,  
+    279              0x17F05E,  
+    280              0x6800A5,  
+    281              0x22629F,  
+    282              0x3C0045,  
+    283              0x43730A,  
+    284              0x377261,  
+    285              0x17F0BE,  
+    286              0x6800A5,  
+    287              0x22629F,  
+    288              0x44000A,  
+    289              0x19E78F,  
+    290              0x81012A,  
+    291              0x877200,  
+    292              0x6800A1,  
+    293              0x977200,  
+    294              0x81013A,  
+    295              0x877220,  
+    296              0x6800A1,  
+    297              0x977220,  
+    298              0x81014A,  
+    299              0x877240,  
+    300              0x6800A1,  
+    301              0x977240,  
+    302              0x81011A,  
+    303              0x19BFCF,  
+    304              0x877210,  
+    305              0x6000A1,  
+    306              0x977210,  
+    307              0x9101DA,  
+    308              0x877230,  
+    309              0x6000A1,  
+    310              0x977230,  
+    311              0x9101EA,  
+    312              0x877250,  
+    313              0x6000A1,  
+    314              0x977250,  
+    315              0x9101FA,  
+    316              0x862450,  
+    317              0x19C27F,  
+    318              0x8A2C72,  
+    319              0x7000AA,  
+    320              0x877260,  
+    321              0x6800A1,  
+    322              0x977260,  
+    323              0x8A2C82,  
+    324              0x7000AA,  
+    325              0x877280,  
+    326              0x6800A1,  
+    327              0x977280,  
+    328              0x810BF1,  
+    329              0x1831DF,  
+    330              0x43F005,  
+    331              0x3C0025,  
+    332              0x3A2D50,  
+    333              0x3B72A2,  
+    334              0x1DC53F,  
+    335              0x43F005,  
+    336              0x19C8CF,  
+    337              0x877270,  
+    338              0x340088,  
+    339              0x6000A1,  
+    340              0x8B72A0,  
+    341              0x7800A2,  
+    342              0x977270,  
+    343              0x877290,  
+    344              0x6000A1,  
+    345              0x8B72B0,  
+    346              0x7800A2,  
+    347              0x977290,  
+    348              0x862550,  
+    349              0x19A30F
+    350          
+    351          };
+    352          
+    353          //parameters for FM36 signal path on AB03
+    354          static unsigned short int fm36_para_table_3[][2] = 
+    355          {
+    356            //patch settings
+    357            {0x3FA0, 0x9E77},
+    358            {0x3FB0, 0x3F00},
+    359            {0x3FA1, 0x9BFB},
+    360            {0x3FB1, 0x3F0E},
+    361            {0x3FA2, 0x9C26},
+    362            {0x3FB2, 0x3F1C},
+    363            {0x3FA3, 0x831C},
+    364            {0x3FB3, 0x3F2A},
+    365            {0x3FA4, 0x9C8B},
+    366            {0x3FB4, 0x3F36},
+    367            {0x3FA5, 0x9A2F},
+    368            {0x3FB5, 0x3F3D},    
+    369          
+    370            //////////////////////////////////////////////////////////////
+    371            
+    372            //SP0 port setting
+    373            //{0x2260, 0x78df},//16bit TDM
+    374            //{0x2260, 0x78ff},//32bit TDM
+    375            {0x2260, 0x7AFF},//32bit TDM,MSB first,Left alignment,8 slot 
+    376            //{0x2260, 0x7AFD},//32bit TDM,MSB first,Left alignment,6 slot 
+    377            {0x2266, 0x0013}, //3.072Hz
+    378            //{0x2266, 0x001B}, //2.048M
+    379            {0x2267, 0xBB80}, //3.072Hz
+    380            //{0x2267, 0x7d00}, //2.048M 
+    381            
+    382            //SP1 port setting
+    383            {0x2261, 0x78FF},//32bit TDM,MSB first,Left alignment,8 slot, Left alignment of word inside slot to meet AD1937
+    384          
+    385            {0x2268, 0xBB80}, 
+    386            {0x2264, 0x01A0},
+    387            {0x2265, 0x0000},
+    388            {0x2288, 0x0000},
+    389            {0x2289, 0x7FFF},
+    390            {0x2290, 0x7FFF},
+    391            {0x22FD, 0x009E},  
+    392          
+    393            //{0x2274, 0x0001},//mic revert  
+    394            //{0x2303, 0x8000},
+    395            //{0x2304, 0x4000},
+    396            //{0x2305, 0x0000},
+    397            {0x22FC, 0x8000},
+    398            {0x226E, 0x0006}, //PLL  12.288MHz OSC 
+    399            
+    400            ////////////////////////////////////////////////////////////
+    401            
+    402            //select data interruption source :  
+    403            // 0: PDM, 1: SP0, 2: SP1, 3: SP2
+    404            {0x22B2, 0x0001},
+    405            {0x22B3, 0x0001},
+    406            {0x22B4, 0x0001}, 
+    407            
+    408              //additional, input
+    409              ////229A = 0x1 //Aux-in From SP0
+    410              ////229B = 0x0 //Aux-in-L in slot0 
+    411              ////229C = 0x1 //Aux-in-R in slot1
+    412              //// 
+    413              //////output, aux2 output same as aux1
+    414              ////22C7 = 0x1018 //Aux-in-L
+    415              ////22C8 = 0x1019 //Aux-in-R
+    416              ////22B4 = 1 //SP0
+    417              ////22D5 = 6 //slot6 
+    418              ////22D6 = 7 //slot7
+    419            
+    420            //lin source 
+    421            {0x229A, 0x0002}, //Aux-in From SP1
+    422            {0x229B, 0x0008}, //Aux-in-L in SP1 slot0 
+    423            {0x229C, 0x0009}, //Aux-in-L in SP1 slot1
+    424            
+    425            //select output data source slot
+    426            {0x22C1, 0x101A},
+    427            {0x22C2, 0x101B},
+    428            {0x22C3, 0x101C},
+    429            {0x22C4, 0x101D},
+    430            {0x22C5, 0x101E},
+    431            {0x22C6, 0x101F},   
+    432            {0x22C7, 0x1018}, //Aux-in-L
+    433            {0x22C8, 0x1019}, //Aux-in-R
+    434            
+    435            //select data dest slot
+    436            //If lineout is from TX0, offset is 0~7
+    437            //If lineout is from TX1, offset is 8~15
+    438            //If lineout is from TX2, offset is 16~23
+    439            //If offset = 0x8000, means Zero output.
+    440            {0x22D7, 0x0000},
+    441            {0x22D8, 0x0001},
+    442            {0x22D9, 0x0002},
+    443            {0x22DA, 0x0003},
+    444            {0x22DB, 0x0004},
+    445            {0x22DC, 0x0005},  
+    446            {0x22D5, 0x0006}, //slot6 
+    447            {0x22D6, 0x0007}, //slot7
+    448            
+    449            //mic souce
+    450            {0x2282, 0x0000},
+    451            {0x2283, 0x0001},
+    452            {0x2284, 0x0002},
+    453            {0x2285, 0x0003},
+    454            {0x2286, 0x0004},
+    455            {0x2287, 0x0005}, 
+    456            
+    457            {0x22EB, 0x0006}, 
+    458            
+    459            {0x22FB, 0 }, 
+    460            
+    461            /*******************  MIC Volume Control  ****************
+    462            Volume setting [7:4]:
+    463            0x0 ( 0 dB) 0x4 (-48 dB) 0x8 (-96 dB) 0xc (Not allowed)
+    464            0x1 (-12 dB) 0x5 (-60 dB) 0x9 (-108 dB) 0xd (Not allowed)
+    465            0x2 (-24 dB) 0x6 (-72 dB) 0xa (-120 dB) 0xe (+24 dB)
+    466            0x3 (-36 dB) 0x7 (-84 dB) 0xb (-132 dB) 0xf (+12 dB)
+    467            Volume setting [3:0]:
+    468            0x0 ( 0 dB) 0x4 (-3.00 dB) 0x8 (-6.00 dB) 0xc (-9.00 dB)
+    469            0x1 (-0.75 dB) 0x5 (-3.75 dB) 0x9 (-6.75 dB) 0xd (-9.75 dB)
+    470            0x2 (-1.50 dB) 0x6 (-4.50 dB) 0xa (-7.50 dB) 0xe (-10.50 dB)
+    471            0x3 (-2.25 dB) 0x7 (-5.25 dB) 0xb (-8.25 dB) 0xf (-11.25 dB)
+    472            Real volume = Volume for [7:4] + Volume for [3:0]
+    473            **********************************************************/  
+    474            //{0x3FC6, 0x0000}, //MIC0,1 Volume Gain = 0dB
+    475            //{0x3FC7, 0x0000}, //MIC2,3 Volume Gain = 0dB
+    476            //{0x3FC8, 0x0000}, //MIC4,5 Volume Gain = 0dB
+    477            
+    478            /**************** MEMS Gain Control **********************/
+    479            //{0x3F91, 0x0000}, //MEMS MIC TYPE, SW default setting as MEMS type
+    480            //{0x3F92, 0x0000} //MEMS MIC gain = 0dB
+    481            //{0x3F92, 0x0555} //MEMS MIC gain = 6dB
+    482            //{0x3F92, 0x0AAA} //MEMS MIC gain = 12dB //SW default setting
+    483            //{0x3F92, 0x0FFF} //MEMS MIC gain = 18dB
+    484          
+    485          } ;
+    486          
+    487          //DMIC 4 steps PGA gain
+    488          unsigned char DMIC_PGA_Control( unsigned short gain ) 
+    489          {
+    490              unsigned char  err  ;
+    491              unsigned short data ;
+    492              unsigned short mute ;
+    493              
+    494              mute = 0x3F;
+    495              
+    496              switch ( gain ){
+    497                  case 0 : 
+    498                      data = 0x0000;
+    499                  break;
+    500                  case 6 : 
+    501                      data = 0x0555;
+    502                  break;
+    503                  case 12 : 
+    504                      data = 0x0AAA;
+    505                  break;
+    506                  case 18 : 
+    507                      data = 0x0FFF;
+    508                  break;
+    509                  case 1000 :
+    510                      mute = 0x3F3F;
+    511                  break;
+    512                  default:
+    513                      return FM36_DMIC_PGA_GAIN_ERR;
+    514              }  
+    515              
+    516              if( mute == 0x3F ) {
+    517                err = DM_SingleWrite( FM36_I2C_ADDR, 0x3F92, data ) ;
+    518                if( OS_ERR_NONE != err ) {
+    519                    return FM36_WR_DM_ERR;;
+    520                }   
+    521              }    
+    522              err = DM_SingleWrite( FM36_I2C_ADDR, 0x3F96, mute ) ;
+    523              if( OS_ERR_NONE != err ) {
+    524                  return FM36_WR_DM_ERR;;
+    525              }    
+    526              
+    527          }
+    528          
+    529          
+    530          //Setup External Lin data input source
+    531          //From : SP0_RX, SP1_RX
+    532          static unsigned char Config_Lin( unsigned char lin_sp_index, unsigned char start_slot_index )
+    533          {
+    534              
+    535              unsigned char err ;
+    536             
+    537              //Aux-Source
+    538              err = DM_SingleWrite( FM36_I2C_ADDR, 0x229A, lin_sp_index+1 ) ;
+    539              if( OS_ERR_NONE != err ) {
+    540                  return FM36_WR_DM_ERR;;
+    541              }
+    542              
+    543              //Aux-in-L
+    544              err = DM_SingleWrite( FM36_I2C_ADDR, 0x229B, (lin_sp_index<<3) + start_slot_index ) ;
+    545              if( OS_ERR_NONE != err ) {
+    546                  return FM36_WR_DM_ERR;;
+    547              }
+    548              
+    549              //Aux-in-R
+    550              err = DM_SingleWrite( FM36_I2C_ADDR, 0x229C, (lin_sp_index<<3) + start_slot_index + 1 ) ;
+    551              if( OS_ERR_NONE != err ) {
+    552                  return FM36_WR_DM_ERR;;
+    553              }    
+    554             
+    555              return err;
+    556              
+    557          }
+    558          
+    559          // Set additional data besides MIC data
+    560          // M0..M5 + X0 + X1
+    561          // Max 8 slots
+    562          // Make sure last 2 slots folowed mic data closely
+    563          static unsigned char Config_SP0_Out( unsigned char mic_num )
+    564          {
+    565              
+    566              unsigned char err ;
+    567            
+    568              //select output data source slot
+    569              err = DM_SingleWrite( FM36_I2C_ADDR, 0x22C1 + mic_num, 0x1018 ) ;
+    570              if( OS_ERR_NONE != err ) {
+    571                  return FM36_WR_DM_ERR;;
+    572              }       
+    573              err = DM_SingleWrite( FM36_I2C_ADDR, 0x22C2 + mic_num, 0x1019 ) ;
+    574              if( OS_ERR_NONE != err ) {
+    575                  return FM36_WR_DM_ERR;;
+    576              }     
+    577            
+    578              return err;
+    579              
+    580          }
+    581          
+    582          
+    583          
+    584          //Note: This routine do NOT support reentrance
+    585          static unsigned int sr_saved = 0;
+    586          
+    587          //Just Change the sample rate of FM36
+    588          unsigned char ReInit_FM36( unsigned short sr )
+    589          {
+    590             
+    591              unsigned char  err;
+    592              unsigned short temp;
+    593              
+    594              if( sr == sr_saved ) {
+    595                  return NO_ERR;
+    596              } else {
+    597                  sr_saved = sr ;
+    598              }  
+    599             
+    600              switch ( sr ) {
+    601                  case 8000 :
+    602                      temp = 0x1F40;
+    603                  break;        
+    604                  case 16000 :
+    605                      temp = 0x3E80;
+    606                  break;
+    607                  case 24000 :
+    608                      temp = 0x5DC0;
+    609                  break;
+    610                  case 32000 :
+    611                      temp = 0x7D00;
+    612                  break;
+    613                  case 44100 :
+    614                      temp = 0xAC44;
+    615                  break;
+    616                  default: // 48000 :
+    617                      temp = 0xBB80;
+    618                  break;   
+    619              }
+    620              
+    621              err = DM_SingleWrite( FM36_I2C_ADDR, 0x3FD6, temp ) ;
+    622              if( OS_ERR_NONE != err ) {
+    623                  err = FM36_WR_DM_ERR;
+    624              }
+    625              return err ; 
+    626              
+    627          }
+    628          
+    629          
+    630           static bool flag_power_lose = true;
+    631          
+    632          /*
+    633          *********************************************************************************************************
+    634          *                                       Init_FM36_AB03()
+    635          *
+    636          * Description : Initialize FM36 DSP on AB03 board.
+    637          * Argument(s) : sr        : sample rate : 8000 ~ 48000 
+    638          *               mic_num   : 0~6
+    639          *               lin_sp_index  : line in data source: 0 ~ 1
+    640          *               start_slot_index: line in data slot: 0 ~ 7
+    641          * Return(s)   : NO_ERR :   execute successfully
+    642          *               others :   =error code .  
+    643          *
+    644          * Note(s)     : None.
+    645          *********************************************************************************************************
+    646          */
+    647          unsigned char Init_FM36_AB03( unsigned short sr, unsigned char mic_num, unsigned char lin_sp_index, unsigned char start_slot_index )
+    648          {
+    649              unsigned int   i;
+    650              unsigned short temp, temp2 ;
+    651              unsigned short addr, val; 
+    652              unsigned char  err ;      
+    653              
+    654              if( sr == sr_saved ) {
+    655                  return NO_ERR;
+    656              } else {
+    657                  sr_saved = sr ;
+    658              }   
+    659              
+    660              Pin_Reset_FM36();  
+    661              
+    662          //    err = HOST_SingleWrite_2(FM36_I2C_ADDR, 0x0C, 2); //reset
+    663          //    if( OS_ERR_NONE != err ) {
+    664          //        return FM36_WR_HOST_ERR;
+    665          //    }    
+    666          //    err = DM_LegacyRead( FM36_I2C_ADDR, 0x22FB,(unsigned char *)&temp ) ;
+    667          //    if( OS_ERR_NONE != err ) {
+    668          //        err = FM36_RD_DM_ERR;
+    669          //        return err ;
+    670          //    }  
+    671          //    APP_TRACE_INFO(("0x22FB = 0x%X\r\n", temp));     
+    672          //    err = DM_LegacyRead( FM36_I2C_ADDR, 0x2306,(unsigned char *)&temp ) ;
+    673          //    if( OS_ERR_NONE != err ) {
+    674          //        err = FM36_RD_DM_ERR;
+    675          //        return err ;
+    676          //    }  
+    677          //    APP_TRACE_INFO(("0x2306 = 0x%X\r\n", temp));     
+    678              
+    679              err = CM_LegacyRead( FM36_I2C_ADDR, 0x2FFF,(unsigned char *)&temp ) ;
+    680              if( OS_ERR_NONE != err ) {
+    681                  err = FM36_RD_CM_ERR;
+    682                  return FM36_RD_CM_ERR ;
+    683              }
+    684              APP_TRACE_INFO(("ROM ID = 0x%X\r\n", temp));
+    685              
+    686              if( temp != FM36_ROM_ID_2 ) { 
+    687                  return FM36_CHECK_ROMID_ERR; //dsp type error
+    688              } 
+    689                 
+    690              // set SR
+    691              switch ( sr ) {
+    692                  case 8000 :
+    693                      temp = 0x1F40;
+    694                  break;        
+    695                  case 16000 :
+    696                      temp = 0x3E80;
+    697                  break;
+    698                  case 24000 :
+    699                      temp = 0x5DC0;
+    700                  break;
+    701                  case 32000 :
+    702                      temp = 0x7D00;
+    703                  break;
+    704                  case 44100 :
+    705                      temp = 0xAC44;
+    706                  break;
+    707                  default: //48000 :
+    708                      temp = 0xBB80;
+    709                  break;   
+    710              }
+    711           
+    712              //FM36-600C
+    713              //patch code
+    714              if( flag_power_lose ) { //only need download patch once after one power cycle
+    715                      
+    716                  flag_power_lose = false;
+    717                  addr = (unsigned short)fm36_patch_code_3[0];
+    718                  for( i = 1; i < sizeof(fm36_patch_code_3)/4; i++) { 
+    719                      Revert_patch_Endien(&fm36_patch_code_3[i]);    
+    720                      err = PM_SingleWrite( FM36_I2C_ADDR, addr++, (unsigned char*)&fm36_patch_code_3[i],0 ) ;
+    721                        if( OS_ERR_NONE != err ) {
+    722                            err = FM36_WR_PM_ERR;
+    723                            return err ;
+    724                        }         
+    725                  }
+    726              } 
+    727              //parameters
+    728              for( i = 0; i < sizeof(fm36_para_table_3)/4; i++) {            
+    729                  addr = fm36_para_table_3[i][0];
+    730                  val  = fm36_para_table_3[i][1];
+    731                  if( addr == 0x2268 ) { //SR
+    732                      val = temp ;
+    733                  }
+    734                  if( addr == 0x22FB ) {  //if run chip, do sth before
+    735                      err = Config_SP0_Out( mic_num );
+    736                      if( OS_ERR_NONE != err ) {
+    737                          return err ;
+    738                      }
+    739                      err = Config_Lin( lin_sp_index, start_slot_index );
+    740                      if( OS_ERR_NONE != err ) {
+    741                          return err ;
+    742                      }
+    743                  } 
+    744                  err = DM_SingleWrite( FM36_I2C_ADDR, addr, val ) ;
+    745                  if( OS_ERR_NONE != err ) {
+    746                      err = FM36_WR_DM_ERR;
+    747                      return err ;
+    748                  }
+    749                  if( addr == 0x22FB ) {  //if run chip, delay
+    750                      OSTimeDly(100);
+    751                  } 
+    752              } 
+    753                    
+    754          
+    755              err = DM_LegacyRead( FM36_I2C_ADDR, 0x2306,(unsigned char *)&temp2 ) ;
+    756              if( OS_ERR_NONE != err ) {
+    757                  err = FM36_RD_DM_ERR;
+    758                  return err ;
+    759              }
+    760              APP_TRACE_DBG(("0x2306 = 0x%X\r\n", temp2));
+    761              OSTimeDly(100);
+    762              err = DM_LegacyRead( FM36_I2C_ADDR, 0x22FB,(unsigned char *)&temp ) ;
+    763              if( OS_ERR_NONE != err ) {
+    764                  err = FM36_RD_DM_ERR;
+    765                  return err ;
+    766              }
+    767              APP_TRACE_INFO(("0x22FB = 0x%X\r\n", temp));
+    768              if( temp != 0x5A5A ) {   
+    769                  return FM36_CHECK_FLAG_ERR;
+    770              }
+    771              err = DM_LegacyRead( FM36_I2C_ADDR, 0x2306,(unsigned char *)&temp ) ;
+    772              if( OS_ERR_NONE != err ) {
+    773                  err = FM36_RD_DM_ERR;
+    774                  return err ;
+    775              }
+    776              APP_TRACE_DBG(("0x2306 = 0x%X\r\n", temp));
+    777              if( temp == temp2 ) {
+    778                  APP_TRACE_INFO(("FM36 frame counter stopped !"));
+    779                  return FM36_CHECK_COUNTER_ERR;
+    780              }    
+    781              return err;
+    782              
+    783          }
+    784          
+    785          
+    786          
+    787          unsigned char Init_FM36( unsigned short sr )
+    788          {
+    789              unsigned int i;
+    790              unsigned short temp, temp2 ;
+    791              unsigned short addr, val; 
+    792              unsigned char err ;
+    793              unsigned char dsp_type;
+    794              
+    795              
+    796              if( sr == sr_saved ) {
+    797                  return 0;
+    798              } else {
+    799                  sr_saved = sr ;
+    800              }    
+    801             
+    802              Pin_Reset_FM36();  
+    803          
+    804              err = HOST_SingleWrite_2(FM36_I2C_ADDR,0x0C, 2); //reset
+    805              if( OS_ERR_NONE != err ) {
+    806                  return err ;
+    807              }
+    808               
+    809          //    err = DM_LegacyRead( FM36_I2C_ADDR, 0x22FB,(unsigned char *)&temp ) ;
+    810          //    if( OS_ERR_NONE != err ) {
+    811          //        return err ;
+    812          //    }  
+    813          //    APP_TRACE_INFO(("0x22FB = 0x%X\r\n", temp)); 
+    814          //    
+    815          //    err = DM_LegacyRead( FM36_I2C_ADDR, 0x2306,(unsigned char *)&temp ) ;
+    816          //    if( OS_ERR_NONE != err ) {
+    817          //        return err ;
+    818          //    }  
+    819          //    APP_TRACE_INFO(("0x2306 = 0x%X\r\n", temp)); 
+    820              
+    821              
+    822              err = CM_LegacyRead( FM36_I2C_ADDR, 0x2FFF,(unsigned char *)&temp ) ;
+    823              if( OS_ERR_NONE != err ) {
+    824                  return err ;
+    825              }
+    826              APP_TRACE_INFO(("ROM ID = 0x%X\r\n", temp)); 
+    827              if( temp == FM36_ROM_ID_1 ) {
+    828                  dsp_type = 0;
+    829              } else if ( temp == FM36_ROM_ID_2 ) {
+    830                  dsp_type = 1;
+    831              } else {
+    832                  return (0xA0); //dsp type error
+    833              } 
+    834                 
+    835              // set SR
+    836              switch ( sr ) {
+    837                  case 8000 :
+    838                      temp = 0x1F40;
+    839                  break;        
+    840                  case 16000 :
+    841                      temp = 0x3E80;
+    842                  break;
+    843                  case 24000 :
+    844                      temp = 0x5DC0;
+    845                  break;
+    846                  case 32000 :
+    847                      temp = 0x7D00;
+    848                  break;
+    849                  case 44100 :
+    850                      temp = 0xAC44;
+    851                  break;
+    852                  default: // 48000 :
+    853                      temp = 0xBB80;
+    854                  break;   
+    855              }
+    856           
+    857              if( dsp_type == 0 )  { 
+    858                  //patch code
+    859                  addr = (unsigned short)fm36_patch_code_1[0];
+    860                  for( i = 1; i < sizeof(fm36_patch_code_1)/4; i++) { 
+    861                    Revert_patch_Endien(&fm36_patch_code_1[i]);    
+    862                    err = PM_SingleWrite( FM36_I2C_ADDR, addr++, (unsigned char*)&fm36_patch_code_1[i],0 ) ;
+    863                      if( OS_ERR_NONE != err ) {
+    864                          return err ;
+    865                      }    
+    866                  }    
+    867                  //parameters
+    868                  for( i = 0; i < sizeof(fm36_para_table_1)/4; i++) {            
+    869                      addr = fm36_para_table_1[i][0];
+    870                      val  = fm36_para_table_1[i][1];
+    871                      if( addr == 0x2268 ) { //SR
+    872                          val = temp ;
+    873                      }
+    874                      err = DM_SingleWrite( FM36_I2C_ADDR, addr, val ) ;
+    875                      if( OS_ERR_NONE != err ) {
+    876                          return err ;
+    877                      }
+    878                      if( addr == 0x22FB ) {  //run chip
+    879                          OSTimeDly(100);
+    880                      }
+    881                  }        
+    882              
+    883              } else {
+    884                  //patch code
+    885                  addr = (unsigned short)fm36_patch_code_2[0];
+    886                  for( i = 1; i < sizeof(fm36_patch_code_2)/4; i++) { 
+    887                    Revert_patch_Endien(&fm36_patch_code_2[i]);    
+    888                    err = PM_SingleWrite( FM36_I2C_ADDR, addr++, (unsigned char*)&fm36_patch_code_2[i],0 ) ;
+    889                      if( OS_ERR_NONE != err ) {
+    890                          return err ;
+    891                      }         
+    892                  } 
+    893                  //parameters
+    894                  for( i = 0; i < sizeof(fm36_para_table_2)/4; i++) {            
+    895                      addr = fm36_para_table_2[i][0];
+    896                      val  = fm36_para_table_2[i][1];
+    897                      if( addr == 0x2268 ) { //SR
+    898                          val = temp ;
+    899                      }
+    900                      err = DM_SingleWrite( FM36_I2C_ADDR, addr, val ) ;
+    901                      if( OS_ERR_NONE != err ) {
+    902                          return err ;
+    903                      }
+    904                      if( addr == 0x22FB ) {  //run chip
+    905                          OSTimeDly(100);
+    906                      } 
+    907          
+    908                  } 
+    909                  
+    910              }
+    911          
+    912              err = DM_LegacyRead( FM36_I2C_ADDR, 0x2306,(unsigned char *)&temp2 ) ;
+    913              if( OS_ERR_NONE != err ) {
+    914                  return err ;
+    915              }
+    916              OSTimeDly(100);
+    917              err = DM_LegacyRead( FM36_I2C_ADDR, 0x22FB,(unsigned char *)&temp ) ;
+    918              if( OS_ERR_NONE != err ) {
+    919                  return err ;
+    920              }
+    921              APP_TRACE_INFO(("0x22FB = 0x%X\r\n", temp));
+    922              if( temp != 0x5A5A ) {   
+    923                  return (2);
+    924              }
+    925              err = DM_LegacyRead( FM36_I2C_ADDR, 0x2306,(unsigned char *)&temp ) ;
+    926              if( OS_ERR_NONE != err ) {
+    927                  return err ;
+    928              }
+    929              if( temp == temp2 ) {
+    930                  APP_TRACE_INFO(("frame counter stopped !"));
+    931                  return (3);
+    932              }    
+    933              return (err);
+    934              
+    935          }
+    936          
+
+   Maximum stack usage in bytes:
+
+   .cstack Function
+   ------- --------
+      16   Config_Lin
+        16   -> DM_SingleWrite
+      16   Config_SP0_Out
+        16   -> DM_SingleWrite
+      24   DMIC_PGA_Control
+        24   -> DM_SingleWrite
+      32   Init_FM36
+        32   -> BSP_Ser_Printf
+        32   -> CM_LegacyRead
+        32   -> DM_LegacyRead
+        32   -> DM_SingleWrite
+        32   -> HOST_SingleWrite_2
+        32   -> OSTimeDly
+        32   -> PM_SingleWrite
+        32   -> Pin_Reset_FM36
+        32   -> Revert_patch_Endien
+      40   Init_FM36_AB03
+        40   -> BSP_Ser_Printf
+        40   -> CM_LegacyRead
+        40   -> Config_Lin
+        40   -> Config_SP0_Out
+        40   -> DM_LegacyRead
+        40   -> DM_SingleWrite
+        40   -> OSTimeDly
+        40   -> PM_SingleWrite
+        40   -> Pin_Reset_FM36
+        40   -> Revert_patch_Endien
+      16   ReInit_FM36
+        16   -> DM_SingleWrite
+       0   Revert_patch_Endien
+
+
+   Section sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+      16  ?<Constant "0x22FB = 0x%X\r\n">
+      32  ?<Constant "FM36 frame counter st...">
+      16  ?<Constant "ROM ID = 0x%X\r\n">
+      24  ?<Constant "frame counter stopped !">
+       4  ??DataTable2
+       4  ??DataTable2_1
+       4  ??DataTable2_10
+       4  ??DataTable2_11
+       4  ??DataTable2_2
+       4  ??DataTable2_3
+       4  ??DataTable2_4
+       4  ??DataTable2_5
+       4  ??DataTable2_6
+       4  ??DataTable2_7
+       4  ??DataTable2_8
+       4  ??DataTable2_9
+     240  Config_Lin
+     168  Config_SP0_Out
+     296  DMIC_PGA_Control
+    1312  Init_FM36
+    1092  Init_FM36_AB03
+     288  ReInit_FM36
+      28  Revert_patch_Endien
+       1  flag_power_lose
+     112  fm36_para_table_1
+     168  fm36_para_table_2
+     220  fm36_para_table_3
+     100  fm36_patch_code_1
+     148  fm36_patch_code_2
+     300  fm36_patch_code_3
+       4  sr_saved
+
+ 
+     4 bytes in section .bss
+ 1 049 bytes in section .data
+    88 bytes in section .rodata
+ 3 472 bytes in section .text
+ 
+ 3 472 bytes of CODE  memory
+    88 bytes of CONST memory
+ 1 053 bytes of DATA  memory
+
+Errors: none
+Warnings: 1

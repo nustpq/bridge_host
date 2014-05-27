@@ -1,0 +1,419 @@
+###############################################################################
+#
+# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        22/May/2014  14:14:56
+# Copyright 1999-2014 IAR Systems AB.
+#
+#    Cpu mode     =  arm
+#    Endian       =  little
+#    Source file  =  E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Driver\spi.c
+#    Command line =  
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Driver\spi.c" -lcN
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\" -lb
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\" -o
+#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\Obj\" --no_cse
+#        --no_unroll --no_inline --no_code_motion --no_tbaa --no_clustering
+#        --no_scheduling --debug --endian=little --cpu=ARM7TDMI -e --fpu=None
+#        --dlib_config "C:\Program Files (x86)\IAR Systems\Embedded Workbench
+#        7.0\arm\INC\c\DLib_Config_Full.h" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\BSP\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Driver\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Noah\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Shell\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uCOS-II\Source\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\uC-CPU\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-LIB\" -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "E:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\uCOS-II\Ports\ARM\Generic\IAR\" -I
+#        "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\RS-232\Source\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\RS-232\Ports\Atmel\AT91SAM7X\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\Source\"
+#        -I "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Plugins\uCOS-II\" -I
+#        "E:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Demos\Intro\Source\"
+#        --interwork --cpu_mode arm -On --use_c++_inline
+#    List file    =  
+#        E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\spi.lst
+#    Object file  =  
+#        E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\Obj\spi.o
+#
+###############################################################################
+
+E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Driver\spi.c
+      1          /* ----------------------------------------------------------------------------
+      2           *         ATMEL Microcontroller Software Support 
+      3           * ----------------------------------------------------------------------------
+      4           * Copyright (c) 2008, Atmel Corporation
+      5           *
+      6           * All rights reserved.
+      7           *
+      8           * Redistribution and use in source and binary forms, with or without
+      9           * modification, are permitted provided that the following conditions are met:
+     10           *
+     11           * - Redistributions of source code must retain the above copyright notice,
+     12           * this list of conditions and the disclaimer below.
+     13           *
+     14           * Atmel's name may not be used to endorse or promote products derived from
+     15           * this software without specific prior written permission.
+     16           *
+     17           * DISCLAIMER: THIS SOFTWARE IS PROVIDED BY ATMEL "AS IS" AND ANY EXPRESS OR
+     18           * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+     19           * MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT ARE
+     20           * DISCLAIMED. IN NO EVENT SHALL ATMEL BE LIABLE FOR ANY DIRECT, INDIRECT,
+     21           * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+     22           * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA,
+     23           * OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+     24           * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+     25           * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE,
+     26           * EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+     27           * ----------------------------------------------------------------------------
+     28           */
+     29          
+     30          //------------------------------------------------------------------------------
+     31          //         Headers
+     32          //------------------------------------------------------------------------------
+     33          
+     34          
+     35          #include <bsp.h>
+     36          #include "spi.h"
+     37          #include <timer.h>
+     38          
+     39          static const Pin spi_pins[] = { PINS_SPI0, PIN_SPI0_NPCS3 };
+     40          
+     41          OS_EVENT * SPI_Sem; //sem for TWI
+     42          
+     43          
+     44          
+     45          
+     46          AT91PS_SPI spi_fpga = AT91C_BASE_SPI0 ;
+     47          
+     48          
+     49          
+     50          //------------------------------------------------------------------------------
+     51          //         Exported functions
+     52          //------------------------------------------------------------------------------
+     53          //------------------------------------------------------------------------------
+     54          //// Enables a SPI peripheral
+     55          //// \param spi  Pointer to an AT91S_SPI instance.
+     56          //------------------------------------------------------------------------------
+     57          void SPI_Enable(AT91S_SPI *spi)
+     58          {
+     59              spi->SPI_CR = AT91C_SPI_SPIEN;
+     60          }
+     61          
+     62          //------------------------------------------------------------------------------
+     63          //// Disables a SPI peripheral.
+     64          //// \param spi  Pointer to an AT91S_SPI instance.
+     65          //------------------------------------------------------------------------------
+     66          void SPI_Disable(AT91S_SPI *spi)
+     67          {
+     68              spi->SPI_CR = AT91C_SPI_SPIDIS;
+     69          }
+     70          
+     71          //------------------------------------------------------------------------------
+     72          //// Configures a SPI peripheral as specified. The configuration can be computed
+     73          //// using several macros (see "SPI configuration macros") and the constants
+     74          //// defined in LibV3 (AT91C_SPI_*).
+     75          //// \param spi  Pointer to an AT91S_SPI instance.
+     76          //// \param id  Peripheral ID of the SPI.
+     77          //// \param configuration  Value of the SPI configuration register.
+     78          //------------------------------------------------------------------------------
+     79          void SPI_Configure(AT91S_SPI *spi,
+     80                                    unsigned int id,
+     81                                    unsigned int configuration)
+     82          {
+     83              AT91C_BASE_PMC->PMC_PCER = 1 << id;  
+     84              spi->SPI_CR = AT91C_SPI_SPIDIS;
+     85              // Execute a software reset of the SPI twice
+     86              spi->SPI_CR = AT91C_SPI_SWRST;
+     87              spi->SPI_CR = AT91C_SPI_SWRST;
+     88              spi->SPI_MR = configuration;
+     89          }
+     90          
+     91          //------------------------------------------------------------------------------
+     92          //// Configures a chip select of a SPI peripheral. The chip select configuration
+     93          //// is computed using the definition provided by the LibV3 (AT91C_SPI_*).
+     94          //// \param spi  Pointer to an AT91S_SPI instance.
+     95          //// \param npcs  Chip select to configure (1, 2, 3 or 4).
+     96          //// \param configuration  Desired chip select configuration.
+     97          //------------------------------------------------------------------------------
+     98          void SPI_ConfigureNPCS(AT91S_SPI *spi,
+     99                                        unsigned int npcs,
+    100                                        unsigned int configuration)
+    101          {
+    102              spi->SPI_CSR[npcs] = configuration;
+    103          }
+    104          
+    105          //------------------------------------------------------------------------------
+    106          //// Sends data through a SPI peripheral. If the SPI is configured to use a fixed
+    107          //// peripheral select, the npcs value is meaningless. Otherwise, it identifies
+    108          //// the component which shall be addressed.
+    109          //// \param spi  Pointer to an AT91S_SPI instance.
+    110          //// \param npcs  Chip select of the component to address (1, 2, 3 or 4).
+    111          //// \param data  Word of data to send.
+    112          //------------------------------------------------------------------------------
+    113          void SPI_Write(AT91S_SPI *spi, unsigned int npcs, unsigned short data)
+    114          {
+    115              unsigned char  err;
+    116              
+    117              OSSemPend( SPI_Sem, 0, &err );
+    118              
+    119              // Discard contents of RDR register
+    120              //volatile unsigned int discard = spi->SPI_RDR;
+    121          
+    122              // Send data
+    123              while ((spi->SPI_SR & AT91C_SPI_TXEMPTY) == 0);
+    124              spi->SPI_TDR = data | SPI_PCS(npcs);
+    125              while ((spi->SPI_SR & AT91C_SPI_TDRE) == 0);
+    126              
+    127              OSSemPost( SPI_Sem );
+    128                
+    129          }
+    130          
+    131          //------------------------------------------------------------------------------
+    132          ///// Sends the contents of buffer through a SPI peripheral, using the PDC to
+    133          ///// take care of the transfer.
+    134          ///// \param spi  Pointer to an AT91S_SPI instance.
+    135          ///// \param buffer  Data buffer to send.
+    136          ///// \param length  Length of the data buffer.
+    137          //------------------------------------------------------------------------------
+    138          unsigned char SPI_WriteBuffer(AT91S_SPI *spi,
+    139                                               void *buffer,
+    140                                               unsigned int length)
+    141          {
+    142          #if !defined(CHIP_SPI_DMA)
+    143              // Check if first bank is free
+    144              if (spi->SPI_TCR == 0) {
+    145          
+    146                  spi->SPI_TPR = (unsigned int) buffer;
+    147                  spi->SPI_TCR = length;
+    148                  spi->SPI_PTCR = AT91C_PDC_TXTEN;
+    149                  return 1;
+    150              }
+    151              // Check if second bank is free
+    152              else if (spi->SPI_TNCR == 0) {
+    153          
+    154                  spi->SPI_TNPR = (unsigned int) buffer;
+    155                  spi->SPI_TNCR = length;
+    156                  return 1;
+    157              }
+    158          #endif      
+    159              // No free banks
+    160              return 0;
+    161          }
+    162          
+    163          //------------------------------------------------------------------------------
+    164          //// Returns 1 if there is no pending write operation on the SPI; otherwise
+    165          //// returns 0.
+    166          //// \param pSpi  Pointer to an AT91S_SPI instance.
+    167          //------------------------------------------------------------------------------
+    168          unsigned char SPI_IsFinished(AT91S_SPI *pSpi)
+    169          {
+    170              return ((pSpi->SPI_SR & AT91C_SPI_TXEMPTY) != 0);
+    171          }
+    172          
+    173          //------------------------------------------------------------------------------
+    174          //// Reads and returns the last word of data received by a SPI peripheral. This
+    175          //// method must be called after a successful SPI_Write call.
+    176          //// \param spi  Pointer to an AT91S_SPI instance.
+    177          //------------------------------------------------------------------------------
+    178          unsigned short SPI_Read(AT91S_SPI *spi)
+    179          {
+    180              unsigned char  err;
+    181              unsigned short data;
+    182              
+    183              OSSemPend( SPI_Sem, 0, &err );
+    184              
+    185              while ((spi->SPI_SR & AT91C_SPI_RDRF) == 0);
+    186              //must add a delay, related to SPI seed  ? 
+    187              delay_us(100);    
+    188              data = spi->SPI_RDR & 0xFFFF;
+    189              
+    190              OSSemPost( SPI_Sem );
+    191               
+    192              return data;
+    193          }
+    194          
+    195          //------------------------------------------------------------------------------
+    196          //// Reads data from a SPI peripheral until the provided buffer is filled. This
+    197          //// method does NOT need to be called after SPI_Write or SPI_WriteBuffer.
+    198          //// \param spi  Pointer to an AT91S_SPI instance.
+    199          //// \param buffer  Data buffer to store incoming bytes.
+    200          //// \param length  Length in bytes of the data buffer.
+    201          //------------------------------------------------------------------------------
+    202          unsigned char SPI_ReadBuffer(AT91S_SPI *spi,
+    203                                              void *buffer,
+    204                                              unsigned int length)
+    205          {
+    206          #if !defined(CHIP_SPI_DMA)
+    207              // Check if the first bank is free
+    208              if (spi->SPI_RCR == 0) {
+    209          
+    210                  spi->SPI_RPR = (unsigned int) buffer;
+    211                  spi->SPI_RCR = length;
+    212                  spi->SPI_PTCR = AT91C_PDC_RXTEN;
+    213                  return 1;
+    214              }
+    215              // Check if second bank is free
+    216              else if (spi->SPI_RNCR == 0) {
+    217          
+    218                  spi->SPI_RNPR = (unsigned int) buffer;
+    219                  spi->SPI_RNCR = length;
+    220                  return 1;
+    221              }
+    222          #endif
+    223              // No free bank
+    224              return 0;
+    225          }
+    226          
+    227          
+    228          //return 0 if write succeed
+    229          //return 1 if write failed
+    230          unsigned char SPI_WriteBuffer_API(  void *buffer,  unsigned int length)
+    231          {
+    232              unsigned char state;
+    233              unsigned char err;
+    234              unsigned int  couter = 0 ;
+    235              
+    236              OSSemPend( SPI_Sem, 0, &err );
+    237               
+    238              state = SPI_WriteBuffer( spi_fpga, buffer, length );
+    239              if( state == 1 ) {
+    240                  while( ! SPI_IsFinished( spi_fpga ) ) {
+    241                      OSTimeDly(1);
+    242                      if( couter++ > 2000 ) { //timeout : 2s
+    243                          state = 0 ;
+    244                          break;
+    245                      }
+    246                  }        
+    247              }    
+    248              
+    249              OSSemPost( SPI_Sem ); 
+    250              
+    251              return (state == 0) ;
+    252              
+    253          }
+    254          
+    255          
+    256          void SPI_Initialize( AT91S_SPI *spi, unsigned int npcs, unsigned int spi_clk, unsigned int mck )
+    257          {
+    258              unsigned int clk ;
+    259              
+    260              clk = mck / spi_clk ;    
+    261              if( clk>255 ){      
+    262                  clk = 255;
+    263              }
+    264              
+    265              //ASSERT(clk>0, "-F- Invalid SPI clock parameters\n\r");
+    266              SPI_Sem  = OSSemCreate(1); 
+    267              
+    268              PIO_Configure(spi_pins, PIO_LISTSIZE(spi_pins) );  
+    269              SPI_Configure(spi, AT91C_ID_SPI0,  AT91C_SPI_MSTR | AT91C_SPI_MODFDIS |(7 << 16)  )  ;     
+    270              SPI_Enable(spi);
+    271             
+    272              SPI_ConfigureNPCS(spi, npcs,  AT91C_SPI_CSAAT|AT91C_SPI_BITS_8|AT91C_SPI_CPOL|(clk << 8)|(200<16) )  ;
+    273          
+    274               
+    275             
+    276          } 
+    277          
+    278          void SPI_Init(  unsigned int spi_clk )
+    279          {
+    280              
+    281             SPI_Initialize( spi_fpga, NPCS_FPGA, spi_clk, MCK ) ;   // Configure SPI   
+    282            
+    283          }
+    284          
+    285          
+    286          
+    287          unsigned char Select_FPGA_Channel( unsigned int channles )
+    288          {      
+    289           
+    290              unsigned char state;    
+    291              
+    292              state = SPI_WriteBuffer_API( (unsigned char *)&channles, 4);     
+    293            
+    294              
+    295              return state ;
+    296              
+    297          }
+    298          
+
+   Maximum stack usage in bytes:
+
+   .cstack Function
+   ------- --------
+       0   SPI_Configure
+       0   SPI_ConfigureNPCS
+       0   SPI_Disable
+       0   SPI_Enable
+       8   SPI_Init
+         8   -> SPI_Initialize
+      24   SPI_Initialize
+        24   -> OSSemCreate
+        24   -> PIO_Configure
+        24   -> SPI_Configure
+        24   -> SPI_ConfigureNPCS
+        24   -> SPI_Enable
+        24   -> __aeabi_uidiv
+       0   SPI_IsFinished
+      16   SPI_Read
+        16   -> OSSemPend
+        16   -> OSSemPost
+        16   -> delay_us
+       0   SPI_ReadBuffer
+      24   SPI_Write
+        24   -> OSSemPend
+        24   -> OSSemPost
+       0   SPI_WriteBuffer
+      24   SPI_WriteBuffer_API
+        24   -> OSSemPend
+        24   -> OSSemPost
+        24   -> OSTimeDly
+        24   -> SPI_IsFinished
+        24   -> SPI_WriteBuffer
+      16   Select_FPGA_Channel
+        16   -> SPI_WriteBuffer_API
+
+
+   Section sizes:
+
+   Bytes  Function/Label
+   -----  --------------
+       4  ??DataTable4
+       4  ??DataTable4_1
+       4  ??DataTable4_2
+      52  SPI_Configure
+      16  SPI_ConfigureNPCS
+      12  SPI_Disable
+      12  SPI_Enable
+      44  SPI_Init
+     136  SPI_Initialize
+      20  SPI_IsFinished
+      88  SPI_Read
+      76  SPI_ReadBuffer
+       4  SPI_Sem
+     116  SPI_Write
+      76  SPI_WriteBuffer
+     184  SPI_WriteBuffer_API
+      40  Select_FPGA_Channel
+       4  spi_fpga
+      48  spi_pins
+
+ 
+   4 bytes in section .bss
+   4 bytes in section .data
+  48 bytes in section .rodata
+ 884 bytes in section .text
+ 
+ 884 bytes of CODE  memory
+  48 bytes of CONST memory
+   8 bytes of DATA  memory
+
+Errors: none
+Warnings: none
