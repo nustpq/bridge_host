@@ -191,42 +191,38 @@ unsigned char Codec_DAC_Attenuation( unsigned char DAC_NAME, unsigned int x10gai
 //    
 //}
 
-                    
+
+// Main clock source = 12.288 MHz.   
 unsigned char Codec_SetFCLK( unsigned int fclk )
 {
     
     unsigned char err;
     unsigned char pll_reg;
-    unsigned char dac_reg;
     
     switch( fclk )   {
       
-        case 8000: // NOT support 8k based on 12.288 MHz.    //8k        
+        case 8000:  // Need  12.288 / 2 MHz Osc 
+            pll_reg = 0x9e;      
             return CODEC_SETFCLK_RANGE_ERR;
             break;            
         case 16000:            
-            pll_reg = 0x9e;      //16k
-            dac_reg = 0x00;      //I2S
+            pll_reg = 0x9e;            
             break;
         case 24000:      
-            pll_reg = 0x9c;      //24k
-            dac_reg = 0x00;      //I2S
+            pll_reg = 0x9c;            
             break;
         case 32000:            
-            pll_reg = 0x9a;      //32k
-            dac_reg = 0x00;      //I2S
+            pll_reg = 0x9a;      
             break;
-        case 44000: 
-            pll_reg = 0x98;      //44k, must change MCLK.
-            dac_reg = 0x00;      //I2S
+        case 44100: // Need 11.2896 MHz Osc 
+            pll_reg = 0x98;  
+            return CODEC_SETFCLK_RANGE_ERR;
             break;
         case 48000:             
-            pll_reg = 0x98;      //48k
-            dac_reg = 0x00;      //I2S
+            pll_reg = 0x98;            
             break;
-        case 96000:         
-            //pll_reg = 0x98);      //96k
-            //dac_reg = 0x02);      //I2S
+        case 96000: // Need 12.288 * 2 MHz Osc       
+            pll_reg = 0x98;             
             return CODEC_SETFCLK_RANGE_ERR;
             break;
             
@@ -237,12 +233,6 @@ unsigned char Codec_SetFCLK( unsigned int fclk )
     }
     
     err = I2CWrite_Codec( PLL_Control0, pll_reg );
-    if( OS_ERR_NONE != err ) {
-        err = CODEC_WR_REG_ERR;
-        return err ;
-    }
-    
-    err = I2CWrite_Codec( DAC_Control0, dac_reg );
     if( OS_ERR_NONE != err ) {
         err = CODEC_WR_REG_ERR;
         return err ;
