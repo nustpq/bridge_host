@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        22/May/2014  14:15:42
+# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        06/Jun/2014  17:56:38
 # Copyright 1999-2014 IAR Systems AB.
 #
 #    Cpu mode     =  arm
@@ -313,9 +313,9 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Driver\codec.c
     265                           break;
     266                  case TDM16_MODE:
     267                           dac_reg0 = 0x40;      //TDM
-    268                           dac_reg1 = 0x72;      // 4 channels
+    268                           dac_reg1 = 0x76;      // 16 channels
     269                           adc_reg1 = 0x23;      //TDM
-    270                           adc_reg2 = 0x11;      // 4 channels
+    270                           adc_reg2 = 0x31;      // 16 channels
     271                           break;
     272                  default:
     273                          return CODEC_SETMODE_RANGE_ERR;

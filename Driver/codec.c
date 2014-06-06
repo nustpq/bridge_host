@@ -265,9 +265,9 @@ unsigned char Codec_SetMode( unsigned char mode )
                  break;
         case TDM16_MODE:
                  dac_reg0 = 0x40;      //TDM
-                 dac_reg1 = 0x72;      // 4 channels
+                 dac_reg1 = 0x76;      // 16 channels
                  adc_reg1 = 0x23;      //TDM
-                 adc_reg2 = 0x11;      // 4 channels
+                 adc_reg2 = 0x31;      // 16 channels
                  break;
         default:
                 return CODEC_SETMODE_RANGE_ERR;

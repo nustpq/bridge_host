@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       22/May/2014  14:15:42
+// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       06/Jun/2014  17:56:38
 // Copyright 1999-2014 IAR Systems AB.
 //
 //    Cpu mode     =  arm
@@ -515,11 +515,11 @@ Codec_SetMode:
 ??Codec_SetMode_2:
         MOV      R0,#+64
         MOVS     R6,R0
-        MOV      R0,#+114
+        MOV      R0,#+118
         MOVS     R7,R0
         MOV      R0,#+35
         MOVS     R8,R0
-        MOV      R0,#+17
+        MOV      R0,#+49
         MOVS     R9,R0
         B        ??Codec_SetMode_4
 ??Codec_SetMode_1:
