@@ -225,7 +225,9 @@ unsigned char Codec_SetFCLK( unsigned int fclk )
             pll_reg = 0x98;             
             return CODEC_SETFCLK_RANGE_ERR;
             break;
-            
+        case 0 : //power down clock
+            pll_reg = 0x01; 
+            break;
         default:
             return CODEC_SETFCLK_RANGE_ERR;
             break;
@@ -358,6 +360,7 @@ unsigned char Init_CODEC( unsigned int sample_rate )
     return err;
     
 }
+
 
 
 

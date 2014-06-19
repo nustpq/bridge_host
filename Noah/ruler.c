@@ -305,6 +305,12 @@ unsigned char Stop_Audio( void )
         APP_TRACE_INFO(("\r\nStop_Audio ERROR: %d\r\n ",data)); 
         return data; 
     } 
+   
+    err = Init_CODEC( 0 );
+    if( err != NO_ERR ) {
+        APP_TRACE_INFO(("\r\nStop_Audio Power Down CODEC ERROR: %d\r\n",err)); 
+    }
+    
     OS_ENTER_CRITICAL(); 
     for( ruler_id = 0 ; ruler_id < 4 ; ruler_id++ ) {       
         if( Global_Ruler_State[ruler_id] ==  RULER_STATE_RUN ) {//given: if mic selected, then ruler used
@@ -1596,6 +1602,8 @@ void AB_POST( void )
         APP_TRACE_INFO(("\r\n---OK\r\n"));
     }    
    
+    
+    
 //    APP_TRACE_INFO(("\r\n4. external CODEC... \r\n"));
 //    err = Init_CODEC_AIC3204( SAMPLE_RATE_DEF );    
 //    if( err != NO_ERR ) {
@@ -1607,7 +1615,14 @@ void AB_POST( void )
 //    }
     
     //Disable_FPGA(); 
-    //Ruler_Power_Switch(1);     
+    //Ruler_Power_Switch(1); 
+    
+    err = Init_CODEC( 0 );
+    if( err != NO_ERR ) {
+        Global_Bridge_POST = POST_ERR_CODEC ;
+        APP_TRACE_INFO(("\r\nPower Down CODEC ERROR: %d\r\n",err)); 
+    }
+    
 }
 
 

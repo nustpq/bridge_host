@@ -753,7 +753,7 @@
         </option>
         <option>
           <name>CCDoJlinkMultiTarget</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>CCScanChainNonARMDevices</name>
@@ -761,7 +761,7 @@
         </option>
         <option>
           <name>CCJLinkMultiTarget</name>
-          <state>0</state>
+          <state>1</state>
         </option>
         <option>
           <name>CCJLinkIRLength</name>

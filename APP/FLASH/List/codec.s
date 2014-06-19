@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       06/Jun/2014  17:56:38
+// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       13/Jun/2014  16:27:37
 // Copyright 1999-2014 IAR Systems AB.
 //
 //    Cpu mode     =  arm
@@ -399,64 +399,70 @@ Codec_SetFCLK:
         PUSH     {R4-R6,LR}
         MOVS     R4,R0
         MOVS     R0,R4
-        CMP      R0,#+8000
+        CMP      R0,#+0
         BEQ      ??Codec_SetFCLK_0
-        CMP      R0,#+16000
+        CMP      R0,#+8000
         BEQ      ??Codec_SetFCLK_1
+        CMP      R0,#+16000
+        BEQ      ??Codec_SetFCLK_2
         MOV      R1,#+192
         ORR      R1,R1,#0x5D00
         CMP      R0,R1
-        BEQ      ??Codec_SetFCLK_2
-        CMP      R0,#+32000
         BEQ      ??Codec_SetFCLK_3
+        CMP      R0,#+32000
+        BEQ      ??Codec_SetFCLK_4
         MOV      R1,#+68
         ORR      R1,R1,#0xAC00
         CMP      R0,R1
-        BEQ      ??Codec_SetFCLK_4
+        BEQ      ??Codec_SetFCLK_5
         MOV      R1,#+128
         ORR      R1,R1,#0xBB00
         CMP      R0,R1
-        BEQ      ??Codec_SetFCLK_5
+        BEQ      ??Codec_SetFCLK_6
         MOV      R1,#+65536
         ORR      R1,R1,#0x7700
         CMP      R0,R1
-        BEQ      ??Codec_SetFCLK_6
-        B        ??Codec_SetFCLK_7
-??Codec_SetFCLK_0:
-        MOV      R0,#+158
-        MOVS     R6,R0
-        MOV      R0,#+232
+        BEQ      ??Codec_SetFCLK_7
         B        ??Codec_SetFCLK_8
 ??Codec_SetFCLK_1:
         MOV      R0,#+158
         MOVS     R6,R0
+        MOV      R0,#+232
         B        ??Codec_SetFCLK_9
 ??Codec_SetFCLK_2:
+        MOV      R0,#+158
+        MOVS     R6,R0
+        B        ??Codec_SetFCLK_10
+??Codec_SetFCLK_3:
         MOV      R0,#+156
         MOVS     R6,R0
-        B        ??Codec_SetFCLK_9
-??Codec_SetFCLK_3:
+        B        ??Codec_SetFCLK_10
+??Codec_SetFCLK_4:
         MOV      R0,#+154
         MOVS     R6,R0
-        B        ??Codec_SetFCLK_9
-??Codec_SetFCLK_4:
-        MOV      R0,#+152
-        MOVS     R6,R0
-        MOV      R0,#+232
-        B        ??Codec_SetFCLK_8
+        B        ??Codec_SetFCLK_10
 ??Codec_SetFCLK_5:
         MOV      R0,#+152
         MOVS     R6,R0
+        MOV      R0,#+232
         B        ??Codec_SetFCLK_9
 ??Codec_SetFCLK_6:
         MOV      R0,#+152
         MOVS     R6,R0
-        MOV      R0,#+232
-        B        ??Codec_SetFCLK_8
+        B        ??Codec_SetFCLK_10
 ??Codec_SetFCLK_7:
+        MOV      R0,#+152
+        MOVS     R6,R0
         MOV      R0,#+232
-        B        ??Codec_SetFCLK_8
-??Codec_SetFCLK_9:
+        B        ??Codec_SetFCLK_9
+??Codec_SetFCLK_0:
+        MOV      R0,#+1
+        MOVS     R6,R0
+        B        ??Codec_SetFCLK_10
+??Codec_SetFCLK_8:
+        MOV      R0,#+232
+        B        ??Codec_SetFCLK_9
+??Codec_SetFCLK_10:
         MOVS     R1,R6
         ANDS     R1,R1,#0xFF      ;; Zero extend
         MOV      R0,#+0
@@ -465,16 +471,16 @@ Codec_SetFCLK:
         MOVS     R0,R5
         ANDS     R0,R0,#0xFF      ;; Zero extend
         CMP      R0,#+0
-        BEQ      ??Codec_SetFCLK_10
+        BEQ      ??Codec_SetFCLK_11
         MOV      R0,#+230
         MOVS     R5,R0
         MOVS     R0,R5
         ANDS     R0,R0,#0xFF      ;; Zero extend
-        B        ??Codec_SetFCLK_8
-??Codec_SetFCLK_10:
+        B        ??Codec_SetFCLK_9
+??Codec_SetFCLK_11:
         MOVS     R0,R5
         ANDS     R0,R0,#0xFF      ;; Zero extend
-??Codec_SetFCLK_8:
+??Codec_SetFCLK_9:
         POP      {R4-R6,LR}
         BX       LR               ;; return
 
@@ -886,9 +892,9 @@ CODEC_Set_Volume:
 // 
 //     4 bytes in section .bss
 //   132 bytes in section .rodata
-// 2 492 bytes in section .text
+// 2 512 bytes in section .text
 // 
-// 2 492 bytes of CODE  memory
+// 2 512 bytes of CODE  memory
 //   132 bytes of CONST memory
 //     4 bytes of DATA  memory
 //
