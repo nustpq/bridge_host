@@ -251,11 +251,11 @@ unsigned char Start_Audio( unsigned char cmd_type )
     USART_SendBuf( AUDIO_UART, buf,  sizeof(buf)) ;    
     err = USART_Read_Timeout( AUDIO_UART, &data, 1, TIMEOUT_AUDIO_COM);  
     if( err != NO_ERR ) { 
-        APP_TRACE_INFO(("\r\nStart_Audio ERROR: timeout\r\n")); 
+        APP_TRACE_INFO(("\r\nStart_Audio ERROR: Timeout : %d\r\n",err)); 
         return err;
     }
     if( data != NO_ERR ) {
-        APP_TRACE_INFO(("\r\nStart_Audio ERROR: %d\r\n ",data)); 
+        APP_TRACE_INFO(("\r\nStart_Audio ERROR: Data : %d\r\n ",data)); 
         return data; 
     } else {
         OS_ENTER_CRITICAL(); 

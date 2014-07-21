@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       13/Jun/2014  16:27:38
+// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       21/Jul/2014  19:24:30
 // Copyright 1999-2014 IAR Systems AB.
 //
 //    Cpu mode     =  arm
@@ -134,8 +134,8 @@ fm36_para_table_3:
         DC16 8807, 48000, 8801, 30975, 8808, 48000, 8804, 416, 8805, 0, 8840, 0
         DC16 8841, 32767, 8848, 32767, 8957, 158, 8956, 32768, 8814, 6, 8882, 1
         DC16 8883, 1, 8884, 1, 8858, 2, 8859, 8, 8860, 9, 8897, 4122, 8898
-        DC16 4123, 8899, 4124, 8900, 4125, 8901, 4126, 8902, 4127, 8903, 4120
-        DC16 8904, 4121, 8919, 0, 8920, 1, 8921, 2, 8922, 3, 8923, 4, 8924, 5
+        DC16 4123, 8899, 4124, 8900, 4125, 8901, 4126, 8902, 4127, 8903, 4128
+        DC16 8904, 4128, 8919, 0, 8920, 1, 8921, 2, 8922, 3, 8923, 4, 8924, 5
         DC16 8917, 6, 8918, 7, 8834, 0, 8835, 1, 8836, 2, 8837, 3, 8838, 4
         DC16 8839, 5, 8939, 6, 8955, 0
 
@@ -348,6 +348,10 @@ Config_SP0_Out:
 sr_saved:
         DS8 4
 
+        SECTION `.bss`:DATA:REORDER:NOROOT(2)
+mic_num_saved:
+        DS8 4
+
         SECTION `.text`:CODE:NOROOT(2)
         ARM
 ReInit_FM36:
@@ -432,314 +436,6 @@ ReInit_FM36:
         ANDS     R0,R0,#0xFF      ;; Zero extend
 ??ReInit_FM36_1:
         POP      {R4-R6,LR}
-        BX       LR               ;; return
-
-        SECTION `.data`:DATA:REORDER:NOROOT(0)
-flag_power_lose:
-        DATA
-        DC8 1
-
-        SECTION `.text`:CODE:NOROOT(2)
-        ARM
-Init_FM36_AB03:
-        PUSH     {R3-R11,LR}
-        MOVS     R11,R0
-        MOVS     R4,R1
-        MOVS     R5,R2
-        MOVS     R6,R3
-        MOVS     R0,R11
-        LSL      R0,R0,#+16
-        LSRS     R0,R0,#+16
-        LDR      R1,??DataTable2
-        LDR      R1,[R1, #+0]
-        CMP      R0,R1
-        BNE      ??Init_FM36_AB03_0
-        MOV      R0,#+0
-        B        ??Init_FM36_AB03_1
-??Init_FM36_AB03_0:
-        MOVS     R0,R11
-        LSL      R0,R0,#+16
-        LSRS     R0,R0,#+16
-        LDR      R1,??DataTable2
-        STR      R0,[R1, #+0]
-        BL       Pin_Reset_FM36
-        MOVS     R2,SP
-        MOV      R1,#+255
-        ORR      R1,R1,#0x2F00
-        MOV      R0,#+192
-        BL       CM_LegacyRead
-        MOVS     R10,R0
-        MOVS     R0,R10
-        ANDS     R0,R0,#0xFF      ;; Zero extend
-        CMP      R0,#+0
-        BEQ      ??Init_FM36_AB03_2
-        MOV      R0,#+224
-        MOVS     R10,R0
-        MOV      R0,#+224
-        B        ??Init_FM36_AB03_1
-??Init_FM36_AB03_2:
-        LDRH     R1,[SP, #+0]
-        LDR      R0,??DataTable2_1
-        BL       BSP_Ser_Printf
-        LDRH     R0,[SP, #+0]
-        MOV      R1,#+12
-        ORR      R1,R1,#0x6000
-        CMP      R0,R1
-        BEQ      ??Init_FM36_AB03_3
-        MOV      R0,#+225
-        B        ??Init_FM36_AB03_1
-??Init_FM36_AB03_3:
-        MOVS     R0,R11
-        LSL      R0,R0,#+16
-        LSRS     R0,R0,#+16
-        CMP      R0,#+8000
-        BEQ      ??Init_FM36_AB03_4
-        CMP      R0,#+16000
-        BEQ      ??Init_FM36_AB03_5
-        MOV      R1,#+192
-        ORR      R1,R1,#0x5D00
-        CMP      R0,R1
-        BEQ      ??Init_FM36_AB03_6
-        CMP      R0,#+32000
-        BEQ      ??Init_FM36_AB03_7
-        MOV      R1,#+68
-        ORR      R1,R1,#0xAC00
-        CMP      R0,R1
-        BEQ      ??Init_FM36_AB03_8
-        B        ??Init_FM36_AB03_9
-??Init_FM36_AB03_4:
-        MOV      R0,#+8000
-        STRH     R0,[SP, #+0]
-        B        ??Init_FM36_AB03_10
-??Init_FM36_AB03_5:
-        MOV      R0,#+16000
-        STRH     R0,[SP, #+0]
-        B        ??Init_FM36_AB03_10
-??Init_FM36_AB03_6:
-        MOV      R0,#+192
-        ORR      R0,R0,#0x5D00
-        STRH     R0,[SP, #+0]
-        B        ??Init_FM36_AB03_10
-??Init_FM36_AB03_7:
-        MOV      R0,#+32000
-        STRH     R0,[SP, #+0]
-        B        ??Init_FM36_AB03_10
-??Init_FM36_AB03_8:
-        MOV      R0,#+68
-        ORR      R0,R0,#0xAC00
-        STRH     R0,[SP, #+0]
-        B        ??Init_FM36_AB03_10
-??Init_FM36_AB03_9:
-        MOV      R0,#+128
-        ORR      R0,R0,#0xBB00
-        STRH     R0,[SP, #+0]
-??Init_FM36_AB03_10:
-        LDR      R0,??DataTable2_2
-        LDRB     R0,[R0, #+0]
-        CMP      R0,#+0
-        BEQ      ??Init_FM36_AB03_11
-        MOV      R0,#+0
-        LDR      R1,??DataTable2_2
-        STRB     R0,[R1, #+0]
-        LDR      R0,??DataTable2_3
-        LDR      R0,[R0, #+0]
-        MOVS     R8,R0
-        MOV      R0,#+1
-        MOVS     R7,R0
-??Init_FM36_AB03_12:
-        CMP      R7,#+75
-        BCS      ??Init_FM36_AB03_11
-        LSLS     R0,R7,#+2
-        LDR      R1,??DataTable2_3
-        ADDS     R0,R0,R1
-        BL       Revert_patch_Endien
-        MOV      R3,#+0
-        LSLS     R0,R7,#+2
-        LDR      R1,??DataTable2_3
-        ADDS     R2,R0,R1
-        MOVS     R1,R8
-        LSL      R1,R1,#+16
-        LSRS     R1,R1,#+16
-        MOV      R0,#+192
-        BL       PM_SingleWrite
-        MOVS     R10,R0
-        ADDS     R8,R8,#+1
-        MOVS     R0,R10
-        ANDS     R0,R0,#0xFF      ;; Zero extend
-        CMP      R0,#+0
-        BEQ      ??Init_FM36_AB03_13
-        MOV      R0,#+221
-        MOVS     R10,R0
-        MOVS     R0,R10
-        ANDS     R0,R0,#0xFF      ;; Zero extend
-        B        ??Init_FM36_AB03_1
-??Init_FM36_AB03_13:
-        ADDS     R7,R7,#+1
-        B        ??Init_FM36_AB03_12
-??Init_FM36_AB03_11:
-        MOV      R0,#+0
-        MOVS     R7,R0
-??Init_FM36_AB03_14:
-        CMP      R7,#+55
-        BCS      ??Init_FM36_AB03_15
-        LSLS     R0,R7,#+2
-        LDR      R1,??DataTable2_4
-        LDRH     R0,[R0, +R1]
-        MOVS     R8,R0
-        LSLS     R0,R7,#+2
-        LDR      R1,??DataTable2_4
-        ADDS     R0,R0,R1
-        LDRH     R0,[R0, #+2]
-        MOVS     R9,R0
-        MOVS     R0,R8
-        LSL      R0,R0,#+16
-        LSRS     R0,R0,#+16
-        MOV      R1,#+104
-        ORR      R1,R1,#0x2200
-        CMP      R0,R1
-        BNE      ??Init_FM36_AB03_16
-        LDRH     R0,[SP, #+0]
-        MOVS     R9,R0
-??Init_FM36_AB03_16:
-        MOVS     R0,R8
-        LSL      R0,R0,#+16
-        LSRS     R0,R0,#+16
-        MOV      R1,#+251
-        ORR      R1,R1,#0x2200
-        CMP      R0,R1
-        BNE      ??Init_FM36_AB03_17
-        MOVS     R0,R4
-        ANDS     R0,R0,#0xFF      ;; Zero extend
-        BL       Config_SP0_Out
-        MOVS     R10,R0
-        MOVS     R0,R10
-        ANDS     R0,R0,#0xFF      ;; Zero extend
-        CMP      R0,#+0
-        BEQ      ??Init_FM36_AB03_18
-        MOVS     R0,R10
-        ANDS     R0,R0,#0xFF      ;; Zero extend
-        B        ??Init_FM36_AB03_1
-??Init_FM36_AB03_18:
-        MOVS     R1,R6
-        ANDS     R1,R1,#0xFF      ;; Zero extend
-        MOVS     R0,R5
-        ANDS     R0,R0,#0xFF      ;; Zero extend
-        BL       Config_Lin
-        MOVS     R10,R0
-        MOVS     R0,R10
-        ANDS     R0,R0,#0xFF      ;; Zero extend
-        CMP      R0,#+0
-        BEQ      ??Init_FM36_AB03_17
-        MOVS     R0,R10
-        ANDS     R0,R0,#0xFF      ;; Zero extend
-        B        ??Init_FM36_AB03_1
-??Init_FM36_AB03_17:
-        MOVS     R2,R9
-        LSL      R2,R2,#+16
-        LSRS     R2,R2,#+16
-        MOVS     R1,R8
-        LSL      R1,R1,#+16
-        LSRS     R1,R1,#+16
-        MOV      R0,#+192
-        BL       DM_SingleWrite
-        MOVS     R10,R0
-        MOVS     R0,R10
-        ANDS     R0,R0,#0xFF      ;; Zero extend
-        CMP      R0,#+0
-        BEQ      ??Init_FM36_AB03_19
-        MOV      R0,#+220
-        MOVS     R10,R0
-        MOVS     R0,R10
-        ANDS     R0,R0,#0xFF      ;; Zero extend
-        B        ??Init_FM36_AB03_1
-??Init_FM36_AB03_19:
-        MOVS     R0,R8
-        LSL      R0,R0,#+16
-        LSRS     R0,R0,#+16
-        MOV      R1,#+251
-        ORR      R1,R1,#0x2200
-        CMP      R0,R1
-        BNE      ??Init_FM36_AB03_20
-        MOV      R0,#+100
-        BL       OSTimeDly
-??Init_FM36_AB03_20:
-        ADDS     R7,R7,#+1
-        B        ??Init_FM36_AB03_14
-??Init_FM36_AB03_15:
-        ADD      R2,SP,#+2
-        MOV      R1,#+6
-        ORR      R1,R1,#0x2300
-        MOV      R0,#+192
-        BL       DM_LegacyRead
-        MOVS     R10,R0
-        MOVS     R0,R10
-        ANDS     R0,R0,#0xFF      ;; Zero extend
-        CMP      R0,#+0
-        BEQ      ??Init_FM36_AB03_21
-        MOV      R0,#+223
-        MOVS     R10,R0
-        MOVS     R0,R10
-        ANDS     R0,R0,#0xFF      ;; Zero extend
-        B        ??Init_FM36_AB03_1
-??Init_FM36_AB03_21:
-        MOV      R0,#+100
-        BL       OSTimeDly
-        MOVS     R2,SP
-        MOV      R1,#+251
-        ORR      R1,R1,#0x2200
-        MOV      R0,#+192
-        BL       DM_LegacyRead
-        MOVS     R10,R0
-        MOVS     R0,R10
-        ANDS     R0,R0,#0xFF      ;; Zero extend
-        CMP      R0,#+0
-        BEQ      ??Init_FM36_AB03_22
-        MOV      R0,#+223
-        MOVS     R10,R0
-        MOVS     R0,R10
-        ANDS     R0,R0,#0xFF      ;; Zero extend
-        B        ??Init_FM36_AB03_1
-??Init_FM36_AB03_22:
-        LDRH     R1,[SP, #+0]
-        LDR      R0,??DataTable2_5
-        BL       BSP_Ser_Printf
-        LDRH     R0,[SP, #+0]
-        MOV      R1,#+90
-        ORR      R1,R1,#0x5A00
-        CMP      R0,R1
-        BEQ      ??Init_FM36_AB03_23
-        MOV      R0,#+227
-        B        ??Init_FM36_AB03_1
-??Init_FM36_AB03_23:
-        MOVS     R2,SP
-        MOV      R1,#+6
-        ORR      R1,R1,#0x2300
-        MOV      R0,#+192
-        BL       DM_LegacyRead
-        MOVS     R10,R0
-        MOVS     R0,R10
-        ANDS     R0,R0,#0xFF      ;; Zero extend
-        CMP      R0,#+0
-        BEQ      ??Init_FM36_AB03_24
-        MOV      R0,#+223
-        MOVS     R10,R0
-        MOVS     R0,R10
-        ANDS     R0,R0,#0xFF      ;; Zero extend
-        B        ??Init_FM36_AB03_1
-??Init_FM36_AB03_24:
-        LDRH     R0,[SP, #+0]
-        LDRH     R1,[SP, #+2]
-        CMP      R0,R1
-        BNE      ??Init_FM36_AB03_25
-        LDR      R0,??DataTable2_6
-        BL       BSP_Ser_Printf
-        MOV      R0,#+226
-        B        ??Init_FM36_AB03_1
-??Init_FM36_AB03_25:
-        MOVS     R0,R10
-        ANDS     R0,R0,#0xFF      ;; Zero extend
-??Init_FM36_AB03_1:
-        POP      {R1,R4-R11,LR}
         BX       LR               ;; return
 
         SECTION `.text`:CODE:NOROOT(2)
@@ -863,7 +559,7 @@ Init_FM36:
         ANDS     R0,R0,#0xFF      ;; Zero extend
         CMP      R0,#+0
         BNE      ??Init_FM36_14
-        LDR      R0,??DataTable2_7
+        LDR      R0,??DataTable2_2
         LDR      R0,[R0, #+0]
         MOVS     R6,R0
         MOV      R0,#+1
@@ -872,12 +568,12 @@ Init_FM36:
         CMP      R5,#+25
         BCS      ??Init_FM36_16
         LSLS     R0,R5,#+2
-        LDR      R1,??DataTable2_7
+        LDR      R1,??DataTable2_2
         ADDS     R0,R0,R1
         BL       Revert_patch_Endien
         MOV      R3,#+0
         LSLS     R0,R5,#+2
-        LDR      R1,??DataTable2_7
+        LDR      R1,??DataTable2_2
         ADDS     R2,R0,R1
         MOVS     R1,R6
         LSL      R1,R1,#+16
@@ -903,11 +599,11 @@ Init_FM36:
         CMP      R5,#+28
         BCS      ??Init_FM36_19
         LSLS     R0,R5,#+2
-        LDR      R1,??DataTable2_8
+        LDR      R1,??DataTable2_3
         LDRH     R0,[R0, +R1]
         MOVS     R6,R0
         LSLS     R0,R5,#+2
-        LDR      R1,??DataTable2_8
+        LDR      R1,??DataTable2_3
         ADDS     R0,R0,R1
         LDRH     R0,[R0, #+2]
         MOVS     R7,R0
@@ -951,7 +647,7 @@ Init_FM36:
         ADDS     R5,R5,#+1
         B        ??Init_FM36_18
 ??Init_FM36_14:
-        LDR      R0,??DataTable2_9
+        LDR      R0,??DataTable2_4
         LDR      R0,[R0, #+0]
         MOVS     R6,R0
         MOV      R0,#+1
@@ -960,12 +656,12 @@ Init_FM36:
         CMP      R5,#+37
         BCS      ??Init_FM36_24
         LSLS     R0,R5,#+2
-        LDR      R1,??DataTable2_9
+        LDR      R1,??DataTable2_4
         ADDS     R0,R0,R1
         BL       Revert_patch_Endien
         MOV      R3,#+0
         LSLS     R0,R5,#+2
-        LDR      R1,??DataTable2_9
+        LDR      R1,??DataTable2_4
         ADDS     R2,R0,R1
         MOVS     R1,R6
         LSL      R1,R1,#+16
@@ -991,11 +687,11 @@ Init_FM36:
         CMP      R5,#+42
         BCS      ??Init_FM36_19
         LSLS     R0,R5,#+2
-        LDR      R1,??DataTable2_10
+        LDR      R1,??DataTable2_5
         LDRH     R0,[R0, +R1]
         MOVS     R6,R0
         LSLS     R0,R5,#+2
-        LDR      R1,??DataTable2_10
+        LDR      R1,??DataTable2_5
         ADDS     R0,R0,R1
         LDRH     R0,[R0, #+2]
         MOVS     R7,R0
@@ -1070,7 +766,7 @@ Init_FM36:
         B        ??Init_FM36_1
 ??Init_FM36_31:
         LDRH     R1,[SP, #+0]
-        LDR      R0,??DataTable2_5
+        LDR      R0,??DataTable2_6
         BL       BSP_Ser_Printf
         LDRH     R0,[SP, #+0]
         MOV      R1,#+90
@@ -1098,7 +794,7 @@ Init_FM36:
         LDRH     R1,[SP, #+2]
         CMP      R0,R1
         BNE      ??Init_FM36_34
-        LDR      R0,??DataTable2_11
+        LDR      R0,??DataTable2_7
         BL       BSP_Ser_Printf
         MOV      R0,#+3
         B        ??Init_FM36_1
@@ -1107,6 +803,324 @@ Init_FM36:
         ANDS     R0,R0,#0xFF      ;; Zero extend
 ??Init_FM36_1:
         POP      {R1,R4-R9,LR}
+        BX       LR               ;; return
+
+        SECTION `.data`:DATA:REORDER:NOROOT(0)
+flag_power_lose:
+        DATA
+        DC8 1
+
+        SECTION `.text`:CODE:NOROOT(2)
+        ARM
+Init_FM36_AB03:
+        PUSH     {R3-R11,LR}
+        MOVS     R11,R0
+        MOVS     R4,R1
+        MOVS     R5,R2
+        MOVS     R6,R3
+        MOVS     R0,R11
+        LSL      R0,R0,#+16
+        LSRS     R0,R0,#+16
+        LDR      R1,??DataTable2
+        LDR      R1,[R1, #+0]
+        CMP      R0,R1
+        BNE      ??Init_FM36_AB03_0
+        MOVS     R0,R4
+        ANDS     R0,R0,#0xFF      ;; Zero extend
+        LDR      R1,??DataTable2_8
+        LDR      R1,[R1, #+0]
+        CMP      R0,R1
+        BNE      ??Init_FM36_AB03_0
+        MOV      R0,#+0
+        B        ??Init_FM36_AB03_1
+??Init_FM36_AB03_0:
+        MOVS     R0,R11
+        LSL      R0,R0,#+16
+        LSRS     R0,R0,#+16
+        LDR      R1,??DataTable2
+        STR      R0,[R1, #+0]
+        MOVS     R0,R4
+        ANDS     R0,R0,#0xFF      ;; Zero extend
+        LDR      R1,??DataTable2_8
+        STR      R0,[R1, #+0]
+        BL       Pin_Reset_FM36
+        MOVS     R2,SP
+        MOV      R1,#+255
+        ORR      R1,R1,#0x2F00
+        MOV      R0,#+192
+        BL       CM_LegacyRead
+        MOVS     R10,R0
+        MOVS     R0,R10
+        ANDS     R0,R0,#0xFF      ;; Zero extend
+        CMP      R0,#+0
+        BEQ      ??Init_FM36_AB03_2
+        MOV      R0,#+224
+        MOVS     R10,R0
+        MOV      R0,#+224
+        B        ??Init_FM36_AB03_1
+??Init_FM36_AB03_2:
+        LDRH     R1,[SP, #+0]
+        LDR      R0,??DataTable2_1
+        BL       BSP_Ser_Printf
+        LDRH     R0,[SP, #+0]
+        MOV      R1,#+12
+        ORR      R1,R1,#0x6000
+        CMP      R0,R1
+        BEQ      ??Init_FM36_AB03_3
+        MOV      R0,#+225
+        B        ??Init_FM36_AB03_1
+??Init_FM36_AB03_3:
+        MOVS     R0,R11
+        LSL      R0,R0,#+16
+        LSRS     R0,R0,#+16
+        CMP      R0,#+8000
+        BEQ      ??Init_FM36_AB03_4
+        CMP      R0,#+16000
+        BEQ      ??Init_FM36_AB03_5
+        MOV      R1,#+192
+        ORR      R1,R1,#0x5D00
+        CMP      R0,R1
+        BEQ      ??Init_FM36_AB03_6
+        CMP      R0,#+32000
+        BEQ      ??Init_FM36_AB03_7
+        MOV      R1,#+68
+        ORR      R1,R1,#0xAC00
+        CMP      R0,R1
+        BEQ      ??Init_FM36_AB03_8
+        B        ??Init_FM36_AB03_9
+??Init_FM36_AB03_4:
+        MOV      R0,#+8000
+        STRH     R0,[SP, #+0]
+        B        ??Init_FM36_AB03_10
+??Init_FM36_AB03_5:
+        MOV      R0,#+16000
+        STRH     R0,[SP, #+0]
+        B        ??Init_FM36_AB03_10
+??Init_FM36_AB03_6:
+        MOV      R0,#+192
+        ORR      R0,R0,#0x5D00
+        STRH     R0,[SP, #+0]
+        B        ??Init_FM36_AB03_10
+??Init_FM36_AB03_7:
+        MOV      R0,#+32000
+        STRH     R0,[SP, #+0]
+        B        ??Init_FM36_AB03_10
+??Init_FM36_AB03_8:
+        MOV      R0,#+68
+        ORR      R0,R0,#0xAC00
+        STRH     R0,[SP, #+0]
+        B        ??Init_FM36_AB03_10
+??Init_FM36_AB03_9:
+        MOV      R0,#+128
+        ORR      R0,R0,#0xBB00
+        STRH     R0,[SP, #+0]
+??Init_FM36_AB03_10:
+        LDR      R0,??DataTable2_9
+        LDRB     R0,[R0, #+0]
+        CMP      R0,#+0
+        BEQ      ??Init_FM36_AB03_11
+        MOV      R0,#+0
+        LDR      R1,??DataTable2_9
+        STRB     R0,[R1, #+0]
+        LDR      R0,??DataTable2_10
+        LDR      R0,[R0, #+0]
+        MOVS     R8,R0
+        MOV      R0,#+1
+        MOVS     R7,R0
+??Init_FM36_AB03_12:
+        CMP      R7,#+75
+        BCS      ??Init_FM36_AB03_11
+        LSLS     R0,R7,#+2
+        LDR      R1,??DataTable2_10
+        ADDS     R0,R0,R1
+        BL       Revert_patch_Endien
+        MOV      R3,#+0
+        LSLS     R0,R7,#+2
+        LDR      R1,??DataTable2_10
+        ADDS     R2,R0,R1
+        MOVS     R1,R8
+        LSL      R1,R1,#+16
+        LSRS     R1,R1,#+16
+        MOV      R0,#+192
+        BL       PM_SingleWrite
+        MOVS     R10,R0
+        ADDS     R8,R8,#+1
+        MOVS     R0,R10
+        ANDS     R0,R0,#0xFF      ;; Zero extend
+        CMP      R0,#+0
+        BEQ      ??Init_FM36_AB03_13
+        MOV      R0,#+221
+        MOVS     R10,R0
+        MOVS     R0,R10
+        ANDS     R0,R0,#0xFF      ;; Zero extend
+        B        ??Init_FM36_AB03_1
+??Init_FM36_AB03_13:
+        ADDS     R7,R7,#+1
+        B        ??Init_FM36_AB03_12
+??Init_FM36_AB03_11:
+        MOV      R0,#+0
+        MOVS     R7,R0
+??Init_FM36_AB03_14:
+        CMP      R7,#+55
+        BCS      ??Init_FM36_AB03_15
+        LSLS     R0,R7,#+2
+        LDR      R1,??DataTable2_11
+        LDRH     R0,[R0, +R1]
+        MOVS     R8,R0
+        LSLS     R0,R7,#+2
+        LDR      R1,??DataTable2_11
+        ADDS     R0,R0,R1
+        LDRH     R0,[R0, #+2]
+        MOVS     R9,R0
+        MOVS     R0,R8
+        LSL      R0,R0,#+16
+        LSRS     R0,R0,#+16
+        MOV      R1,#+104
+        ORR      R1,R1,#0x2200
+        CMP      R0,R1
+        BNE      ??Init_FM36_AB03_16
+        LDRH     R0,[SP, #+0]
+        MOVS     R9,R0
+??Init_FM36_AB03_16:
+        MOVS     R0,R8
+        LSL      R0,R0,#+16
+        LSRS     R0,R0,#+16
+        MOV      R1,#+251
+        ORR      R1,R1,#0x2200
+        CMP      R0,R1
+        BNE      ??Init_FM36_AB03_17
+        MOVS     R0,R4
+        ANDS     R0,R0,#0xFF      ;; Zero extend
+        BL       Config_SP0_Out
+        MOVS     R10,R0
+        MOVS     R0,R10
+        ANDS     R0,R0,#0xFF      ;; Zero extend
+        CMP      R0,#+0
+        BEQ      ??Init_FM36_AB03_18
+        MOVS     R0,R10
+        ANDS     R0,R0,#0xFF      ;; Zero extend
+        B        ??Init_FM36_AB03_1
+??Init_FM36_AB03_18:
+        MOVS     R1,R6
+        ANDS     R1,R1,#0xFF      ;; Zero extend
+        MOVS     R0,R5
+        ANDS     R0,R0,#0xFF      ;; Zero extend
+        BL       Config_Lin
+        MOVS     R10,R0
+        MOVS     R0,R10
+        ANDS     R0,R0,#0xFF      ;; Zero extend
+        CMP      R0,#+0
+        BEQ      ??Init_FM36_AB03_17
+        MOVS     R0,R10
+        ANDS     R0,R0,#0xFF      ;; Zero extend
+        B        ??Init_FM36_AB03_1
+??Init_FM36_AB03_17:
+        MOVS     R2,R9
+        LSL      R2,R2,#+16
+        LSRS     R2,R2,#+16
+        MOVS     R1,R8
+        LSL      R1,R1,#+16
+        LSRS     R1,R1,#+16
+        MOV      R0,#+192
+        BL       DM_SingleWrite
+        MOVS     R10,R0
+        MOVS     R0,R10
+        ANDS     R0,R0,#0xFF      ;; Zero extend
+        CMP      R0,#+0
+        BEQ      ??Init_FM36_AB03_19
+        MOV      R0,#+220
+        MOVS     R10,R0
+        MOVS     R0,R10
+        ANDS     R0,R0,#0xFF      ;; Zero extend
+        B        ??Init_FM36_AB03_1
+??Init_FM36_AB03_19:
+        MOVS     R0,R8
+        LSL      R0,R0,#+16
+        LSRS     R0,R0,#+16
+        MOV      R1,#+251
+        ORR      R1,R1,#0x2200
+        CMP      R0,R1
+        BNE      ??Init_FM36_AB03_20
+        MOV      R0,#+100
+        BL       OSTimeDly
+??Init_FM36_AB03_20:
+        ADDS     R7,R7,#+1
+        B        ??Init_FM36_AB03_14
+??Init_FM36_AB03_15:
+        ADD      R2,SP,#+2
+        MOV      R1,#+6
+        ORR      R1,R1,#0x2300
+        MOV      R0,#+192
+        BL       DM_LegacyRead
+        MOVS     R10,R0
+        MOVS     R0,R10
+        ANDS     R0,R0,#0xFF      ;; Zero extend
+        CMP      R0,#+0
+        BEQ      ??Init_FM36_AB03_21
+        MOV      R0,#+223
+        MOVS     R10,R0
+        MOVS     R0,R10
+        ANDS     R0,R0,#0xFF      ;; Zero extend
+        B        ??Init_FM36_AB03_1
+??Init_FM36_AB03_21:
+        MOV      R0,#+100
+        BL       OSTimeDly
+        MOVS     R2,SP
+        MOV      R1,#+251
+        ORR      R1,R1,#0x2200
+        MOV      R0,#+192
+        BL       DM_LegacyRead
+        MOVS     R10,R0
+        MOVS     R0,R10
+        ANDS     R0,R0,#0xFF      ;; Zero extend
+        CMP      R0,#+0
+        BEQ      ??Init_FM36_AB03_22
+        MOV      R0,#+223
+        MOVS     R10,R0
+        MOVS     R0,R10
+        ANDS     R0,R0,#0xFF      ;; Zero extend
+        B        ??Init_FM36_AB03_1
+??Init_FM36_AB03_22:
+        LDRH     R1,[SP, #+0]
+        LDR      R0,??DataTable2_6
+        BL       BSP_Ser_Printf
+        LDRH     R0,[SP, #+0]
+        MOV      R1,#+90
+        ORR      R1,R1,#0x5A00
+        CMP      R0,R1
+        BEQ      ??Init_FM36_AB03_23
+        MOV      R0,#+227
+        B        ??Init_FM36_AB03_1
+??Init_FM36_AB03_23:
+        MOVS     R2,SP
+        MOV      R1,#+6
+        ORR      R1,R1,#0x2300
+        MOV      R0,#+192
+        BL       DM_LegacyRead
+        MOVS     R10,R0
+        MOVS     R0,R10
+        ANDS     R0,R0,#0xFF      ;; Zero extend
+        CMP      R0,#+0
+        BEQ      ??Init_FM36_AB03_24
+        MOV      R0,#+223
+        MOVS     R10,R0
+        MOVS     R0,R10
+        ANDS     R0,R0,#0xFF      ;; Zero extend
+        B        ??Init_FM36_AB03_1
+??Init_FM36_AB03_24:
+        LDRH     R0,[SP, #+0]
+        LDRH     R1,[SP, #+2]
+        CMP      R0,R1
+        BNE      ??Init_FM36_AB03_25
+        LDR      R0,??DataTable2_12
+        BL       BSP_Ser_Printf
+        MOV      R0,#+226
+        B        ??Init_FM36_AB03_1
+??Init_FM36_AB03_25:
+        MOVS     R0,R10
+        ANDS     R0,R0,#0xFF      ;; Zero extend
+??Init_FM36_AB03_1:
+        POP      {R1,R4-R11,LR}
         BX       LR               ;; return
 
         SECTION `.text`:CODE:NOROOT(2)
@@ -1125,61 +1139,67 @@ Init_FM36:
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
 ??DataTable2_2:
-        DC32     flag_power_lose
-
-        SECTION `.text`:CODE:NOROOT(2)
-        SECTION_TYPE SHT_PROGBITS, 0
-        DATA
-??DataTable2_3:
-        DC32     fm36_patch_code_3
-
-        SECTION `.text`:CODE:NOROOT(2)
-        SECTION_TYPE SHT_PROGBITS, 0
-        DATA
-??DataTable2_4:
-        DC32     fm36_para_table_3
-
-        SECTION `.text`:CODE:NOROOT(2)
-        SECTION_TYPE SHT_PROGBITS, 0
-        DATA
-??DataTable2_5:
-        DC32     `?<Constant "0x22FB = 0x%X\\r\\n">`
-
-        SECTION `.text`:CODE:NOROOT(2)
-        SECTION_TYPE SHT_PROGBITS, 0
-        DATA
-??DataTable2_6:
-        DC32     `?<Constant "FM36 frame counter st...">`
-
-        SECTION `.text`:CODE:NOROOT(2)
-        SECTION_TYPE SHT_PROGBITS, 0
-        DATA
-??DataTable2_7:
         DC32     fm36_patch_code_1
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable2_8:
+??DataTable2_3:
         DC32     fm36_para_table_1
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable2_9:
+??DataTable2_4:
         DC32     fm36_patch_code_2
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable2_10:
+??DataTable2_5:
         DC32     fm36_para_table_2
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable2_11:
+??DataTable2_6:
+        DC32     `?<Constant "0x22FB = 0x%X\\r\\n">`
+
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable2_7:
         DC32     `?<Constant "frame counter stopped !">`
+
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable2_8:
+        DC32     mic_num_saved
+
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable2_9:
+        DC32     flag_power_lose
+
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable2_10:
+        DC32     fm36_patch_code_3
+
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable2_11:
+        DC32     fm36_para_table_3
+
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable2_12:
+        DC32     `?<Constant "FM36 frame counter st...">`
 
         SECTION `.iar_vfe_header`:DATA:NOALLOC:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
@@ -1203,26 +1223,26 @@ Init_FM36:
         DC8 "0x22FB = 0x%X\015\012"
 
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
+`?<Constant "frame counter stopped !">`:
+        DATA
+        DC8 "frame counter stopped !"
+
+        SECTION `.rodata`:CONST:REORDER:NOROOT(2)
 `?<Constant "FM36 frame counter st...">`:
         DATA
         DC8 "FM36 frame counter stopped !"
         DC8 0, 0, 0
 
-        SECTION `.rodata`:CONST:REORDER:NOROOT(2)
-`?<Constant "frame counter stopped !">`:
-        DATA
-        DC8 "frame counter stopped !"
-
         END
 // 
-//     4 bytes in section .bss
+//     8 bytes in section .bss
 // 1 049 bytes in section .data
 //    88 bytes in section .rodata
-// 3 472 bytes in section .text
+// 3 516 bytes in section .text
 // 
-// 3 472 bytes of CODE  memory
+// 3 516 bytes of CODE  memory
 //    88 bytes of CONST memory
-// 1 053 bytes of DATA  memory
+// 1 057 bytes of DATA  memory
 //
 //Errors: none
 //Warnings: 1

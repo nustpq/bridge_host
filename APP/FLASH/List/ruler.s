@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       13/Jun/2014  16:27:47
+// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       21/Jul/2014  19:24:39
 // Copyright 1999-2014 IAR Systems AB.
 //
 //    Cpu mode     =  arm
@@ -482,6 +482,8 @@ Start_Audio:
         ANDS     R0,R0,#0xFF      ;; Zero extend
         CMP      R0,#+0
         BEQ      ??Start_Audio_0
+        MOVS     R1,R5
+        ANDS     R1,R1,#0xFF      ;; Zero extend
         LDR      R0,??DataTable13_2
         BL       BSP_Ser_Printf
         MOVS     R0,R5
@@ -3884,14 +3886,13 @@ Ruler_Setup_Sync:
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
 `?<Constant "\\r\\nStart_Audio ERROR: ...">`:
         DATA
-        DC8 "\015\012Start_Audio ERROR: timeout\015\012"
-        DC8 0
+        DC8 "\015\012Start_Audio ERROR: Timeout : %d\015\012"
 
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
 `?<Constant "\\r\\nStart_Audio ERROR: ...">_1`:
         DATA
-        DC8 "\015\012Start_Audio ERROR: %d\015\012 "
-        DC8 0
+        DC8 "\015\012Start_Audio ERROR: Data : %d\015\012 "
+        DC8 0, 0
 
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
 `?<Constant {235, 144, 3}>`:
@@ -4380,11 +4381,11 @@ Ruler_Setup_Sync:
 // 
 //     52 bytes in section .bss
 //      4 bytes in section .data
-//  2 818 bytes in section .rodata
-// 10 312 bytes in section .text
+//  2 830 bytes in section .rodata
+// 10 320 bytes in section .text
 // 
-// 10 312 bytes of CODE  memory
-//  2 818 bytes of CONST memory
+// 10 320 bytes of CODE  memory
+//  2 830 bytes of CONST memory
 //     56 bytes of DATA  memory
 //
 //Errors: none

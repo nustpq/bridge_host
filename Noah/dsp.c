@@ -420,7 +420,7 @@ static unsigned short int fm36_para_table_3[][2] =
   //lin source 
   {0x229A, 0x0002}, //Aux-in From SP1
   {0x229B, 0x0008}, //Aux-in-L in SP1 slot0 
-  {0x229C, 0x0009}, //Aux-in-L in SP1 slot1
+  {0x229C, 0x0009}, //Aux-in-R in SP1 slot1
   
   //select output data source slot
   {0x22C1, 0x101A},
@@ -429,8 +429,10 @@ static unsigned short int fm36_para_table_3[][2] =
   {0x22C4, 0x101D},
   {0x22C5, 0x101E},
   {0x22C6, 0x101F},   
-  {0x22C7, 0x1018}, //Aux-in-L
-  {0x22C8, 0x1019}, //Aux-in-R
+//  {0x22C7, 0x1018}, //Aux-in-L
+//  {0x22C8, 0x1019}, //Aux-in-R
+  {0x22C7, 0x1020}, //default 0
+  {0x22C8, 0x1020}, //default 0
   
   //select data dest slot
   //If lineout is from TX0, offset is 0~7
@@ -583,6 +585,7 @@ static unsigned char Config_SP0_Out( unsigned char mic_num )
 
 //Note: This routine do NOT support reentrance
 static unsigned int sr_saved = 0;
+static unsigned int mic_num_saved = 0;
 
 //Just Change the sample rate of FM36
 unsigned char ReInit_FM36( unsigned short sr )
@@ -625,163 +628,6 @@ unsigned char ReInit_FM36( unsigned short sr )
     return err ; 
     
 }
-
-
- static bool flag_power_lose = true;
-
-/*
-*********************************************************************************************************
-*                                       Init_FM36_AB03()
-*
-* Description : Initialize FM36 DSP on AB03 board.
-* Argument(s) : sr        : sample rate : 8000 ~ 48000 
-*               mic_num   : 0~6
-*               lin_sp_index  : line in data source: 0 ~ 1
-*               start_slot_index: line in data slot: 0 ~ 7
-* Return(s)   : NO_ERR :   execute successfully
-*               others :   =error code .  
-*
-* Note(s)     : None.
-*********************************************************************************************************
-*/
-unsigned char Init_FM36_AB03( unsigned short sr, unsigned char mic_num, unsigned char lin_sp_index, unsigned char start_slot_index )
-{
-    unsigned int   i;
-    unsigned short temp, temp2 ;
-    unsigned short addr, val; 
-    unsigned char  err ;      
-    
-    if( sr == sr_saved ) {
-        return NO_ERR;
-    } else {
-        sr_saved = sr ;
-    }   
-    
-    Pin_Reset_FM36();  
-    
-//    err = HOST_SingleWrite_2(FM36_I2C_ADDR, 0x0C, 2); //reset
-//    if( OS_ERR_NONE != err ) {
-//        return FM36_WR_HOST_ERR;
-//    }    
-//    err = DM_LegacyRead( FM36_I2C_ADDR, 0x22FB,(unsigned char *)&temp ) ;
-//    if( OS_ERR_NONE != err ) {
-//        err = FM36_RD_DM_ERR;
-//        return err ;
-//    }  
-//    APP_TRACE_INFO(("0x22FB = 0x%X\r\n", temp));     
-//    err = DM_LegacyRead( FM36_I2C_ADDR, 0x2306,(unsigned char *)&temp ) ;
-//    if( OS_ERR_NONE != err ) {
-//        err = FM36_RD_DM_ERR;
-//        return err ;
-//    }  
-//    APP_TRACE_INFO(("0x2306 = 0x%X\r\n", temp));     
-    
-    err = CM_LegacyRead( FM36_I2C_ADDR, 0x2FFF,(unsigned char *)&temp ) ;
-    if( OS_ERR_NONE != err ) {
-        err = FM36_RD_CM_ERR;
-        return FM36_RD_CM_ERR ;
-    }
-    APP_TRACE_INFO(("ROM ID = 0x%X\r\n", temp));
-    
-    if( temp != FM36_ROM_ID_2 ) { 
-        return FM36_CHECK_ROMID_ERR; //dsp type error
-    } 
-       
-    // set SR
-    switch ( sr ) {
-        case 8000 :
-            temp = 0x1F40;
-        break;        
-        case 16000 :
-            temp = 0x3E80;
-        break;
-        case 24000 :
-            temp = 0x5DC0;
-        break;
-        case 32000 :
-            temp = 0x7D00;
-        break;
-        case 44100 :
-            temp = 0xAC44;
-        break;
-        default: //48000 :
-            temp = 0xBB80;
-        break;   
-    }
- 
-    //FM36-600C
-    //patch code
-    if( flag_power_lose ) { //only need download patch once after one power cycle
-            
-        flag_power_lose = false;
-        addr = (unsigned short)fm36_patch_code_3[0];
-        for( i = 1; i < sizeof(fm36_patch_code_3)/4; i++) { 
-            Revert_patch_Endien(&fm36_patch_code_3[i]);    
-            err = PM_SingleWrite( FM36_I2C_ADDR, addr++, (unsigned char*)&fm36_patch_code_3[i],0 ) ;
-              if( OS_ERR_NONE != err ) {
-                  err = FM36_WR_PM_ERR;
-                  return err ;
-              }         
-        }
-    } 
-    //parameters
-    for( i = 0; i < sizeof(fm36_para_table_3)/4; i++) {            
-        addr = fm36_para_table_3[i][0];
-        val  = fm36_para_table_3[i][1];
-        if( addr == 0x2268 ) { //SR
-            val = temp ;
-        }
-        if( addr == 0x22FB ) {  //if run chip, do sth before
-            err = Config_SP0_Out( mic_num );
-            if( OS_ERR_NONE != err ) {
-                return err ;
-            }
-            err = Config_Lin( lin_sp_index, start_slot_index );
-            if( OS_ERR_NONE != err ) {
-                return err ;
-            }
-        } 
-        err = DM_SingleWrite( FM36_I2C_ADDR, addr, val ) ;
-        if( OS_ERR_NONE != err ) {
-            err = FM36_WR_DM_ERR;
-            return err ;
-        }
-        if( addr == 0x22FB ) {  //if run chip, delay
-            OSTimeDly(100);
-        } 
-    } 
-          
-
-    err = DM_LegacyRead( FM36_I2C_ADDR, 0x2306,(unsigned char *)&temp2 ) ;
-    if( OS_ERR_NONE != err ) {
-        err = FM36_RD_DM_ERR;
-        return err ;
-    }
-    APP_TRACE_DBG(("0x2306 = 0x%X\r\n", temp2));
-    OSTimeDly(100);
-    err = DM_LegacyRead( FM36_I2C_ADDR, 0x22FB,(unsigned char *)&temp ) ;
-    if( OS_ERR_NONE != err ) {
-        err = FM36_RD_DM_ERR;
-        return err ;
-    }
-    APP_TRACE_INFO(("0x22FB = 0x%X\r\n", temp));
-    if( temp != 0x5A5A ) {   
-        return FM36_CHECK_FLAG_ERR;
-    }
-    err = DM_LegacyRead( FM36_I2C_ADDR, 0x2306,(unsigned char *)&temp ) ;
-    if( OS_ERR_NONE != err ) {
-        err = FM36_RD_DM_ERR;
-        return err ;
-    }
-    APP_TRACE_DBG(("0x2306 = 0x%X\r\n", temp));
-    if( temp == temp2 ) {
-        APP_TRACE_INFO(("FM36 frame counter stopped !"));
-        return FM36_CHECK_COUNTER_ERR;
-    }    
-    return err;
-    
-}
-
 
 
 unsigned char Init_FM36( unsigned short sr )
@@ -933,4 +779,161 @@ unsigned char Init_FM36( unsigned short sr )
     return (err);
     
 }
+
+static bool flag_power_lose = true;
+
+/*
+*********************************************************************************************************
+*                                       Init_FM36_AB03()
+*
+* Description : Initialize FM36 DSP on AB03 board.
+* Argument(s) : sr        : sample rate : 8000 ~ 48000 
+*               mic_num   : 0~6
+*               lin_sp_index  : line in data source: 0 ~ 1
+*               start_slot_index: line in data slot: 0 ~ 7
+* Return(s)   : NO_ERR :   execute successfully
+*               others :   =error code .  
+*
+* Note(s)     : None.
+*********************************************************************************************************
+*/
+unsigned char Init_FM36_AB03( unsigned short sr, unsigned char mic_num, unsigned char lin_sp_index, unsigned char start_slot_index )
+{
+    unsigned int   i;
+    unsigned short temp, temp2 ;
+    unsigned short addr, val; 
+    unsigned char  err ;      
+    
+    if( sr == sr_saved  &&  mic_num == mic_num_saved ) { //just check this 2 parameters, b/c other won't change in AB03
+        return NO_ERR;
+    } else {
+        sr_saved = sr ;
+        mic_num_saved = mic_num ;
+    }   
+    
+    Pin_Reset_FM36();  
+    
+//    err = HOST_SingleWrite_2(FM36_I2C_ADDR, 0x0C, 2); //reset
+//    if( OS_ERR_NONE != err ) {
+//        return FM36_WR_HOST_ERR;
+//    }    
+//    err = DM_LegacyRead( FM36_I2C_ADDR, 0x22FB,(unsigned char *)&temp ) ;
+//    if( OS_ERR_NONE != err ) {
+//        err = FM36_RD_DM_ERR;
+//        return err ;
+//    }  
+//    APP_TRACE_INFO(("0x22FB = 0x%X\r\n", temp));     
+//    err = DM_LegacyRead( FM36_I2C_ADDR, 0x2306,(unsigned char *)&temp ) ;
+//    if( OS_ERR_NONE != err ) {
+//        err = FM36_RD_DM_ERR;
+//        return err ;
+//    }  
+//    APP_TRACE_INFO(("0x2306 = 0x%X\r\n", temp));     
+    
+    err = CM_LegacyRead( FM36_I2C_ADDR, 0x2FFF,(unsigned char *)&temp ) ;
+    if( OS_ERR_NONE != err ) {
+        err = FM36_RD_CM_ERR;
+        return FM36_RD_CM_ERR ;
+    }
+    APP_TRACE_INFO(("ROM ID = 0x%X\r\n", temp));
+    
+    if( temp != FM36_ROM_ID_2 ) { 
+        return FM36_CHECK_ROMID_ERR; //dsp type error
+    } 
+       
+    // set SR
+    switch ( sr ) {
+        case 8000 :
+            temp = 0x1F40;
+        break;        
+        case 16000 :
+            temp = 0x3E80;
+        break;
+        case 24000 :
+            temp = 0x5DC0;
+        break;
+        case 32000 :
+            temp = 0x7D00;
+        break;
+        case 44100 :
+            temp = 0xAC44;
+        break;
+        default: //48000 :
+            temp = 0xBB80;
+        break;   
+    }
+ 
+    //FM36-600C
+    //patch code
+    if( flag_power_lose ) { //only need download patch once after one power cycle
+            
+        flag_power_lose = false;
+        addr = (unsigned short)fm36_patch_code_3[0];
+        for( i = 1; i < sizeof(fm36_patch_code_3)/4; i++) { 
+            Revert_patch_Endien(&fm36_patch_code_3[i]);    
+            err = PM_SingleWrite( FM36_I2C_ADDR, addr++, (unsigned char*)&fm36_patch_code_3[i],0 ) ;
+              if( OS_ERR_NONE != err ) {
+                  err = FM36_WR_PM_ERR;
+                  return err ;
+              }         
+        }
+    } 
+    //parameters
+    for( i = 0; i < sizeof(fm36_para_table_3)/4; i++) {            
+        addr = fm36_para_table_3[i][0];
+        val  = fm36_para_table_3[i][1];
+        if( addr == 0x2268 ) { //SR
+            val = temp ;
+        }
+        if( addr == 0x22FB ) {  //if run chip, do sth before
+            err = Config_SP0_Out( mic_num );
+            if( OS_ERR_NONE != err ) {
+                return err ;
+            }
+            err = Config_Lin( lin_sp_index, start_slot_index );
+            if( OS_ERR_NONE != err ) {
+                return err ;
+            }
+        } 
+        err = DM_SingleWrite( FM36_I2C_ADDR, addr, val ) ;
+        if( OS_ERR_NONE != err ) {
+            err = FM36_WR_DM_ERR;
+            return err ;
+        }
+        if( addr == 0x22FB ) {  //if run chip, delay
+            OSTimeDly(100);
+        } 
+    } 
+          
+
+    err = DM_LegacyRead( FM36_I2C_ADDR, 0x2306,(unsigned char *)&temp2 ) ;
+    if( OS_ERR_NONE != err ) {
+        err = FM36_RD_DM_ERR;
+        return err ;
+    }
+    APP_TRACE_DBG(("0x2306 = 0x%X\r\n", temp2));
+    OSTimeDly(100);
+    err = DM_LegacyRead( FM36_I2C_ADDR, 0x22FB,(unsigned char *)&temp ) ;
+    if( OS_ERR_NONE != err ) {
+        err = FM36_RD_DM_ERR;
+        return err ;
+    }
+    APP_TRACE_INFO(("0x22FB = 0x%X\r\n", temp));
+    if( temp != 0x5A5A ) {   
+        return FM36_CHECK_FLAG_ERR;
+    }
+    err = DM_LegacyRead( FM36_I2C_ADDR, 0x2306,(unsigned char *)&temp ) ;
+    if( OS_ERR_NONE != err ) {
+        err = FM36_RD_DM_ERR;
+        return err ;
+    }
+    APP_TRACE_DBG(("0x2306 = 0x%X\r\n", temp));
+    if( temp == temp2 ) {
+        APP_TRACE_INFO(("FM36 frame counter stopped !"));
+        return FM36_CHECK_COUNTER_ERR;
+    }    
+    return err;
+    
+}
+
 

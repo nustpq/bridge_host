@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        13/Jun/2014  16:27:47
+# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        21/Jul/2014  19:24:39
 # Copyright 1999-2014 IAR Systems AB.
 #
 #    Cpu mode     =  arm
@@ -298,11 +298,11 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
     251              USART_SendBuf( AUDIO_UART, buf,  sizeof(buf)) ;    
     252              err = USART_Read_Timeout( AUDIO_UART, &data, 1, TIMEOUT_AUDIO_COM);  
     253              if( err != NO_ERR ) { 
-    254                  APP_TRACE_INFO(("\r\nStart_Audio ERROR: timeout\r\n")); 
+    254                  APP_TRACE_INFO(("\r\nStart_Audio ERROR: Timeout : %d\r\n",err)); 
     255                  return err;
     256              }
     257              if( data != NO_ERR ) {
-    258                  APP_TRACE_INFO(("\r\nStart_Audio ERROR: %d\r\n ",data)); 
+    258                  APP_TRACE_INFO(("\r\nStart_Audio ERROR: Data : %d\r\n ",data)); 
     259                  return data; 
     260              } else {
     261                  OS_ENTER_CRITICAL(); 
@@ -2078,8 +2078,8 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
       40  ?<Constant "\r\nSetup_Audio Init_CO...">
       40  ?<Constant "\r\nSetup_Audio ReInit_...">
       32  ?<Constant "\r\nStart Audio Bridge ...">
-      32  ?<Constant "\r\nStart_Audio ERROR: ...">
-      28  ?<Constant "\r\nStart_Audio ERROR: ...">_1
+      36  ?<Constant "\r\nStart_Audio ERROR: ...">
+      36  ?<Constant "\r\nStart_Audio ERROR: ...">_1
       28  ?<Constant "\r\nStop_Audio ERROR: %...">
       32  ?<Constant "\r\nStop_Audio ERROR: t...">
       44  ?<Constant "\r\nStop_Audio Power Do...">
@@ -2268,7 +2268,7 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
      344  Set_Volume
      592  Setup_Audio
      380  Setup_Ruler
-     272  Start_Audio
+     280  Start_Audio
      300  Stop_Audio
      440  Toggle_Mic
      380  Update_Mic_Mask
@@ -2284,11 +2284,11 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
  
      52 bytes in section .bss
       4 bytes in section .data
-  2 818 bytes in section .rodata
- 10 312 bytes in section .text
+  2 830 bytes in section .rodata
+ 10 320 bytes in section .text
  
- 10 312 bytes of CODE  memory
-  2 818 bytes of CONST memory
+ 10 320 bytes of CODE  memory
+  2 830 bytes of CONST memory
      56 bytes of DATA  memory
 
 Errors: none
