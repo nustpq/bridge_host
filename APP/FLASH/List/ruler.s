@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       21/Jul/2014  19:24:39
+// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       19/Aug/2014  09:38:02
 // Copyright 1999-2014 IAR Systems AB.
 //
 //    Cpu mode     =  arm
@@ -105,6 +105,7 @@
         PUBLIC Read_Mic_Cali_Data
         PUBLIC Read_Ruler_Info
         PUBLIC Read_Ruler_Status
+        PUBLIC Reset_Audio
         PUBLIC Reset_Mic_Mask
         PUBLIC Ruler_Active_Control
         PUBLIC Ruler_CMD_Result
@@ -192,7 +193,7 @@ Init_Global_Var:
         MOVS     R2,R0
         ANDS     R2,R2,#0xFF      ;; Zero extend
         LSLS     R2,R2,#+2
-        LDR      R3,??DataTable11_3
+        LDR      R3,??DataTable12
         STR      R1,[R2, +R3]
         ADDS     R0,R0,#+1
         B        ??Init_Global_Var_0
@@ -220,7 +221,7 @@ Check_Actived_Mic_Number:
         MOVS     R3,R1
         ANDS     R3,R3,#0xFF      ;; Zero extend
         LSLS     R3,R3,#+2
-        LDR      R12,??DataTable11_3
+        LDR      R12,??DataTable12
         LDR      R3,[R3, +R12]
         MOV      R12,#+1
         TST      R12,R3, LSR R2
@@ -245,7 +246,7 @@ Check_UART_Mixer_Ready:
         MOVS     R4,R0
 ??Check_UART_Mixer_Ready_0:
         MOVS     R1,SP
-        LDR      R0,??DataTable11_4
+        LDR      R0,??DataTable12_1
         LDR      R0,[R0, #+0]
         BL       OSQGet
         CMP      R0,#+0
@@ -258,13 +259,13 @@ Check_UART_Mixer_Ready:
         CMP      R4,#+0
         BEQ      ??Check_UART_Mixer_Ready_2
         MOVS     R1,R4
-        LDR      R0,??DataTable11_5
+        LDR      R0,??DataTable12_2
         BL       BSP_Ser_Printf
 ??Check_UART_Mixer_Ready_2:
         MOV      R0,#+0
         MOVS     R4,R0
 ??Check_UART_Mixer_Ready_3:
-        LDR      R0,??DataTable11_6
+        LDR      R0,??DataTable12_3
         LDR      R0,[R0, #+4]
         BL       Queue_NData
         CMP      R0,#+0
@@ -277,7 +278,7 @@ Check_UART_Mixer_Ready:
         CMP      R4,#+0
         BEQ      ??Check_UART_Mixer_Ready_5
         MOVS     R1,R4
-        LDR      R0,??DataTable12
+        LDR      R0,??DataTable12_4
         BL       BSP_Ser_Printf
 ??Check_UART_Mixer_Ready_5:
         MOV      R0,#+5
@@ -294,7 +295,7 @@ Setup_Audio:
         MOV      R0,#+255
         STRB     R0,[SP, #+0]
         ADD      R0,SP,#+4
-        LDR      R1,??DataTable11_7
+        LDR      R1,??DataTable12_5
         LDM      R1!,{R2,R3}
         STM      R0!,{R2,R3}
         SUBS     R1,R1,#+8
@@ -316,20 +317,20 @@ Setup_Audio:
         LDRB     R0,[R4, #+4]
         CMP      R0,#+0
         BNE      ??Setup_Audio_1
-        LDR      R3,??DataTable11_8
+        LDR      R3,??DataTable12_6
         B        ??Setup_Audio_2
 ??Setup_Audio_1:
-        LDR      R3,??DataTable11_9
+        LDR      R3,??DataTable12_7
 ??Setup_Audio_2:
         LDRB     R2,[R4, #+3]
         LDRH     R1,[R4, #+0]
-        LDR      R0,??DataTable11_10
+        LDR      R0,??DataTable12_8
         BL       BSP_Ser_Printf
         B        ??Setup_Audio_3
 ??Setup_Audio_0:
         LDRB     R2,[R4, #+3]
         LDRH     R1,[R4, #+0]
-        LDR      R0,??DataTable11_11
+        LDR      R0,??DataTable12_9
         BL       BSP_Ser_Printf
 ??Setup_Audio_3:
         BL       Check_Actived_Mic_Number
@@ -340,7 +341,7 @@ Setup_Audio:
         BLT      ??Setup_Audio_4
         MOVS     R1,R6
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable11_12
+        LDR      R0,??DataTable12_10
         BL       BSP_Ser_Printf
         MOV      R0,#+199
         B        ??Setup_Audio_5
@@ -355,9 +356,11 @@ Setup_Audio:
         MOVS     R2,R6
         ANDS     R2,R2,#0xFF      ;; Zero extend
         LDRB     R1,[R4, #+3]
-        LDR      R0,??DataTable12_1
+        LDR      R0,??DataTable12_11
         BL       BSP_Ser_Printf
         STRB     R6,[SP, #+8]
+        MOV      R0,#+201
+        B        ??Setup_Audio_5
 ??Setup_Audio_6:
         LDRB     R0,[R4, #+2]
         CMP      R0,#+1
@@ -366,7 +369,7 @@ Setup_Audio:
         CMP      R0,#+5
         BLT      ??Setup_Audio_7
         LDRB     R1,[R4, #+3]
-        LDR      R0,??DataTable12_2
+        LDR      R0,??DataTable12_12
         BL       BSP_Ser_Printf
         MOV      R0,#+200
         B        ??Setup_Audio_5
@@ -381,7 +384,7 @@ Setup_Audio:
         ADDS     R0,R0,#+2
         STRB     R0,[SP, #+8]
         LDRB     R1,[SP, #+8]
-        LDR      R0,??DataTable12_3
+        LDR      R0,??DataTable12_13
         BL       BSP_Ser_Printf
 ??Setup_Audio_8:
         MOV      R0,#+3
@@ -400,7 +403,7 @@ Setup_Audio:
         ANDS     R0,R0,#0xFF      ;; Zero extend
         CMP      R0,#+0
         BEQ      ??Setup_Audio_9
-        LDR      R0,??DataTable12_4
+        LDR      R0,??DataTable12_14
         BL       BSP_Ser_Printf
         MOVS     R0,R5
         ANDS     R0,R0,#0xFF      ;; Zero extend
@@ -410,7 +413,7 @@ Setup_Audio:
         CMP      R0,#+0
         BEQ      ??Setup_Audio_10
         LDRB     R1,[SP, #+0]
-        LDR      R0,??DataTable12_5
+        LDR      R0,??DataTable13
         BL       BSP_Ser_Printf
         LDRB     R0,[SP, #+0]
         B        ??Setup_Audio_5
@@ -424,7 +427,7 @@ Setup_Audio:
         BEQ      ??Setup_Audio_11
         MOVS     R1,R5
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable12_6
+        LDR      R0,??DataTable13_1
         BL       BSP_Ser_Printf
 ??Setup_Audio_11:
         MOV      R3,#+0
@@ -440,7 +443,7 @@ Setup_Audio:
         BEQ      ??Setup_Audio_12
         MOVS     R1,R5
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable13
+        LDR      R0,??DataTable14
         BL       BSP_Ser_Printf
 ??Setup_Audio_12:
         MOVS     R0,R5
@@ -460,12 +463,16 @@ Start_Audio:
         MOV      R0,#+255
         STRB     R0,[SP, #+0]
         ADD      R0,SP,#+4
-        LDR      R1,??DataTable13_1
+        LDR      R1,??DataTable13_2
         LDR      R2,[R1, #0]
         STR      R2,[R0, #+0]
         ANDS     R0,R4,#0x3
         STRB     R0,[SP, #+7]
         MOV      R7,#+0
+        MOVS     R1,R4
+        ANDS     R1,R1,#0xFF      ;; Zero extend
+        LDR      R0,??DataTable13_3
+        BL       BSP_Ser_Printf
         MOV      R0,#+3
         BL       UART2_Mixer
         MOV      R2,#+4
@@ -484,7 +491,7 @@ Start_Audio:
         BEQ      ??Start_Audio_0
         MOVS     R1,R5
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable13_2
+        LDR      R0,??DataTable13_4
         BL       BSP_Ser_Printf
         MOVS     R0,R5
         ANDS     R0,R0,#0xFF      ;; Zero extend
@@ -494,7 +501,7 @@ Start_Audio:
         CMP      R0,#+0
         BEQ      ??Start_Audio_2
         LDRB     R1,[SP, #+0]
-        LDR      R0,??DataTable13_3
+        LDR      R0,??DataTable13_5
         BL       BSP_Ser_Printf
         LDRB     R0,[SP, #+0]
         B        ??Start_Audio_1
@@ -538,10 +545,12 @@ Stop_Audio:
         MOV      R0,#+255
         STRB     R0,[SP, #+0]
         ADD      R0,SP,#+4
-        LDR      R1,??DataTable13_4
+        LDR      R1,??DataTable14_1
         LDR      R2,[R1, #0]
         STR      R2,[R0, #+0]
         MOV      R6,#+0
+        LDR      R0,??DataTable14_2
+        BL       BSP_Ser_Printf
         MOV      R0,#+3
         BL       UART2_Mixer
         MOV      R2,#+3
@@ -558,7 +567,7 @@ Stop_Audio:
         ANDS     R0,R0,#0xFF      ;; Zero extend
         CMP      R0,#+0
         BEQ      ??Stop_Audio_0
-        LDR      R0,??DataTable13_5
+        LDR      R0,??DataTable14_3
         BL       BSP_Ser_Printf
         MOVS     R0,R4
         ANDS     R0,R0,#0xFF      ;; Zero extend
@@ -568,7 +577,7 @@ Stop_Audio:
         CMP      R0,#+0
         BEQ      ??Stop_Audio_2
         LDRB     R1,[SP, #+0]
-        LDR      R0,??DataTable13_6
+        LDR      R0,??DataTable14_4
         BL       BSP_Ser_Printf
         LDRB     R0,[SP, #+0]
         B        ??Stop_Audio_1
@@ -582,7 +591,7 @@ Stop_Audio:
         BEQ      ??Stop_Audio_3
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable13_7
+        LDR      R0,??DataTable14_5
         BL       BSP_Ser_Printf
 ??Stop_Audio_3:
         BL       OS_CPU_SR_Save
@@ -618,11 +627,60 @@ Stop_Audio:
 
         SECTION `.text`:CODE:NOROOT(2)
         ARM
+Reset_Audio:
+        PUSH     {R2-R4,LR}
+        MOV      R4,#+255
+        MOV      R0,#+255
+        STRB     R0,[SP, #+0]
+        ADD      R0,SP,#+4
+        LDR      R1,??DataTable14_6
+        LDR      R2,[R1, #0]
+        STR      R2,[R0, #+0]
+        LDR      R0,??DataTable14_7
+        BL       BSP_Ser_Printf
+        MOV      R0,#+3
+        BL       UART2_Mixer
+        MOV      R2,#+3
+        ADD      R1,SP,#+4
+        MOV      R0,#+2
+        BL       USART_SendBuf
+        MOV      R3,#+2000
+        MOV      R2,#+1
+        MOVS     R1,SP
+        MOV      R0,#+2
+        BL       USART_Read_Timeout
+        MOVS     R4,R0
+        MOVS     R0,R4
+        ANDS     R0,R0,#0xFF      ;; Zero extend
+        CMP      R0,#+0
+        BEQ      ??Reset_Audio_0
+        LDR      R0,??DataTable14_8
+        BL       BSP_Ser_Printf
+        MOVS     R0,R4
+        ANDS     R0,R0,#0xFF      ;; Zero extend
+        B        ??Reset_Audio_1
+??Reset_Audio_0:
+        LDRB     R0,[SP, #+0]
+        CMP      R0,#+0
+        BEQ      ??Reset_Audio_2
+        LDRB     R1,[SP, #+0]
+        LDR      R0,??DataTable15
+        BL       BSP_Ser_Printf
+        LDRB     R0,[SP, #+0]
+        B        ??Reset_Audio_1
+??Reset_Audio_2:
+        MOV      R0,#+0
+??Reset_Audio_1:
+        POP      {R1,R2,R4,LR}
+        BX       LR               ;; return
+
+        SECTION `.text`:CODE:NOROOT(2)
+        ARM
 Get_Audio_Version:
         PUSH     {R4,LR}
         SUB      SP,SP,#+8
         MOVS     R0,SP
-        LDR      R1,??DataTable13_8
+        LDR      R1,??DataTable14_9
         LDR      R2,[R1, #0]
         STR      R2,[R0, #+0]
         MOV      R0,#+3
@@ -633,7 +691,7 @@ Get_Audio_Version:
         BL       USART_SendBuf
         MOV      R3,#+2000
         MOV      R2,#+12
-        LDR      R1,??DataTable14
+        LDR      R1,??DataTable14_10
         MOV      R0,#+2
         BL       USART_Read_Timeout
         MOVS     R4,R0
@@ -641,14 +699,14 @@ Get_Audio_Version:
         ANDS     R0,R0,#0xFF      ;; Zero extend
         CMP      R0,#+0
         BEQ      ??Get_Audio_Version_0
-        LDR      R0,??DataTable14_1
+        LDR      R0,??DataTable15_1
         BL       BSP_Ser_Printf
         MOVS     R0,R4
         ANDS     R0,R0,#0xFF      ;; Zero extend
         B        ??Get_Audio_Version_1
 ??Get_Audio_Version_0:
-        LDR      R1,??DataTable14
-        LDR      R0,??DataTable15
+        LDR      R1,??DataTable14_10
+        LDR      R0,??DataTable16
         BL       BSP_Ser_Printf
         MOV      R0,#+0
 ??Get_Audio_Version_1:
@@ -671,16 +729,16 @@ Init_Ruler:
 ??Init_Ruler_0:
         ADD      R2,SP,#+12
         MOV      R1,#+0
-        LDR      R0,??DataTable15_1
+        LDR      R0,??DataTable16_1
         LDR      R0,[R0, #+0]
         BL       OSSemPend
-        LDR      R0,??DataTable14_2
+        LDR      R0,??DataTable15_2
         LDRB     R0,[R0, #+0]
         ANDS     R4,R4,#0xFF      ;; Zero extend
         CMP      R0,R4
         BEQ      ??Init_Ruler_2
         BL       Check_UART_Mixer_Ready
-        LDR      R0,??DataTable14_2
+        LDR      R0,??DataTable15_2
         STRB     R4,[R0, #+0]
         MOVS     R0,R4
         ANDS     R0,R0,#0xFF      ;; Zero extend
@@ -695,7 +753,7 @@ Init_Ruler:
         MOV      R3,#+0
         MOV      R2,#+0
         MOV      R1,#+62
-        LDR      R0,??DataTable11_4
+        LDR      R0,??DataTable12_1
         LDR      R0,[R0, #+0]
         BL       pcSendDateToBuf
         STRB     R0,[SP, #+12]
@@ -705,7 +763,7 @@ Init_Ruler:
         ADD      R2,SP,#+12
         MOV      R1,#+136
         ORR      R1,R1,#0x1300
-        LDR      R0,??DataTable14_3
+        LDR      R0,??DataTable15_3
         LDR      R0,[R0, #+0]
         BL       OSSemPend
         LDRB     R0,[SP, #+12]
@@ -713,11 +771,11 @@ Init_Ruler:
         BNE      ??Init_Ruler_4
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable14_4
+        LDR      R0,??DataTable15_4
         BL       BSP_Ser_Printf
         B        ??Init_Ruler_5
 ??Init_Ruler_4:
-        LDR      R0,??DataTable14_5
+        LDR      R0,??DataTable15_5
         LDRB     R0,[R0, #+0]
         STRB     R0,[SP, #+12]
         LDRB     R0,[SP, #+12]
@@ -726,17 +784,17 @@ Init_Ruler:
         LDRB     R2,[SP, #+12]
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable14_6
+        LDR      R0,??DataTable15_6
         BL       BSP_Ser_Printf
         B        ??Init_Ruler_5
 ??Init_Ruler_3:
         LDRB     R2,[SP, #+12]
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable14_7
+        LDR      R0,??DataTable15_7
         BL       BSP_Ser_Printf
 ??Init_Ruler_5:
-        LDR      R0,??DataTable15_1
+        LDR      R0,??DataTable16_1
         LDR      R0,[R0, #+0]
         BL       OSSemPost
         LDRB     R0,[SP, #+12]
@@ -752,11 +810,11 @@ Setup_Ruler:
         SUB      SP,SP,#+20
         MOVS     R5,R0
         ADD      R0,SP,#+14
-        LDR      R1,??DataTable15_2
+        LDR      R1,??DataTable15_8
         LDRH     R2,[R1, #0]
         STRH     R2,[R0, #+0]
         STRB     R5,[SP, #+15]
-        LDR      R0,??DataTable15_3
+        LDR      R0,??DataTable16_2
         MOVS     R4,R0
         MOVS     R0,R5
         ANDS     R0,R0,#0xFF      ;; Zero extend
@@ -769,16 +827,16 @@ Setup_Ruler:
 ??Setup_Ruler_0:
         ADD      R2,SP,#+12
         MOV      R1,#+0
-        LDR      R0,??DataTable15_1
+        LDR      R0,??DataTable16_1
         LDR      R0,[R0, #+0]
         BL       OSSemPend
-        LDR      R0,??DataTable14_2
+        LDR      R0,??DataTable15_2
         LDRB     R0,[R0, #+0]
         ANDS     R5,R5,#0xFF      ;; Zero extend
         CMP      R0,R5
         BEQ      ??Setup_Ruler_2
         BL       Check_UART_Mixer_Ready
-        LDR      R0,??DataTable14_2
+        LDR      R0,??DataTable15_2
         STRB     R5,[R0, #+0]
         MOVS     R0,R5
         ANDS     R0,R0,#0xFF      ;; Zero extend
@@ -793,7 +851,7 @@ Setup_Ruler:
         MOV      R3,#+2
         ADD      R2,SP,#+14
         MOV      R1,#+2
-        LDR      R0,??DataTable11_4
+        LDR      R0,??DataTable12_1
         LDR      R0,[R0, #+0]
         BL       pcSendDateToBuf
         STRB     R0,[SP, #+12]
@@ -803,7 +861,7 @@ Setup_Ruler:
         ADD      R2,SP,#+12
         MOV      R1,#+136
         ORR      R1,R1,#0x1300
-        LDR      R0,??DataTable14_3
+        LDR      R0,??DataTable15_3
         LDR      R0,[R0, #+0]
         BL       OSSemPend
         LDRB     R0,[SP, #+12]
@@ -811,18 +869,18 @@ Setup_Ruler:
         BNE      ??Setup_Ruler_4
         MOVS     R1,R5
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable15_4
+        LDR      R0,??DataTable16_3
         BL       BSP_Ser_Printf
         B        ??Setup_Ruler_5
 ??Setup_Ruler_4:
         LDRB     R0,[R4, #+12]
-        LDR      R1,??DataTable15_5
+        LDR      R1,??DataTable16_4
         STRB     R0,[R1, #+0]
-        LDR      R0,??DataTable15_5
+        LDR      R0,??DataTable16_4
         LDRB     R1,[R0, #+0]
-        LDR      R0,??DataTable15_6
+        LDR      R0,??DataTable16_5
         BL       BSP_Ser_Printf
-        LDR      R0,??DataTable14_5
+        LDR      R0,??DataTable15_5
         LDRB     R0,[R0, #+0]
         STRB     R0,[SP, #+12]
         LDRB     R0,[SP, #+12]
@@ -831,17 +889,17 @@ Setup_Ruler:
         LDRB     R2,[SP, #+12]
         MOVS     R1,R5
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable15_7
+        LDR      R0,??DataTable16_6
         BL       BSP_Ser_Printf
         B        ??Setup_Ruler_5
 ??Setup_Ruler_3:
         LDRB     R2,[SP, #+12]
         MOVS     R1,R5
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable14_7
+        LDR      R0,??DataTable15_7
         BL       BSP_Ser_Printf
 ??Setup_Ruler_5:
-        LDR      R0,??DataTable15_1
+        LDR      R0,??DataTable16_1
         LDR      R0,[R0, #+0]
         BL       OSSemPost
         LDRB     R0,[SP, #+12]
@@ -857,10 +915,10 @@ Get_Ruler_Type:
         SUB      SP,SP,#+20
         MOVS     R4,R0
         ADD      R0,SP,#+13
-        LDR      R1,??DataTable15_8
+        LDR      R1,??DataTable16_7
         LDRB     R2,[R1, #0]
         STRB     R2,[R0, #+0]
-        LDR      R0,??DataTable15_3
+        LDR      R0,??DataTable16_2
         MOVS     R5,R0
         MOVS     R0,R4
         ANDS     R0,R0,#0xFF      ;; Zero extend
@@ -873,16 +931,16 @@ Get_Ruler_Type:
 ??Get_Ruler_Type_0:
         ADD      R2,SP,#+12
         MOV      R1,#+0
-        LDR      R0,??DataTable15_1
+        LDR      R0,??DataTable16_1
         LDR      R0,[R0, #+0]
         BL       OSSemPend
-        LDR      R0,??DataTable14_2
+        LDR      R0,??DataTable15_2
         LDRB     R0,[R0, #+0]
         ANDS     R4,R4,#0xFF      ;; Zero extend
         CMP      R0,R4
         BEQ      ??Get_Ruler_Type_2
         BL       Check_UART_Mixer_Ready
-        LDR      R0,??DataTable14_2
+        LDR      R0,??DataTable15_2
         STRB     R4,[R0, #+0]
         MOVS     R0,R4
         ANDS     R0,R0,#0xFF      ;; Zero extend
@@ -897,7 +955,7 @@ Get_Ruler_Type:
         MOV      R3,#+1
         ADD      R2,SP,#+13
         MOV      R1,#+2
-        LDR      R0,??DataTable11_4
+        LDR      R0,??DataTable12_1
         LDR      R0,[R0, #+0]
         BL       pcSendDateToBuf
         STRB     R0,[SP, #+12]
@@ -907,7 +965,7 @@ Get_Ruler_Type:
         ADD      R2,SP,#+12
         MOV      R1,#+136
         ORR      R1,R1,#0x1300
-        LDR      R0,??DataTable14_3
+        LDR      R0,??DataTable15_3
         LDR      R0,[R0, #+0]
         BL       OSSemPend
         LDRB     R0,[SP, #+12]
@@ -915,7 +973,7 @@ Get_Ruler_Type:
         BNE      ??Get_Ruler_Type_4
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable16
+        LDR      R0,??DataTable17
         BL       BSP_Ser_Printf
         B        ??Get_Ruler_Type_5
 ??Get_Ruler_Type_4:
@@ -924,7 +982,7 @@ Get_Ruler_Type:
         ANDS     R1,R1,#0xFF      ;; Zero extend
         LDR      R2,??DataTable11_1
         STRB     R0,[R1, +R2]
-        LDR      R0,??DataTable14_5
+        LDR      R0,??DataTable15_5
         LDRB     R0,[R0, #+0]
         STRB     R0,[SP, #+12]
         LDRB     R0,[SP, #+12]
@@ -933,17 +991,17 @@ Get_Ruler_Type:
         LDRB     R2,[SP, #+12]
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable16_1
+        LDR      R0,??DataTable17_1
         BL       BSP_Ser_Printf
         B        ??Get_Ruler_Type_5
 ??Get_Ruler_Type_3:
         LDRB     R2,[SP, #+12]
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable14_7
+        LDR      R0,??DataTable15_7
         BL       BSP_Ser_Printf
 ??Get_Ruler_Type_5:
-        LDR      R0,??DataTable15_1
+        LDR      R0,??DataTable16_1
         LDR      R0,[R0, #+0]
         BL       OSSemPost
         LDRB     R0,[SP, #+12]
@@ -959,10 +1017,10 @@ Read_Ruler_Status:
         MOVS     R6,R0
         MOVS     R4,R1
         ADD      R0,SP,#+13
-        LDR      R1,??DataTable16_2
+        LDR      R1,??DataTable17_2
         LDRB     R2,[R1, #0]
         STRB     R2,[R0, #+0]
-        LDR      R0,??DataTable15_3
+        LDR      R0,??DataTable16_2
         MOVS     R5,R0
         MOVS     R0,R6
         ANDS     R0,R0,#0xFF      ;; Zero extend
@@ -975,16 +1033,16 @@ Read_Ruler_Status:
 ??Read_Ruler_Status_0:
         ADD      R2,SP,#+12
         MOV      R1,#+0
-        LDR      R0,??DataTable15_1
+        LDR      R0,??DataTable16_1
         LDR      R0,[R0, #+0]
         BL       OSSemPend
-        LDR      R0,??DataTable14_2
+        LDR      R0,??DataTable15_2
         LDRB     R0,[R0, #+0]
         ANDS     R6,R6,#0xFF      ;; Zero extend
         CMP      R0,R6
         BEQ      ??Read_Ruler_Status_2
         BL       Check_UART_Mixer_Ready
-        LDR      R0,??DataTable14_2
+        LDR      R0,??DataTable15_2
         STRB     R6,[R0, #+0]
         MOVS     R0,R6
         ANDS     R0,R0,#0xFF      ;; Zero extend
@@ -999,7 +1057,7 @@ Read_Ruler_Status:
         MOV      R3,#+1
         ADD      R2,SP,#+13
         MOV      R1,#+2
-        LDR      R0,??DataTable11_4
+        LDR      R0,??DataTable12_1
         LDR      R0,[R0, #+0]
         BL       pcSendDateToBuf
         STRB     R0,[SP, #+12]
@@ -1009,7 +1067,7 @@ Read_Ruler_Status:
         ADD      R2,SP,#+12
         MOV      R1,#+136
         ORR      R1,R1,#0x1300
-        LDR      R0,??DataTable14_3
+        LDR      R0,??DataTable15_3
         LDR      R0,[R0, #+0]
         BL       OSSemPend
         LDRB     R0,[SP, #+12]
@@ -1017,7 +1075,7 @@ Read_Ruler_Status:
         BNE      ??Read_Ruler_Status_4
         MOVS     R1,R6
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable18
+        LDR      R0,??DataTable19
         BL       BSP_Ser_Printf
         B        ??Read_Ruler_Status_5
 ??Read_Ruler_Status_4:
@@ -1025,7 +1083,7 @@ Read_Ruler_Status:
         LDRB     R1,[R5, #+12]
         ADDS     R0,R1,R0, LSL #+8
         STRH     R0,[R4, #+0]
-        LDR      R0,??DataTable14_5
+        LDR      R0,??DataTable15_5
         LDRB     R0,[R0, #+0]
         STRB     R0,[SP, #+12]
         LDRB     R0,[SP, #+12]
@@ -1034,117 +1092,23 @@ Read_Ruler_Status:
         LDRB     R2,[SP, #+12]
         MOVS     R1,R6
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable19
+        LDR      R0,??DataTable20
         BL       BSP_Ser_Printf
         B        ??Read_Ruler_Status_5
 ??Read_Ruler_Status_3:
         LDRB     R2,[SP, #+12]
         MOVS     R1,R6
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable14_7
+        LDR      R0,??DataTable15_7
         BL       BSP_Ser_Printf
 ??Read_Ruler_Status_5:
-        LDR      R0,??DataTable15_1
+        LDR      R0,??DataTable16_1
         LDR      R0,[R0, #+0]
         BL       OSSemPost
         LDRB     R0,[SP, #+12]
 ??Read_Ruler_Status_1:
         ADD      SP,SP,#+16       ;; stack cleaning
         POP      {R4-R6,LR}
-        BX       LR               ;; return
-
-        SECTION `.text`:CODE:NOROOT(2)
-        ARM
-Read_Ruler_Info:
-        PUSH     {R0-R4,LR}
-        MOVS     R4,R0
-        ADD      R0,SP,#+13
-        LDR      R1,??DataTable19_1
-        LDRB     R2,[R1, #0]
-        STRB     R2,[R0, #+0]
-        MOVS     R0,R4
-        ANDS     R0,R0,#0xFF      ;; Zero extend
-        LDR      R1,??DataTable11
-        LDRB     R0,[R0, +R1]
-        CMP      R0,#+2
-        BGE      ??Read_Ruler_Info_0
-        MOV      R0,#+193
-        B        ??Read_Ruler_Info_1
-??Read_Ruler_Info_0:
-        ADD      R2,SP,#+12
-        MOV      R1,#+0
-        LDR      R0,??DataTable15_1
-        LDR      R0,[R0, #+0]
-        BL       OSSemPend
-        LDR      R0,??DataTable14_2
-        LDRB     R0,[R0, #+0]
-        ANDS     R4,R4,#0xFF      ;; Zero extend
-        CMP      R0,R4
-        BEQ      ??Read_Ruler_Info_2
-        BL       Check_UART_Mixer_Ready
-        LDR      R0,??DataTable14_2
-        STRB     R4,[R0, #+0]
-        MOVS     R0,R4
-        ANDS     R0,R0,#0xFF      ;; Zero extend
-        BL       UART1_Mixer
-??Read_Ruler_Info_2:
-        MOV      R0,#+0
-        STR      R0,[SP, #+8]
-        MOV      R0,#+0
-        STR      R0,[SP, #+4]
-        MOV      R0,#+0
-        STR      R0,[SP, #+0]
-        MOV      R3,#+1
-        ADD      R2,SP,#+13
-        MOV      R1,#+2
-        LDR      R0,??DataTable11_4
-        LDR      R0,[R0, #+0]
-        BL       pcSendDateToBuf
-        STRB     R0,[SP, #+12]
-        LDRB     R0,[SP, #+12]
-        CMP      R0,#+0
-        BNE      ??Read_Ruler_Info_3
-        ADD      R2,SP,#+12
-        MOV      R1,#+136
-        ORR      R1,R1,#0x1300
-        LDR      R0,??DataTable14_3
-        LDR      R0,[R0, #+0]
-        BL       OSSemPend
-        LDRB     R0,[SP, #+12]
-        CMP      R0,#+10
-        BNE      ??Read_Ruler_Info_4
-        MOVS     R1,R4
-        ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable19_2
-        BL       BSP_Ser_Printf
-        B        ??Read_Ruler_Info_5
-??Read_Ruler_Info_4:
-        LDR      R0,??DataTable14_5
-        LDRB     R0,[R0, #+0]
-        STRB     R0,[SP, #+12]
-        LDRB     R0,[SP, #+12]
-        CMP      R0,#+0
-        BEQ      ??Read_Ruler_Info_5
-        LDRB     R2,[SP, #+12]
-        MOVS     R1,R4
-        ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable19_3
-        BL       BSP_Ser_Printf
-        B        ??Read_Ruler_Info_5
-??Read_Ruler_Info_3:
-        LDRB     R2,[SP, #+12]
-        MOVS     R1,R4
-        ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable14_7
-        BL       BSP_Ser_Printf
-??Read_Ruler_Info_5:
-        LDR      R0,??DataTable15_1
-        LDR      R0,[R0, #+0]
-        BL       OSSemPost
-        LDRB     R0,[SP, #+12]
-??Read_Ruler_Info_1:
-        ADD      SP,SP,#+16       ;; stack cleaning
-        POP      {R4,LR}
         BX       LR               ;; return
 
         SECTION `.text`:CODE:NOROOT(2)
@@ -1166,64 +1130,188 @@ Read_Ruler_Info:
         DC32     Global_Mic_State
 
         SECTION `.text`:CODE:NOROOT(2)
+        ARM
+Read_Ruler_Info:
+        PUSH     {R0-R4,LR}
+        MOVS     R4,R0
+        ADD      R0,SP,#+13
+        LDR      R1,??DataTable20_1
+        LDRB     R2,[R1, #0]
+        STRB     R2,[R0, #+0]
+        MOVS     R0,R4
+        ANDS     R0,R0,#0xFF      ;; Zero extend
+        LDR      R1,??DataTable20_2
+        LDRB     R0,[R0, +R1]
+        CMP      R0,#+2
+        BGE      ??Read_Ruler_Info_0
+        MOV      R0,#+193
+        B        ??Read_Ruler_Info_1
+??Read_Ruler_Info_0:
+        ADD      R2,SP,#+12
+        MOV      R1,#+0
+        LDR      R0,??DataTable16_1
+        LDR      R0,[R0, #+0]
+        BL       OSSemPend
+        LDR      R0,??DataTable15_2
+        LDRB     R0,[R0, #+0]
+        ANDS     R4,R4,#0xFF      ;; Zero extend
+        CMP      R0,R4
+        BEQ      ??Read_Ruler_Info_2
+        BL       Check_UART_Mixer_Ready
+        LDR      R0,??DataTable15_2
+        STRB     R4,[R0, #+0]
+        MOVS     R0,R4
+        ANDS     R0,R0,#0xFF      ;; Zero extend
+        BL       UART1_Mixer
+??Read_Ruler_Info_2:
+        MOV      R0,#+0
+        STR      R0,[SP, #+8]
+        MOV      R0,#+0
+        STR      R0,[SP, #+4]
+        MOV      R0,#+0
+        STR      R0,[SP, #+0]
+        MOV      R3,#+1
+        ADD      R2,SP,#+13
+        MOV      R1,#+2
+        LDR      R0,??DataTable12_1
+        LDR      R0,[R0, #+0]
+        BL       pcSendDateToBuf
+        STRB     R0,[SP, #+12]
+        LDRB     R0,[SP, #+12]
+        CMP      R0,#+0
+        BNE      ??Read_Ruler_Info_3
+        ADD      R2,SP,#+12
+        MOV      R1,#+136
+        ORR      R1,R1,#0x1300
+        LDR      R0,??DataTable15_3
+        LDR      R0,[R0, #+0]
+        BL       OSSemPend
+        LDRB     R0,[SP, #+12]
+        CMP      R0,#+10
+        BNE      ??Read_Ruler_Info_4
+        MOVS     R1,R4
+        ANDS     R1,R1,#0xFF      ;; Zero extend
+        LDR      R0,??DataTable20_3
+        BL       BSP_Ser_Printf
+        B        ??Read_Ruler_Info_5
+??Read_Ruler_Info_4:
+        LDR      R0,??DataTable15_5
+        LDRB     R0,[R0, #+0]
+        STRB     R0,[SP, #+12]
+        LDRB     R0,[SP, #+12]
+        CMP      R0,#+0
+        BEQ      ??Read_Ruler_Info_5
+        LDRB     R2,[SP, #+12]
+        MOVS     R1,R4
+        ANDS     R1,R1,#0xFF      ;; Zero extend
+        LDR      R0,??DataTable20_4
+        BL       BSP_Ser_Printf
+        B        ??Read_Ruler_Info_5
+??Read_Ruler_Info_3:
+        LDRB     R2,[SP, #+12]
+        MOVS     R1,R4
+        ANDS     R1,R1,#0xFF      ;; Zero extend
+        LDR      R0,??DataTable15_7
+        BL       BSP_Ser_Printf
+??Read_Ruler_Info_5:
+        LDR      R0,??DataTable16_1
+        LDR      R0,[R0, #+0]
+        BL       OSSemPost
+        LDRB     R0,[SP, #+12]
+??Read_Ruler_Info_1:
+        ADD      SP,SP,#+16       ;; stack cleaning
+        POP      {R4,LR}
+        BX       LR               ;; return
+
+        SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable11_3:
+??DataTable12:
         DC32     Global_Mic_Mask
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable11_4:
+??DataTable12_1:
         DC32     EVENT_MsgQ_Noah2RulerUART
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable11_5:
+??DataTable12_2:
         DC32     `?<Constant "Check_UART_Mixer_Read...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable11_6:
+??DataTable12_3:
         DC32     pUART_Send_Buf
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable11_7:
+??DataTable12_4:
+        DC32     `?<Constant "Check_UART_Mixer_Read...">_1`
+
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable12_5:
         DC32     `?<Constant {235, 144, 1, 0, 0, 0, 0}>`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable11_8:
+??DataTable12_6:
         DC32     `?<Constant "LIN Disabled">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable11_9:
+??DataTable12_7:
         DC32     `?<Constant "LIN Enabled">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable11_10:
+??DataTable12_8:
         DC32     `?<Constant "Setup_Audio [REC]:[%d...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable11_11:
+??DataTable12_9:
         DC32     `?<Constant "Setup_Audio [PLAY]:[%...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable11_12:
+??DataTable12_10:
         DC32     `?<Constant "\\r\\nERROR: Check_Active...">`
+
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable12_11:
+        DC32     `?<Constant "WARN:(Setup_Audio Rec...">`
+
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable12_12:
+        DC32     `?<Constant "ERROR:(Setup_Audio Pl...">`
+
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable12_13:
+        DC32     `?<Constant "Lin 2 channels added....">`
+
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable12_14:
+        DC32     `?<Constant "\\r\\nSetup_Audio ERROR: ...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         ARM
@@ -1231,7 +1319,7 @@ Write_Ruler_Info:
         PUSH     {R4-R8,LR}
         SUB      SP,SP,#+24
         MOVS     R4,R0
-        LDR      R0,??DataTable20
+        LDR      R0,??DataTable21
         MOVS     R8,R0
         MOV      R0,#+7
         STRB     R0,[SP, #+16]
@@ -1244,7 +1332,7 @@ Write_Ruler_Info:
         STRB     R0,[SP, #+19]
         MOVS     R0,R4
         ANDS     R0,R0,#0xFF      ;; Zero extend
-        LDR      R1,??DataTable20_1
+        LDR      R1,??DataTable20_2
         LDRB     R0,[R0, +R1]
         CMP      R0,#+2
         BGE      ??Write_Ruler_Info_0
@@ -1253,16 +1341,16 @@ Write_Ruler_Info:
 ??Write_Ruler_Info_0:
         ADD      R2,SP,#+12
         MOV      R1,#+0
-        LDR      R0,??DataTable15_1
+        LDR      R0,??DataTable16_1
         LDR      R0,[R0, #+0]
         BL       OSSemPend
-        LDR      R0,??DataTable14_2
+        LDR      R0,??DataTable15_2
         LDRB     R0,[R0, #+0]
         ANDS     R4,R4,#0xFF      ;; Zero extend
         CMP      R0,R4
         BEQ      ??Write_Ruler_Info_2
         BL       Check_UART_Mixer_Ready
-        LDR      R0,??DataTable14_2
+        LDR      R0,??DataTable15_2
         STRB     R4,[R0, #+0]
         MOVS     R0,R4
         ANDS     R0,R0,#0xFF      ;; Zero extend
@@ -1277,7 +1365,7 @@ Write_Ruler_Info:
         MOV      R3,#+4
         ADD      R2,SP,#+16
         MOV      R1,#+2
-        LDR      R0,??DataTable20_3
+        LDR      R0,??DataTable21_2
         LDR      R0,[R0, #+0]
         BL       pcSendDateToBuf
         STRB     R0,[SP, #+12]
@@ -1317,7 +1405,7 @@ Write_Ruler_Info:
         ANDS     R3,R3,#0xFF      ;; Zero extend
         MOVS     R2,R7
         MOV      R1,#+2
-        LDR      R0,??DataTable20_3
+        LDR      R0,??DataTable21_2
         LDR      R0,[R0, #+0]
         BL       pcSendDateToBuf
         STRB     R0,[SP, #+12]
@@ -1341,7 +1429,7 @@ Write_Ruler_Info:
         ADD      R2,SP,#+12
         MOV      R1,#+136
         ORR      R1,R1,#0x1300
-        LDR      R0,??DataTable14_3
+        LDR      R0,??DataTable15_3
         LDR      R0,[R0, #+0]
         BL       OSSemPend
         LDRB     R0,[SP, #+12]
@@ -1349,11 +1437,11 @@ Write_Ruler_Info:
         BNE      ??Write_Ruler_Info_10
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable20_5
+        LDR      R0,??DataTable21_4
         BL       BSP_Ser_Printf
         B        ??Write_Ruler_Info_11
 ??Write_Ruler_Info_10:
-        LDR      R0,??DataTable14_5
+        LDR      R0,??DataTable15_5
         LDRB     R0,[R0, #+0]
         STRB     R0,[SP, #+12]
         LDRB     R0,[SP, #+12]
@@ -1362,17 +1450,17 @@ Write_Ruler_Info:
         LDRB     R2,[SP, #+12]
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable20_6
+        LDR      R0,??DataTable21_5
         BL       BSP_Ser_Printf
         B        ??Write_Ruler_Info_11
 ??Write_Ruler_Info_9:
         LDRB     R2,[SP, #+12]
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable14_7
+        LDR      R0,??DataTable15_7
         BL       BSP_Ser_Printf
 ??Write_Ruler_Info_11:
-        LDR      R0,??DataTable15_1
+        LDR      R0,??DataTable16_1
         LDR      R0,[R0, #+0]
         BL       OSSemPost
         LDRB     R0,[SP, #+12]
@@ -1384,44 +1472,38 @@ Write_Ruler_Info:
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12:
-        DC32     `?<Constant "Check_UART_Mixer_Read...">_1`
-
-        SECTION `.text`:CODE:NOROOT(2)
-        SECTION_TYPE SHT_PROGBITS, 0
-        DATA
-??DataTable12_1:
-        DC32     `?<Constant "WARN:(Setup_Audio Rec...">`
-
-        SECTION `.text`:CODE:NOROOT(2)
-        SECTION_TYPE SHT_PROGBITS, 0
-        DATA
-??DataTable12_2:
-        DC32     `?<Constant "ERROR:(Setup_Audio Pl...">`
-
-        SECTION `.text`:CODE:NOROOT(2)
-        SECTION_TYPE SHT_PROGBITS, 0
-        DATA
-??DataTable12_3:
-        DC32     `?<Constant "Lin 2 channels added....">`
-
-        SECTION `.text`:CODE:NOROOT(2)
-        SECTION_TYPE SHT_PROGBITS, 0
-        DATA
-??DataTable12_4:
-        DC32     `?<Constant "\\r\\nSetup_Audio ERROR: ...">`
-
-        SECTION `.text`:CODE:NOROOT(2)
-        SECTION_TYPE SHT_PROGBITS, 0
-        DATA
-??DataTable12_5:
+??DataTable13:
         DC32     `?<Constant "\\r\\nSetup_Audio ERROR: ...">_1`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_6:
+??DataTable13_1:
         DC32     `?<Constant "\\r\\nSetup_Audio Init_CO...">`
+
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable13_2:
+        DC32     `?<Constant {235, 144, 2, 0}>`
+
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable13_3:
+        DC32     `?<Constant "Start_Audio : type = ...">`
+
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable13_4:
+        DC32     `?<Constant "\\r\\nStart_Audio ERROR: ...">`
+
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable13_5:
+        DC32     `?<Constant "\\r\\nStart_Audio ERROR: ...">_1`
 
         SECTION `.text`:CODE:NOROOT(2)
         ARM
@@ -1431,13 +1513,13 @@ Read_Mic_Cali_Data:
         MOVS     R4,R0
         MOVS     R5,R1
         ADD      R0,SP,#+14
-        LDR      R1,??DataTable21
+        LDR      R1,??DataTable22
         LDRH     R2,[R1, #0]
         STRH     R2,[R0, #+0]
         STRB     R5,[SP, #+15]
         MOVS     R0,R4
         ANDS     R0,R0,#0xFF      ;; Zero extend
-        LDR      R1,??DataTable20_1
+        LDR      R1,??DataTable20_2
         LDRB     R0,[R0, +R1]
         CMP      R0,#+2
         BGE      ??Read_Mic_Cali_Data_0
@@ -1446,16 +1528,16 @@ Read_Mic_Cali_Data:
 ??Read_Mic_Cali_Data_0:
         ADD      R2,SP,#+12
         MOV      R1,#+0
-        LDR      R0,??DataTable15_1
+        LDR      R0,??DataTable16_1
         LDR      R0,[R0, #+0]
         BL       OSSemPend
-        LDR      R0,??DataTable14_2
+        LDR      R0,??DataTable15_2
         LDRB     R0,[R0, #+0]
         ANDS     R4,R4,#0xFF      ;; Zero extend
         CMP      R0,R4
         BEQ      ??Read_Mic_Cali_Data_2
         BL       Check_UART_Mixer_Ready
-        LDR      R0,??DataTable14_2
+        LDR      R0,??DataTable15_2
         STRB     R4,[R0, #+0]
         MOVS     R0,R4
         ANDS     R0,R0,#0xFF      ;; Zero extend
@@ -1470,7 +1552,7 @@ Read_Mic_Cali_Data:
         MOV      R3,#+2
         ADD      R2,SP,#+14
         MOV      R1,#+2
-        LDR      R0,??DataTable20_3
+        LDR      R0,??DataTable21_2
         LDR      R0,[R0, #+0]
         BL       pcSendDateToBuf
         STRB     R0,[SP, #+12]
@@ -1480,7 +1562,7 @@ Read_Mic_Cali_Data:
         ADD      R2,SP,#+12
         MOV      R1,#+136
         ORR      R1,R1,#0x1300
-        LDR      R0,??DataTable14_3
+        LDR      R0,??DataTable15_3
         LDR      R0,[R0, #+0]
         BL       OSSemPend
         LDRB     R0,[SP, #+12]
@@ -1488,11 +1570,11 @@ Read_Mic_Cali_Data:
         BNE      ??Read_Mic_Cali_Data_4
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable21_1
+        LDR      R0,??DataTable22_1
         BL       BSP_Ser_Printf
         B        ??Read_Mic_Cali_Data_5
 ??Read_Mic_Cali_Data_4:
-        LDR      R0,??DataTable14_5
+        LDR      R0,??DataTable15_5
         LDRB     R0,[R0, #+0]
         STRB     R0,[SP, #+12]
         LDRB     R0,[SP, #+12]
@@ -1501,17 +1583,17 @@ Read_Mic_Cali_Data:
         LDRB     R2,[SP, #+12]
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable21_2
+        LDR      R0,??DataTable22_2
         BL       BSP_Ser_Printf
         B        ??Read_Mic_Cali_Data_5
 ??Read_Mic_Cali_Data_3:
         LDRB     R2,[SP, #+12]
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable14_7
+        LDR      R0,??DataTable15_7
         BL       BSP_Ser_Printf
 ??Read_Mic_Cali_Data_5:
-        LDR      R0,??DataTable15_1
+        LDR      R0,??DataTable16_1
         LDR      R0,[R0, #+0]
         BL       OSSemPost
         LDRB     R0,[SP, #+12]
@@ -1523,56 +1605,68 @@ Read_Mic_Cali_Data:
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable13:
+??DataTable14:
         DC32     `?<Constant "\\r\\nSetup_Audio ReInit_...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable13_1:
-        DC32     `?<Constant {235, 144, 2, 0}>`
-
-        SECTION `.text`:CODE:NOROOT(2)
-        SECTION_TYPE SHT_PROGBITS, 0
-        DATA
-??DataTable13_2:
-        DC32     `?<Constant "\\r\\nStart_Audio ERROR: ...">`
-
-        SECTION `.text`:CODE:NOROOT(2)
-        SECTION_TYPE SHT_PROGBITS, 0
-        DATA
-??DataTable13_3:
-        DC32     `?<Constant "\\r\\nStart_Audio ERROR: ...">_1`
-
-        SECTION `.text`:CODE:NOROOT(2)
-        SECTION_TYPE SHT_PROGBITS, 0
-        DATA
-??DataTable13_4:
+??DataTable14_1:
         DC32     `?<Constant {235, 144, 3}>`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable13_5:
+??DataTable14_2:
+        DC32     `?<Constant "Stop_Audio\\r\\n">`
+
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable14_3:
         DC32     `?<Constant "\\r\\nStop_Audio ERROR: t...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable13_6:
+??DataTable14_4:
         DC32     `?<Constant "\\r\\nStop_Audio ERROR: %...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable13_7:
+??DataTable14_5:
         DC32     `?<Constant "\\r\\nStop_Audio Power Do...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable13_8:
+??DataTable14_6:
+        DC32     `?<Constant {235, 144, 16}>`
+
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable14_7:
+        DC32     `?<Constant "Reset_Audio\\r\\n">`
+
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable14_8:
+        DC32     `?<Constant "\\r\\nReset_Audio ERROR: ...">`
+
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable14_9:
         DC32     `?<Constant {235, 144, 11}>`
+
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable14_10:
+        DC32     Audio_Version
 
         SECTION `.text`:CODE:NOROOT(2)
         ARM
@@ -1581,7 +1675,7 @@ Write_Mic_Cali_Data:
         SUB      SP,SP,#+28
         MOVS     R4,R0
         MOVS     R5,R1
-        LDR      R0,??DataTable20
+        LDR      R0,??DataTable21
         MOVS     R9,R0
         MOV      R0,#+9
         STRB     R0,[SP, #+16]
@@ -1595,7 +1689,7 @@ Write_Mic_Cali_Data:
         STRB     R0,[SP, #+20]
         MOVS     R0,R4
         ANDS     R0,R0,#0xFF      ;; Zero extend
-        LDR      R1,??DataTable20_1
+        LDR      R1,??DataTable20_2
         LDRB     R0,[R0, +R1]
         CMP      R0,#+2
         BGE      ??Write_Mic_Cali_Data_0
@@ -1604,16 +1698,16 @@ Write_Mic_Cali_Data:
 ??Write_Mic_Cali_Data_0:
         ADD      R2,SP,#+12
         MOV      R1,#+0
-        LDR      R0,??DataTable15_1
+        LDR      R0,??DataTable16_1
         LDR      R0,[R0, #+0]
         BL       OSSemPend
-        LDR      R0,??DataTable14_2
+        LDR      R0,??DataTable15_2
         LDRB     R0,[R0, #+0]
         ANDS     R4,R4,#0xFF      ;; Zero extend
         CMP      R0,R4
         BEQ      ??Write_Mic_Cali_Data_2
         BL       Check_UART_Mixer_Ready
-        LDR      R0,??DataTable14_2
+        LDR      R0,??DataTable15_2
         STRB     R4,[R0, #+0]
         MOVS     R0,R4
         ANDS     R0,R0,#0xFF      ;; Zero extend
@@ -1628,7 +1722,7 @@ Write_Mic_Cali_Data:
         MOV      R3,#+5
         ADD      R2,SP,#+16
         MOV      R1,#+2
-        LDR      R0,??DataTable20_3
+        LDR      R0,??DataTable21_2
         LDR      R0,[R0, #+0]
         BL       pcSendDateToBuf
         STRB     R0,[SP, #+12]
@@ -1668,7 +1762,7 @@ Write_Mic_Cali_Data:
         ANDS     R3,R3,#0xFF      ;; Zero extend
         MOVS     R2,R8
         MOV      R1,#+2
-        LDR      R0,??DataTable20_3
+        LDR      R0,??DataTable21_2
         LDR      R0,[R0, #+0]
         BL       pcSendDateToBuf
         STRB     R0,[SP, #+12]
@@ -1692,7 +1786,7 @@ Write_Mic_Cali_Data:
         ADD      R2,SP,#+12
         MOV      R1,#+136
         ORR      R1,R1,#0x1300
-        LDR      R0,??DataTable14_3
+        LDR      R0,??DataTable15_3
         LDR      R0,[R0, #+0]
         BL       OSSemPend
         LDRB     R0,[SP, #+12]
@@ -1702,11 +1796,11 @@ Write_Mic_Cali_Data:
         ANDS     R2,R2,#0xFF      ;; Zero extend
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable23_1
+        LDR      R0,??DataTable24_1
         BL       BSP_Ser_Printf
         B        ??Write_Mic_Cali_Data_11
 ??Write_Mic_Cali_Data_10:
-        LDR      R0,??DataTable14_5
+        LDR      R0,??DataTable15_5
         LDRB     R0,[R0, #+0]
         STRB     R0,[SP, #+12]
         LDRB     R0,[SP, #+12]
@@ -1715,17 +1809,17 @@ Write_Mic_Cali_Data:
         LDRB     R2,[SP, #+12]
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable23_2
+        LDR      R0,??DataTable24_2
         BL       BSP_Ser_Printf
         B        ??Write_Mic_Cali_Data_11
 ??Write_Mic_Cali_Data_9:
         LDRB     R2,[SP, #+12]
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable14_7
+        LDR      R0,??DataTable15_7
         BL       BSP_Ser_Printf
 ??Write_Mic_Cali_Data_11:
-        LDR      R0,??DataTable15_1
+        LDR      R0,??DataTable16_1
         LDR      R0,[R0, #+0]
         BL       OSSemPost
         LDRB     R0,[SP, #+12]
@@ -1737,50 +1831,56 @@ Write_Mic_Cali_Data:
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable14:
-        DC32     Audio_Version
+??DataTable15:
+        DC32     `?<Constant "\\r\\nReset_Audio ERROR: ...">_1`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable14_1:
+??DataTable15_1:
         DC32     `?<Constant "\\r\\nGet_Audio_Version E...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable14_2:
+??DataTable15_2:
         DC32     Global_Ruler_Index
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable14_3:
+??DataTable15_3:
         DC32     Done_Sem_RulerUART
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable14_4:
+??DataTable15_4:
         DC32     `?<Constant "Init ruler[%d] timeou...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable14_5:
+??DataTable15_5:
         DC32     Ruler_CMD_Result
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable14_6:
+??DataTable15_6:
         DC32     `?<Constant "Init_Ruler[%d] err = ...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable14_7:
+??DataTable15_7:
         DC32     `?<Constant "Ruler[%d] pcSendDateT...">`
+
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable15_8:
+        DC32     `?<Constant {4, 0}>`
 
         SECTION `.text`:CODE:NOROOT(2)
         ARM
@@ -1790,7 +1890,7 @@ Update_Mic_Mask:
         MOVS     R4,R0
         MOVS     R5,R1
         ADD      R0,SP,#+16
-        LDR      R1,??DataTable23_3
+        LDR      R1,??DataTable24_3
         LDM      R1!,{R2,R3}
         STM      R0!,{R2,R3}
         SUBS     R1,R1,#+8
@@ -1804,7 +1904,7 @@ Update_Mic_Mask:
         STRB     R0,[SP, #+20]
         MOVS     R0,R4
         ANDS     R0,R0,#0xFF      ;; Zero extend
-        LDR      R1,??DataTable20_1
+        LDR      R1,??DataTable20_2
         LDRB     R0,[R0, +R1]
         CMP      R0,#+2
         BGE      ??Update_Mic_Mask_0
@@ -1813,16 +1913,16 @@ Update_Mic_Mask:
 ??Update_Mic_Mask_0:
         ADD      R2,SP,#+12
         MOV      R1,#+0
-        LDR      R0,??DataTable15_1
+        LDR      R0,??DataTable16_1
         LDR      R0,[R0, #+0]
         BL       OSSemPend
-        LDR      R0,??DataTable24
+        LDR      R0,??DataTable25
         LDRB     R0,[R0, #+0]
         ANDS     R4,R4,#0xFF      ;; Zero extend
         CMP      R0,R4
         BEQ      ??Update_Mic_Mask_2
         BL       Check_UART_Mixer_Ready
-        LDR      R0,??DataTable24
+        LDR      R0,??DataTable25
         STRB     R4,[R0, #+0]
         MOVS     R0,R4
         ANDS     R0,R0,#0xFF      ;; Zero extend
@@ -1830,7 +1930,7 @@ Update_Mic_Mask:
 ??Update_Mic_Mask_2:
         MOVS     R0,R4
         ANDS     R0,R0,#0xFF      ;; Zero extend
-        LDR      R1,??DataTable24_1
+        LDR      R1,??DataTable25_1
         LDRB     R0,[R0, +R1]
         CMP      R0,#+130
         BNE      ??Update_Mic_Mask_3
@@ -1851,7 +1951,7 @@ Update_Mic_Mask:
         ANDS     R3,R3,#0xFF      ;; Zero extend
         ADD      R2,SP,#+16
         MOV      R1,#+2
-        LDR      R0,??DataTable20_3
+        LDR      R0,??DataTable21_2
         LDR      R0,[R0, #+0]
         BL       pcSendDateToBuf
         STRB     R0,[SP, #+12]
@@ -1861,7 +1961,7 @@ Update_Mic_Mask:
         ADD      R2,SP,#+12
         MOV      R1,#+136
         ORR      R1,R1,#0x1300
-        LDR      R0,??DataTable24_2
+        LDR      R0,??DataTable25_2
         LDR      R0,[R0, #+0]
         BL       OSSemPend
         LDRB     R0,[SP, #+12]
@@ -1869,17 +1969,17 @@ Update_Mic_Mask:
         BNE      ??Update_Mic_Mask_6
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable24_3
+        LDR      R0,??DataTable25_3
         BL       BSP_Ser_Printf
         B        ??Update_Mic_Mask_6
 ??Update_Mic_Mask_5:
         LDRB     R2,[SP, #+12]
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable24_4
+        LDR      R0,??DataTable25_4
         BL       BSP_Ser_Printf
 ??Update_Mic_Mask_6:
-        LDR      R0,??DataTable15_1
+        LDR      R0,??DataTable16_1
         LDR      R0,[R0, #+0]
         BL       OSSemPost
         LDRB     R0,[SP, #+12]
@@ -1891,55 +1991,49 @@ Update_Mic_Mask:
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable15:
+??DataTable16:
         DC32     `?<Constant "\\r\\nUSB Audio FW Versio...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable15_1:
+??DataTable16_1:
         DC32     UART_MUX_Sem_lock
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable15_2:
-        DC32     `?<Constant {4, 0}>`
-
-        SECTION `.text`:CODE:NOROOT(2)
-        SECTION_TYPE SHT_PROGBITS, 0
-        DATA
-??DataTable15_3:
+??DataTable16_2:
         DC32     Emb_Buf_Data
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable15_4:
+??DataTable16_3:
         DC32     `?<Constant "Setup_Ruler[%d] timeo...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable15_5:
+??DataTable16_4:
         DC32     Ruler_Setup_Sync_Data
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable15_6:
+??DataTable16_5:
         DC32     `?<Constant "Get Ruler_Setup_Sync_...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable15_7:
+??DataTable16_6:
         DC32     `?<Constant "Setup_Ruler[%d] err =...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable15_8:
+??DataTable16_7:
         DC32     `?<Constant {12}>`
 
         SECTION `.text`:CODE:NOROOT(2)
@@ -1949,7 +2043,7 @@ Ruler_Active_Control:
         SUB      SP,SP,#+20
         MOVS     R4,R0
         ADD      R0,SP,#+14
-        LDR      R1,??DataTable25
+        LDR      R1,??DataTable26
         LDRH     R2,[R1, #0]
         STRH     R2,[R0, #+0]
         STRB     R4,[SP, #+15]
@@ -1964,14 +2058,14 @@ Ruler_Active_Control:
         BGE      ??Ruler_Active_Control_1
         MOVS     R0,R5
         ANDS     R0,R0,#0xFF      ;; Zero extend
-        LDR      R1,??DataTable20_1
+        LDR      R1,??DataTable20_2
         LDRB     R0,[R0, +R1]
         CMP      R0,#+2
         BLT      ??Ruler_Active_Control_2
         MOVS     R0,R5
         ANDS     R0,R0,#0xFF      ;; Zero extend
         LSLS     R0,R0,#+2
-        LDR      R1,??DataTable25_1
+        LDR      R1,??DataTable26_1
         LDR      R0,[R0, +R1]
         CMP      R0,#+0
         BNE      ??Ruler_Active_Control_3
@@ -1982,20 +2076,20 @@ Ruler_Active_Control:
         ANDS     R2,R2,#0xFF      ;; Zero extend
         MOVS     R1,R5
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable25_2
+        LDR      R0,??DataTable26_2
         BL       BSP_Ser_Printf
         ADD      R2,SP,#+12
         MOV      R1,#+0
-        LDR      R0,??DataTable26
+        LDR      R0,??DataTable27
         LDR      R0,[R0, #+0]
         BL       OSSemPend
-        LDR      R0,??DataTable24
+        LDR      R0,??DataTable25
         LDRB     R0,[R0, #+0]
         ANDS     R5,R5,#0xFF      ;; Zero extend
         CMP      R0,R5
         BEQ      ??Ruler_Active_Control_5
         BL       Check_UART_Mixer_Ready
-        LDR      R0,??DataTable24
+        LDR      R0,??DataTable25
         STRB     R5,[R0, #+0]
         MOVS     R0,R5
         ANDS     R0,R0,#0xFF      ;; Zero extend
@@ -2010,7 +2104,7 @@ Ruler_Active_Control:
         MOV      R3,#+2
         ADD      R2,SP,#+14
         MOV      R1,#+2
-        LDR      R0,??DataTable20_3
+        LDR      R0,??DataTable21_2
         LDR      R0,[R0, #+0]
         BL       pcSendDateToBuf
         STRB     R0,[SP, #+12]
@@ -2020,7 +2114,7 @@ Ruler_Active_Control:
         ADD      R2,SP,#+12
         MOV      R1,#+136
         ORR      R1,R1,#0x1300
-        LDR      R0,??DataTable24_2
+        LDR      R0,??DataTable25_2
         LDR      R0,[R0, #+0]
         BL       OSSemPend
         LDRB     R0,[SP, #+12]
@@ -2028,11 +2122,11 @@ Ruler_Active_Control:
         BNE      ??Ruler_Active_Control_7
         MOVS     R1,R5
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable26_1
+        LDR      R0,??DataTable27_1
         BL       BSP_Ser_Printf
         B        ??Ruler_Active_Control_8
 ??Ruler_Active_Control_7:
-        LDR      R0,??DataTable26_2
+        LDR      R0,??DataTable27_2
         LDRB     R0,[R0, #+0]
         STRB     R0,[SP, #+12]
         LDRB     R0,[SP, #+12]
@@ -2041,17 +2135,17 @@ Ruler_Active_Control:
         LDRB     R2,[SP, #+12]
         MOVS     R1,R5
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable26_3
+        LDR      R0,??DataTable27_3
         BL       BSP_Ser_Printf
         B        ??Ruler_Active_Control_8
 ??Ruler_Active_Control_6:
         LDRB     R2,[SP, #+12]
         MOVS     R1,R5
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable24_4
+        LDR      R0,??DataTable25_4
         BL       BSP_Ser_Printf
 ??Ruler_Active_Control_8:
-        LDR      R0,??DataTable26
+        LDR      R0,??DataTable27
         LDR      R0,[R0, #+0]
         BL       OSSemPost
         LDRB     R0,[SP, #+12]
@@ -2069,19 +2163,19 @@ Ruler_Active_Control:
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable16:
+??DataTable17:
         DC32     `?<Constant "Read_Ruler_Type[%d] t...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable16_1:
+??DataTable17_1:
         DC32     `?<Constant "Get_Ruler_Type[%d] er...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable16_2:
+??DataTable17_2:
         DC32     `?<Constant {5}>`
 
         SECTION `.text`:CODE:NOROOT(2)
@@ -2091,14 +2185,14 @@ Get_Ruler_Version:
         SUB      SP,SP,#+20
         MOVS     R4,R0
         ADD      R0,SP,#+13
-        LDR      R1,??DataTable26_4
+        LDR      R1,??DataTable27_4
         LDRB     R2,[R1, #0]
         STRB     R2,[R0, #+0]
-        LDR      R0,??DataTable26_5
+        LDR      R0,??DataTable27_5
         MOVS     R5,R0
         MOVS     R0,R4
         ANDS     R0,R0,#0xFF      ;; Zero extend
-        LDR      R1,??DataTable20_1
+        LDR      R1,??DataTable20_2
         LDRB     R0,[R0, +R1]
         CMP      R0,#+0
         BNE      ??Get_Ruler_Version_0
@@ -2107,16 +2201,16 @@ Get_Ruler_Version:
 ??Get_Ruler_Version_0:
         ADD      R2,SP,#+12
         MOV      R1,#+0
-        LDR      R0,??DataTable26
+        LDR      R0,??DataTable27
         LDR      R0,[R0, #+0]
         BL       OSSemPend
-        LDR      R0,??DataTable24
+        LDR      R0,??DataTable25
         LDRB     R0,[R0, #+0]
         ANDS     R4,R4,#0xFF      ;; Zero extend
         CMP      R0,R4
         BEQ      ??Get_Ruler_Version_2
         BL       Check_UART_Mixer_Ready
-        LDR      R0,??DataTable24
+        LDR      R0,??DataTable25
         STRB     R4,[R0, #+0]
         MOVS     R0,R4
         ANDS     R0,R0,#0xFF      ;; Zero extend
@@ -2131,7 +2225,7 @@ Get_Ruler_Version:
         MOV      R3,#+1
         ADD      R2,SP,#+13
         MOV      R1,#+2
-        LDR      R0,??DataTable20_3
+        LDR      R0,??DataTable21_2
         LDR      R0,[R0, #+0]
         BL       pcSendDateToBuf
         STRB     R0,[SP, #+12]
@@ -2141,7 +2235,7 @@ Get_Ruler_Version:
         ADD      R2,SP,#+12
         MOV      R1,#+136
         ORR      R1,R1,#0x1300
-        LDR      R0,??DataTable24_2
+        LDR      R0,??DataTable25_2
         LDR      R0,[R0, #+0]
         BL       OSSemPend
         LDRB     R0,[SP, #+12]
@@ -2149,11 +2243,11 @@ Get_Ruler_Version:
         BNE      ??Get_Ruler_Version_4
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable28
+        LDR      R0,??DataTable29
         BL       BSP_Ser_Printf
         B        ??Get_Ruler_Version_5
 ??Get_Ruler_Version_4:
-        LDR      R0,??DataTable26_2
+        LDR      R0,??DataTable27_2
         LDRB     R0,[R0, #+0]
         STRB     R0,[SP, #+12]
         LDRB     R0,[SP, #+12]
@@ -2162,7 +2256,7 @@ Get_Ruler_Version:
         LDRB     R2,[SP, #+12]
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable28_1
+        LDR      R0,??DataTable29_1
         BL       BSP_Ser_Printf
 ??Get_Ruler_Version_5:
         LDRB     R0,[SP, #+12]
@@ -2171,17 +2265,17 @@ Get_Ruler_Version:
         ADDS     R2,R5,#+12
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable28_2
+        LDR      R0,??DataTable29_2
         BL       BSP_Ser_Printf
         B        ??Get_Ruler_Version_6
 ??Get_Ruler_Version_3:
         LDRB     R2,[SP, #+12]
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable24_4
+        LDR      R0,??DataTable25_4
         BL       BSP_Ser_Printf
 ??Get_Ruler_Version_6:
-        LDR      R0,??DataTable26
+        LDR      R0,??DataTable27
         LDR      R0,[R0, #+0]
         BL       OSSemPost
         LDRB     R0,[SP, #+12]
@@ -2199,7 +2293,7 @@ FLASHD_Write_Safe:
         MOVS     R6,R2
         CMP      R4,#+1179648
         BCS      ??FLASHD_Write_Safe_0
-        LDR      R0,??DataTable29
+        LDR      R0,??DataTable30
         BL       BSP_Ser_Printf
         MOV      R0,#+215
         B        ??FLASHD_Write_Safe_1
@@ -2218,7 +2312,7 @@ FLASHD_Write_Safe:
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable18:
+??DataTable19:
         DC32     `?<Constant "Read_Ruler_Status[%d]...">`
 
         SECTION `.text`:CODE:NOROOT(2)
@@ -2250,7 +2344,7 @@ Write_Flash_State:
         ANDS     R0,R0,#0xFF      ;; Zero extend
         CMP      R0,#+0
         BEQ      ??Write_Flash_State_0
-        LDR      R0,??DataTable29_1
+        LDR      R0,??DataTable30_1
         BL       BSP_Ser_Printf
 ??Write_Flash_State_0:
         MOVS     R0,R5
@@ -2261,25 +2355,31 @@ Write_Flash_State:
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable19:
+??DataTable20:
         DC32     `?<Constant "Read_Ruler_Status[%d]...">_1`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable19_1:
+??DataTable20_1:
         DC32     `?<Constant {6}>`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable19_2:
+??DataTable20_2:
+        DC32     Global_Ruler_State
+
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable20_3:
         DC32     `?<Constant "Read_Ruler_Info[%d] t...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable19_3:
+??DataTable20_4:
         DC32     `?<Constant "Read_Ruler_Info[%d] e...">`
 
         SECTION `.text`:CODE:NOROOT(2)
@@ -2303,11 +2403,11 @@ Save_Ruler_FW:
         BCC      ??Save_Ruler_FW_3
         B        ??Save_Ruler_FW_1
 ??Save_Ruler_FW_0:
-        LDR      R0,??DataTable29_2
+        LDR      R0,??DataTable30_2
         BL       BSP_Ser_Printf
         MOV      R0,#+1179648
         ORR      R0,R0,#0x100
-        LDR      R1,??DataTable29_3
+        LDR      R1,??DataTable30_3
         STR      R0,[R1, #+0]
         MOV      R0,#+170
         STR      R0,[SP, #+0]
@@ -2315,24 +2415,24 @@ Save_Ruler_FW:
         STR      R0,[SP, #+12]
         B        ??Save_Ruler_FW_4
 ??Save_Ruler_FW_3:
-        ADR      R0,??DataTable20_2  ;; 0x3E, 0x20, 0x00, 0x00
+        ADR      R0,??DataTable21_1  ;; 0x3E, 0x20, 0x00, 0x00
         BL       BSP_Ser_Printf
         LDR      R0,[SP, #+0]
         CMP      R0,#+170
         BEQ      ??Save_Ruler_FW_5
-        LDR      R0,??DataTable29_4
+        LDR      R0,??DataTable30_4
         BL       BSP_Ser_Printf
         MOV      R0,#+212
         MOVS     R8,R0
 ??Save_Ruler_FW_5:
         B        ??Save_Ruler_FW_4
 ??Save_Ruler_FW_2:
-        ADR      R0,??DataTable20_4  ;; ">\r\n"
+        ADR      R0,??DataTable21_3  ;; ">\r\n"
         BL       BSP_Ser_Printf
         LDR      R0,[SP, #+0]
         CMP      R0,#+170
         BEQ      ??Save_Ruler_FW_6
-        LDR      R0,??DataTable29_4
+        LDR      R0,??DataTable30_4
         BL       BSP_Ser_Printf
         MOV      R0,#+213
         MOVS     R8,R0
@@ -2345,7 +2445,7 @@ Save_Ruler_FW:
         STR      R0,[SP, #+4]
         B        ??Save_Ruler_FW_4
 ??Save_Ruler_FW_1:
-        LDR      R0,??DataTable29_5
+        LDR      R0,??DataTable30_5
         BL       BSP_Ser_Printf
         MOV      R0,#+214
         MOVS     R8,R0
@@ -2364,7 +2464,7 @@ Save_Ruler_FW:
         BL       LED_Toggle
         MOVS     R2,R7
         MOVS     R1,R5
-        LDR      R0,??DataTable29_3
+        LDR      R0,??DataTable30_3
         LDR      R0,[R0, #+0]
         BL       FLASHD_Write_Safe
         MOVS     R8,R0
@@ -2374,18 +2474,18 @@ Save_Ruler_FW:
         ANDS     R0,R0,#0xFF      ;; Zero extend
         CMP      R0,#+0
         BEQ      ??Save_Ruler_FW_9
-        LDR      R0,??DataTable29_6
+        LDR      R0,??DataTable30_6
         BL       BSP_Ser_Printf
         MOVS     R0,R8
         ANDS     R0,R0,#0xFF      ;; Zero extend
         B        ??Save_Ruler_FW_8
 ??Save_Ruler_FW_9:
-        LDR      R0,??DataTable29_3
+        LDR      R0,??DataTable30_3
         LDR      R0,[R0, #+0]
         ADDS     R0,R7,R0
-        LDR      R1,??DataTable29_3
+        LDR      R1,??DataTable30_3
         STR      R0,[R1, #+0]
-        LDR      R0,??DataTable29_3
+        LDR      R0,??DataTable30_3
         LDR      R0,[R0, #+0]
         MVN      R1,#+255
         BIC      R1,R1,#0x120000
@@ -2406,7 +2506,7 @@ Save_Ruler_FW:
         CMP      R4,#+3
         BNE      ??Save_Ruler_FW_10
         LDR      R1,[SP, #+12]
-        LDR      R0,??DataTable29_7
+        LDR      R0,??DataTable30_7
         BL       BSP_Ser_Printf
 ??Save_Ruler_FW_10:
         MOVS     R0,R8
@@ -2419,43 +2519,37 @@ Save_Ruler_FW:
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable20:
+??DataTable21:
         DC32     Emb_Buf_Cmd
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable20_1:
-        DC32     Global_Ruler_State
-
-        SECTION `.text`:CODE:NOROOT(2)
-        SECTION_TYPE SHT_PROGBITS, 0
-        DATA
-??DataTable20_2:
+??DataTable21_1:
         DC8      0x3E, 0x20, 0x00, 0x00
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable20_3:
+??DataTable21_2:
         DC32     EVENT_MsgQ_Noah2RulerUART
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable20_4:
+??DataTable21_3:
         DC8      ">\r\n"
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable20_5:
+??DataTable21_4:
         DC32     `?<Constant "Write_Ruler_Info[%d] ...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable20_6:
+??DataTable21_5:
         DC32     `?<Constant "Write_Ruler_Info[%d] ...">_1`
 
         SECTION `.data`:DATA:REORDER:NOROOT(2)
@@ -2479,7 +2573,7 @@ Update_Ruler_FW:
         LDR      R0,[R6, #+0]
         CMP      R0,#+85
         BEQ      ??Update_Ruler_FW_0
-        LDR      R0,??DataTable29_8
+        LDR      R0,??DataTable30_8
         BL       BSP_Ser_Printf
         MOV      R0,#+211
         B        ??Update_Ruler_FW_1
@@ -2487,7 +2581,7 @@ Update_Ruler_FW:
         ADDS     R2,R6,#+16
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable29_9
+        LDR      R0,??DataTable30_9
         BL       BSP_Ser_Printf
         MOV      R2,#+9
         MOV      R1,#+100
@@ -2507,7 +2601,7 @@ Update_Ruler_FW:
         MOV      R0,#+0
         MOVS     R1,R7
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R2,??DataTable29_10
+        LDR      R2,??DataTable30_10
         STRB     R0,[R1, +R2]
         ADDS     R7,R7,#+1
         B        ??Update_Ruler_FW_2
@@ -2521,16 +2615,16 @@ Update_Ruler_FW:
         BL       Port_Detect_Enable
         MOVS     R2,SP
         MOV      R1,#+0
-        LDR      R0,??DataTable26
+        LDR      R0,??DataTable27
         LDR      R0,[R0, #+0]
         BL       OSSemPend
-        LDR      R0,??DataTable24
+        LDR      R0,??DataTable25
         LDRB     R0,[R0, #+0]
         ANDS     R4,R4,#0xFF      ;; Zero extend
         CMP      R0,R4
         BEQ      ??Update_Ruler_FW_4
         BL       Check_UART_Mixer_Ready
-        LDR      R0,??DataTable24
+        LDR      R0,??DataTable25
         STRB     R4,[R0, #+0]
         MOVS     R0,R4
         ANDS     R0,R0,#0xFF      ;; Zero extend
@@ -2570,7 +2664,7 @@ Update_Ruler_FW:
         MOV      R0,#+4
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R2,??DataTable29_10
+        LDR      R2,??DataTable30_10
         STRB     R0,[R1, +R2]
         LDR      R1,[R6, #+12]
         MOVS     R0,R5
@@ -2579,27 +2673,27 @@ Update_Ruler_FW:
         MOV      R0,#+0
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R2,??DataTable29_10
+        LDR      R2,??DataTable30_10
         STRB     R0,[R1, +R2]
 ??Update_Ruler_FW_5:
         LDRB     R0,[SP, #+0]
         CMP      R0,#+0
         BEQ      ??Update_Ruler_FW_7
         LDRB     R1,[SP, #+0]
-        LDR      R0,??DataTable29_11
+        LDR      R0,??DataTable30_11
         BL       BSP_Ser_Printf
         B        ??Update_Ruler_FW_8
 ??Update_Ruler_FW_7:
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable29_12
+        LDR      R0,??DataTable30_12
         BL       BSP_Ser_Printf
 ??Update_Ruler_FW_8:
         MOV      R0,#+1
         BL       Port_Detect_Enable
         MOV      R2,#+65536
         ORR      R2,R2,#0xC200
-        LDR      R1,??DataTable29_13
+        LDR      R1,??DataTable30_13
         MOV      R0,#+1
         BL       UART_Init
         MOV      R0,#+0
@@ -2608,7 +2702,7 @@ Update_Ruler_FW:
         BL       OSTimeDly
         MOV      R0,#+1
         BL       Ruler_Power_Switch
-        LDR      R0,??DataTable26
+        LDR      R0,??DataTable27
         LDR      R0,[R0, #+0]
         BL       OSSemPost
         LDRB     R0,[SP, #+0]
@@ -2620,19 +2714,19 @@ Update_Ruler_FW:
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable21:
+??DataTable22:
         DC32     `?<Constant {8, 0}>`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable21_1:
+??DataTable22_1:
         DC32     `?<Constant "Read_Mic_Cali_Data[%d...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable21_2:
+??DataTable22_2:
         DC32     `?<Constant "Read_Mic_Cali_Data[%d...">_1`
 
         SECTION `.text`:CODE:NOROOT(2)
@@ -2644,7 +2738,7 @@ Toggle_Mic:
         MOV      R0,#+0
         MOVS     R8,R0
         LDRB     R0,[R4, #+0]
-        LDR      R1,??DataTable29_10
+        LDR      R1,??DataTable30_10
         LDRB     R0,[R0, +R1]
         CMP      R0,#+2
         BGE      ??Toggle_Mic_0
@@ -2654,13 +2748,13 @@ Toggle_Mic:
         LDRB     R3,[R4, #+2]
         LDRB     R2,[R4, #+1]
         LDRB     R1,[R4, #+0]
-        LDR      R0,??DataTable29_14
+        LDR      R0,??DataTable30_14
         BL       BSP_Ser_Printf
         BL       OS_CPU_SR_Save
         MOVS     R9,R0
         LDRB     R0,[R4, #+0]
         LSLS     R0,R0,#+2
-        LDR      R1,??DataTable25_1
+        LDR      R1,??DataTable26_1
         LDR      R0,[R0, +R1]
         MOVS     R7,R0
         MOVS     R0,R9
@@ -2681,14 +2775,14 @@ Toggle_Mic:
         ANDS     R0,R0,#0xFF      ;; Zero extend
         CMP      R0,#+0
         BNE      ??Toggle_Mic_2
-        ADR      R1,??DataTable23  ;; 0x4F, 0x4B, 0x00, 0x00
+        ADR      R1,??DataTable24  ;; 0x4F, 0x4B, 0x00, 0x00
         B        ??Toggle_Mic_3
 ??Toggle_Mic_2:
-        LDR      R1,??DataTable29_15
+        LDR      R1,??DataTable30_15
 ??Toggle_Mic_3:
         MOVS     R2,R5
         ANDS     R2,R2,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable29_16
+        LDR      R0,??DataTable30_16
         BL       BSP_Ser_Printf
         MOVS     R0,R5
         ANDS     R0,R0,#0xFF      ;; Zero extend
@@ -2702,25 +2796,25 @@ Toggle_Mic:
         MOVS     R9,R0
         LDRB     R0,[R4, #+0]
         LSLS     R0,R0,#+2
-        LDR      R1,??DataTable25_1
+        LDR      R1,??DataTable26_1
         STR      R7,[R0, +R1]
         CMP      R7,#+0
         BNE      ??Toggle_Mic_5
         MOV      R0,#+2
         LDRB     R1,[R4, #+0]
-        LDR      R2,??DataTable29_10
+        LDR      R2,??DataTable30_10
         STRB     R0,[R1, +R2]
         B        ??Toggle_Mic_6
 ??Toggle_Mic_5:
         MOV      R0,#+3
         LDRB     R1,[R4, #+0]
-        LDR      R2,??DataTable29_10
+        LDR      R2,??DataTable30_10
         STRB     R0,[R1, +R2]
 ??Toggle_Mic_6:
         MOVS     R0,R9
         BL       OS_CPU_SR_Restore
         LDRB     R0,[R4, #+0]
-        LDR      R1,??DataTable24_1
+        LDR      R1,??DataTable25_1
         LDRB     R0,[R0, +R1]
         ANDS     R0,R0,#0xFF      ;; Zero extend
         LSRS     R0,R0,#+7
@@ -2737,7 +2831,7 @@ Toggle_Mic:
         MOVS     R0,R6
         ANDS     R0,R0,#0xFF      ;; Zero extend
         LSLS     R0,R0,#+2
-        LDR      R1,??DataTable25_1
+        LDR      R1,??DataTable26_1
         LDR      R0,[R0, +R1]
         ANDS     R0,R0,#0xFF
         LSLS     R1,R6,#+3
@@ -2764,23 +2858,23 @@ Toggle_Mic:
 Set_Volume:
         PUSH     {R4-R6,LR}
         MOVS     R4,R0
-        LDR      R0,??DataTable29_17
+        LDR      R0,??DataTable30_17
         BL       BSP_Ser_Printf
         LDR      R0,[R4, #+0]
         CMP      R0,#+1000
         BNE      ??Set_Volume_0
-        LDR      R0,??DataTable29_18
+        LDR      R0,??DataTable30_18
         BL       BSP_Ser_Printf
         B        ??Set_Volume_1
 ??Set_Volume_0:
         LDR      R1,[R4, #+0]
-        LDR      R0,??DataTable29_19
+        LDR      R0,??DataTable30_19
         BL       BSP_Ser_Printf
 ??Set_Volume_1:
         LDR      R0,[R4, #+4]
         CMP      R0,#+1000
         BNE      ??Set_Volume_2
-        LDR      R0,??DataTable29_20
+        LDR      R0,??DataTable30_20
         BL       BSP_Ser_Printf
         B        ??Set_Volume_3
 ??Set_Volume_2:
@@ -2794,13 +2888,13 @@ Set_Volume:
         BL       __aeabi_uidiv
         MOVS     R1,R0
         MOVS     R2,R6
-        LDR      R0,??DataTable29_21
+        LDR      R0,??DataTable30_21
         BL       BSP_Ser_Printf
 ??Set_Volume_3:
         LDR      R0,[R4, #+8]
         CMP      R0,#+1000
         BNE      ??Set_Volume_4
-        LDR      R0,??DataTable29_22
+        LDR      R0,??DataTable30_22
         BL       BSP_Ser_Printf
         B        ??Set_Volume_5
 ??Set_Volume_4:
@@ -2814,7 +2908,7 @@ Set_Volume:
         BL       __aeabi_uidiv
         MOVS     R1,R0
         MOVS     R2,R6
-        LDR      R0,??DataTable29_23
+        LDR      R0,??DataTable30_23
         BL       BSP_Ser_Printf
 ??Set_Volume_5:
         LDR      R0,[R4, #+0]
@@ -2828,7 +2922,7 @@ Set_Volume:
         BEQ      ??Set_Volume_6
         MOVS     R1,R5
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable29_24
+        LDR      R0,??DataTable30_24
         BL       BSP_Ser_Printf
         MOVS     R0,R5
         ANDS     R0,R0,#0xFF      ;; Zero extend
@@ -2844,13 +2938,13 @@ Set_Volume:
         BEQ      ??Set_Volume_8
         MOVS     R1,R5
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable29_24
+        LDR      R0,??DataTable30_24
         BL       BSP_Ser_Printf
         MOVS     R0,R5
         ANDS     R0,R0,#0xFF      ;; Zero extend
         B        ??Set_Volume_7
 ??Set_Volume_8:
-        LDR      R0,??DataTable29_25
+        LDR      R0,??DataTable30_25
         BL       BSP_Ser_Printf
         MOVS     R0,R5
         ANDS     R0,R0,#0xFF      ;; Zero extend
@@ -2861,25 +2955,25 @@ Set_Volume:
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable23:
+??DataTable24:
         DC8      0x4F, 0x4B, 0x00, 0x00
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable23_1:
+??DataTable24_1:
         DC32     `?<Constant "Write_Mic_Cali_Data[%...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable23_2:
+??DataTable24_2:
         DC32     `?<Constant "Write_Mic_Cali_Data[%...">_1`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable23_3:
+??DataTable24_3:
         DC32     `?<Constant {10, 0, 0, 0, 0}>`
 
         SECTION `.text`:CODE:NOROOT(2)
@@ -2907,7 +3001,7 @@ Reset_Mic_Mask:
 ??Reset_Mic_Mask_3:
         MOVS     R0,R8
         ANDS     R0,R0,#0xFF      ;; Zero extend
-        LDR      R1,??DataTable29_10
+        LDR      R1,??DataTable30_10
         LDRB     R0,[R0, +R1]
         CMP      R0,#+2
         BLT      ??Reset_Mic_Mask_2
@@ -2915,7 +3009,7 @@ Reset_Mic_Mask:
         MOV      R0,#+2
         MOVS     R1,R8
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R2,??DataTable29_10
+        LDR      R2,??DataTable30_10
         STRB     R0,[R1, +R2]
         MOV      R1,#+0
         MOVS     R0,R8
@@ -2934,11 +3028,11 @@ Reset_Mic_Mask:
         MOVS     R1,R8
         ANDS     R1,R1,#0xFF      ;; Zero extend
         LSLS     R1,R1,#+2
-        LDR      R2,??DataTable25_1
+        LDR      R2,??DataTable26_1
         STR      R0,[R1, +R2]
         MOVS     R0,R8
         ANDS     R0,R0,#0xFF      ;; Zero extend
-        LDR      R1,??DataTable24_1
+        LDR      R1,??DataTable25_1
         LDRB     R0,[R0, +R1]
         ANDS     R0,R0,#0xFF      ;; Zero extend
         LSRS     R0,R0,#+7
@@ -2948,7 +3042,7 @@ Reset_Mic_Mask:
         MOVS     R0,R8
         ANDS     R0,R0,#0xFF      ;; Zero extend
         LSLS     R0,R0,#+2
-        LDR      R1,??DataTable25_1
+        LDR      R1,??DataTable26_1
         LDR      R0,[R0, +R1]
         ANDS     R0,R0,#0xFF
         LSLS     R1,R8,#+3
@@ -2973,31 +3067,31 @@ Reset_Mic_Mask:
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable24:
+??DataTable25:
         DC32     Global_Ruler_Index
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable24_1:
+??DataTable25_1:
         DC32     Global_Ruler_Type
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable24_2:
+??DataTable25_2:
         DC32     Done_Sem_RulerUART
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable24_3:
+??DataTable25_3:
         DC32     `?<Constant "Update_Mic_Mask for R...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable24_4:
+??DataTable25_4:
         DC32     `?<Constant "Ruler[%d] pcSendDateT...">`
 
         SECTION `.text`:CODE:NOROOT(2)
@@ -3017,10 +3111,10 @@ Ruler_Port_LED_Service:
         BGE      ??Ruler_Port_LED_Service_2
         MOVS     R0,R7
         ANDS     R0,R0,#0xFF      ;; Zero extend
-        LDR      R1,??DataTable29_10
+        LDR      R1,??DataTable30_10
         LDRB     R0,[R0, +R1]
         MOVS     R4,R0
-        LDR      R0,??DataTable29_26
+        LDR      R0,??DataTable30_26
         LDRB     R0,[R0, #+0]
         CMP      R0,#+0
         BEQ      ??Ruler_Port_LED_Service_3
@@ -3053,7 +3147,7 @@ Ruler_Port_LED_Service:
         BL       LED_Set
         B        ??Ruler_Port_LED_Service_6
 ??Ruler_Port_LED_Service_8:
-        LDR      R0,??DataTable29_27
+        LDR      R0,??DataTable30_27
         LDR      R0,[R0, #+0]
         MOVS     R1,R5
         ANDS     R1,R1,#0xFF      ;; Zero extend
@@ -3071,14 +3165,14 @@ Ruler_Port_LED_Service:
         ANDS     R0,R0,#0xFF      ;; Zero extend
         CMP      R0,#+0
         BNE      ??Ruler_Port_LED_Service_4
-        LDR      R0,??DataTable29_28
+        LDR      R0,??DataTable30_28
         LDR      R0,[R0, #+0]
         ADDS     R1,R0,#+1
-        LDR      R2,??DataTable29_28
+        LDR      R2,??DataTable30_28
         STR      R1,[R2, #+0]
         CMP      R0,#+6
         BCS      ??Ruler_Port_LED_Service_4
-        LDR      R0,??DataTable29_28
+        LDR      R0,??DataTable30_28
         LDRB     R0,[R0, #+0]
         ANDS     R0,R0,#0x1
         BL       Buzzer_OnOff
@@ -3087,10 +3181,10 @@ Ruler_Port_LED_Service:
         ADDS     R7,R7,#+1
         B        ??Ruler_Port_LED_Service_1
 ??Ruler_Port_LED_Service_2:
-        LDR      R0,??DataTable29_27
+        LDR      R0,??DataTable30_27
         LDR      R0,[R0, #+0]
         ADDS     R0,R0,#+1
-        LDR      R1,??DataTable29_27
+        LDR      R1,??DataTable30_27
         STR      R0,[R1, #+0]
         POP      {R0,R4-R7,LR}
         BX       LR               ;; return
@@ -3098,19 +3192,19 @@ Ruler_Port_LED_Service:
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable25:
+??DataTable26:
         DC32     `?<Constant {13, 0}>`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable25_1:
+??DataTable26_1:
         DC32     Global_Mic_Mask
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable25_2:
+??DataTable26_2:
         DC32     `?<Constant "Ruler[%d]_Active_Cont...">`
 
         SECTION `.bss`:DATA:REORDER:NOROOT(2)
@@ -3125,10 +3219,10 @@ Ruler_Port_LED_Service:
         ARM
 AB_POST:
         PUSH     {R4,LR}
-        LDR      R0,??DataTable29_29
+        LDR      R0,??DataTable30_29
         BL       BSP_Ser_Printf
         BL       Enable_FPGA
-        LDR      R0,??DataTable29_30
+        LDR      R0,??DataTable30_30
         BL       BSP_Ser_Printf
         MOV      R0,#+32000
         BL       Init_CODEC
@@ -3138,17 +3232,17 @@ AB_POST:
         CMP      R0,#+0
         BEQ      ??AB_POST_0
         MOV      R0,#+195
-        LDR      R1,??DataTable29_26
+        LDR      R1,??DataTable30_26
         STRB     R0,[R1, #+0]
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable29_31
+        LDR      R0,??DataTable30_31
         BL       BSP_Ser_Printf
         B        ??AB_POST_1
 ??AB_POST_0:
-        LDR      R0,??DataTable29_32
+        LDR      R0,??DataTable30_32
         BL       BSP_Ser_Printf
-        LDR      R0,??DataTable29_33
+        LDR      R0,??DataTable30_33
         BL       BSP_Ser_Printf
         MOV      R3,#+0
         MOV      R2,#+1
@@ -3161,17 +3255,17 @@ AB_POST:
         CMP      R0,#+0
         BEQ      ??AB_POST_2
         MOV      R0,#+196
-        LDR      R1,??DataTable29_26
+        LDR      R1,??DataTable30_26
         STRB     R0,[R1, #+0]
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable29_31
+        LDR      R0,??DataTable30_31
         BL       BSP_Ser_Printf
         B        ??AB_POST_1
 ??AB_POST_2:
-        LDR      R0,??DataTable29_32
+        LDR      R0,??DataTable30_32
         BL       BSP_Ser_Printf
-        LDR      R0,??DataTable29_34
+        LDR      R0,??DataTable30_34
         BL       BSP_Ser_Printf
         BL       Get_Audio_Version
         MOVS     R4,R0
@@ -3180,15 +3274,15 @@ AB_POST:
         CMP      R0,#+0
         BEQ      ??AB_POST_3
         MOV      R0,#+197
-        LDR      R1,??DataTable29_26
+        LDR      R1,??DataTable30_26
         STRB     R0,[R1, #+0]
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable29_31
+        LDR      R0,??DataTable30_31
         BL       BSP_Ser_Printf
         B        ??AB_POST_1
 ??AB_POST_3:
-        LDR      R0,??DataTable29_32
+        LDR      R0,??DataTable30_32
         BL       BSP_Ser_Printf
         MOV      R0,#+0
         BL       Init_CODEC
@@ -3198,11 +3292,11 @@ AB_POST:
         CMP      R0,#+0
         BEQ      ??AB_POST_4
         MOV      R0,#+195
-        LDR      R1,??DataTable29_26
+        LDR      R1,??DataTable30_26
         STRB     R0,[R1, #+0]
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable29_35
+        LDR      R0,??DataTable30_35
         BL       BSP_Ser_Printf
 ??AB_POST_4:
 ??AB_POST_1:
@@ -3212,37 +3306,37 @@ AB_POST:
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable26:
+??DataTable27:
         DC32     UART_MUX_Sem_lock
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable26_1:
+??DataTable27_1:
         DC32     `?<Constant "Ruler[%d]_Active_Cont...">_1`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable26_2:
+??DataTable27_2:
         DC32     Ruler_CMD_Result
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable26_3:
+??DataTable27_3:
         DC32     `?<Constant "Ruler[%d]_Active_Cont...">_2`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable26_4:
+??DataTable27_4:
         DC32     `?<Constant {14}>`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable26_5:
+??DataTable27_5:
         DC32     Emb_Buf_Data
 
         SECTION `.text`:CODE:NOROOT(2)
@@ -3252,7 +3346,7 @@ Ruler_POST:
         MOVS     R4,R0
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable29_36
+        LDR      R0,??DataTable30_36
         BL       BSP_Ser_Printf
         MOVS     R1,SP
         MOVS     R0,R4
@@ -3286,17 +3380,17 @@ Ruler_POST:
         ANDS     R2,R2,#0xFF      ;; Zero extend
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable29_37
+        LDR      R0,??DataTable30_37
         BL       BSP_Ser_Printf
         MOV      R0,#+1
         B        ??Ruler_POST_1
 ??Ruler_POST_4:
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable29_38
+        LDR      R0,??DataTable30_38
         BL       BSP_Ser_Printf
 ??Ruler_POST_3:
-        LDR      R0,??DataTable29_32
+        LDR      R0,??DataTable30_32
         BL       BSP_Ser_Printf
         MOVS     R0,R5
         ANDS     R0,R0,#0xFF      ;; Zero extend
@@ -3309,7 +3403,7 @@ Ruler_POST:
 simple_test_use:
         PUSH     {LR}
         SUB      SP,SP,#+20
-        LDR      R0,??DataTable29_39
+        LDR      R0,??DataTable30_39
         BL       BSP_Ser_Printf
         MOV      R1,#+63
         MOV      R0,#+0
@@ -3317,13 +3411,13 @@ simple_test_use:
         MOV      R0,#+63
         BL       Init_FPGA
         MOV      R0,#+4
-        LDR      R1,??DataTable29_10
+        LDR      R1,??DataTable30_10
         STRB     R0,[R1, #+0]
-        LDR      R0,??DataTable29_40
+        LDR      R0,??DataTable30_40
         LDM      R0,{R2,R3}
         ADD      R0,SP,#+8
         STM      R0,{R2,R3}
-        LDR      R0,??DataTable29_41
+        LDR      R0,??DataTable30_41
         LDM      R0,{R2,R3}
         MOVS     R0,SP
         STM      R0,{R2,R3}
@@ -3340,19 +3434,19 @@ simple_test_use:
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable28:
+??DataTable29:
         DC32     `?<Constant "Get_Ruler_Version[%d]...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable28_1:
+??DataTable29_1:
         DC32     `?<Constant "Get_Ruler_Version[%d]...">_1`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable28_2:
+??DataTable29_2:
         DC32     `?<Constant "Ruler[%d] FW Version:...">`
 
         SECTION `.text`:CODE:NOROOT(2)
@@ -3362,16 +3456,16 @@ Ruler_Setup_Sync:
         SUB      SP,SP,#+24
         MOVS     R4,R0
         ADD      R0,SP,#+16
-        LDR      R1,??DataTable29_42
+        LDR      R1,??DataTable30_42
         LDR      R2,[R1, #0]
         STR      R2,[R0, #+0]
-        LDR      R0,??DataTable29_43
+        LDR      R0,??DataTable30_43
         LDRB     R0,[R0, #+0]
         STRB     R0,[SP, #+17]
         STRB     R4,[SP, #+18]
         MOVS     R0,R4
         ANDS     R0,R0,#0xFF      ;; Zero extend
-        LDR      R1,??DataTable29_10
+        LDR      R1,??DataTable30_10
         LDRB     R0,[R0, +R1]
         CMP      R0,#+0
         BNE      ??Ruler_Setup_Sync_0
@@ -3380,16 +3474,16 @@ Ruler_Setup_Sync:
 ??Ruler_Setup_Sync_0:
         ADD      R2,SP,#+12
         MOV      R1,#+0
-        LDR      R0,??DataTable29_44
+        LDR      R0,??DataTable30_44
         LDR      R0,[R0, #+0]
         BL       OSSemPend
-        LDR      R0,??DataTable29_45
+        LDR      R0,??DataTable30_45
         LDRB     R0,[R0, #+0]
         ANDS     R4,R4,#0xFF      ;; Zero extend
         CMP      R0,R4
         BEQ      ??Ruler_Setup_Sync_2
         BL       Check_UART_Mixer_Ready
-        LDR      R0,??DataTable29_45
+        LDR      R0,??DataTable30_45
         STRB     R4,[R0, #+0]
         MOVS     R0,R4
         ANDS     R0,R0,#0xFF      ;; Zero extend
@@ -3404,7 +3498,7 @@ Ruler_Setup_Sync:
         MOV      R3,#+3
         ADD      R2,SP,#+16
         MOV      R1,#+2
-        LDR      R0,??DataTable29_46
+        LDR      R0,??DataTable30_46
         LDR      R0,[R0, #+0]
         BL       pcSendDateToBuf
         STRB     R0,[SP, #+12]
@@ -3414,7 +3508,7 @@ Ruler_Setup_Sync:
         ADD      R2,SP,#+12
         MOV      R1,#+136
         ORR      R1,R1,#0x1300
-        LDR      R0,??DataTable29_47
+        LDR      R0,??DataTable30_47
         LDR      R0,[R0, #+0]
         BL       OSSemPend
         LDRB     R0,[SP, #+12]
@@ -3422,11 +3516,11 @@ Ruler_Setup_Sync:
         BNE      ??Ruler_Setup_Sync_4
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable29_48
+        LDR      R0,??DataTable30_48
         BL       BSP_Ser_Printf
         B        ??Ruler_Setup_Sync_5
 ??Ruler_Setup_Sync_4:
-        LDR      R0,??DataTable29_49
+        LDR      R0,??DataTable30_49
         LDRB     R0,[R0, #+0]
         STRB     R0,[SP, #+12]
         LDRB     R0,[SP, #+12]
@@ -3435,17 +3529,17 @@ Ruler_Setup_Sync:
         LDRB     R2,[SP, #+12]
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable29_50
+        LDR      R0,??DataTable30_50
         BL       BSP_Ser_Printf
         B        ??Ruler_Setup_Sync_5
 ??Ruler_Setup_Sync_3:
         LDRB     R2,[SP, #+12]
         MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable29_51
+        LDR      R0,??DataTable30_51
         BL       BSP_Ser_Printf
 ??Ruler_Setup_Sync_5:
-        LDR      R0,??DataTable29_44
+        LDR      R0,??DataTable30_44
         LDR      R0,[R0, #+0]
         BL       OSSemPost
         LDRB     R0,[SP, #+12]
@@ -3457,313 +3551,313 @@ Ruler_Setup_Sync:
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29:
+??DataTable30:
         DC32     `?<Constant "ERROR: this operation...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_1:
+??DataTable30_1:
         DC32     `?<Constant "ERROR: Write flash st...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_2:
+??DataTable30_2:
         DC32     `?<Constant "Start loading ruler b...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_3:
+??DataTable30_3:
         DC32     ??flash_addr
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_4:
+??DataTable30_4:
         DC32     `?<Constant "ERROR: flash state no...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_5:
+??DataTable30_5:
         DC32     `?<Constant "ERROR:  Save ruler FW...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_6:
+??DataTable30_6:
         DC32     `?<Constant "ERROR: Write MCU flas...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_7:
+??DataTable30_7:
         DC32     `?<Constant "Bin file[%d Btyes] sa...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_8:
+??DataTable30_8:
         DC32     `?<Constant "ERROR: FW bin file mi...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_9:
+??DataTable30_9:
         DC32     `?<Constant "Start updating ruler[...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_10:
+??DataTable30_10:
         DC32     Global_Ruler_State
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_11:
+??DataTable30_11:
         DC32     `?<Constant "\\r\\nFailed to init rule...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_12:
+??DataTable30_12:
         DC32     `?<Constant "\\r\\nUpdate ruler[%d] fi...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_13:
+??DataTable30_13:
         DC32     ISR_Ruler_UART
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_14:
+??DataTable30_14:
         DC32     `?<Constant "Toggle Ruler[%d]-Mic[...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_15:
+??DataTable30_15:
         DC32     `?<Constant "FAIL">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_16:
+??DataTable30_16:
         DC32     `?<Constant " %s [0x%X]\\r\\n">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_17:
+??DataTable30_17:
         DC32     `?<Constant "Set Volume :: ">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_18:
+??DataTable30_18:
         DC32     `?<Constant "Mute MIC :  ">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_19:
+??DataTable30_19:
         DC32     `?<Constant "Mic_Gain = %d dB :  ">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_20:
+??DataTable30_20:
         DC32     `?<Constant "Mute LOUT :  ">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_21:
+??DataTable30_21:
         DC32     `?<Constant "LOUT_Gain = -%d.%d dB...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_22:
+??DataTable30_22:
         DC32     `?<Constant "Mute SPK :  ">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_23:
+??DataTable30_23:
         DC32     `?<Constant "SPK_Gain = -%d.%d dB :  ">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_24:
+??DataTable30_24:
         DC32     `?<Constant "FAIL [0x%X]\\r\\n">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_25:
+??DataTable30_25:
         DC32     `?<Constant "OK\\r\\n">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_26:
+??DataTable30_26:
         DC32     Global_Bridge_POST
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_27:
+??DataTable30_27:
         DC32     ??counter
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_28:
+??DataTable30_28:
         DC32     ??counter_buz
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_29:
+??DataTable30_29:
         DC32     `?<Constant "\\r\\nStart Audio Bridge ...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_30:
+??DataTable30_30:
         DC32     `?<Constant "\\r\\n1. CODEC... \\r\\n">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_31:
+??DataTable30_31:
         DC32     `?<Constant "\\r\\n---Error : %d\\r\\n">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_32:
+??DataTable30_32:
         DC32     `?<Constant "\\r\\n---OK\\r\\n">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_33:
+??DataTable30_33:
         DC32     `?<Constant "\\r\\n2. FM36 DSP... \\r\\n">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_34:
+??DataTable30_34:
         DC32     `?<Constant "\\r\\n3. AUDIO MCU... \\r\\n">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_35:
+??DataTable30_35:
         DC32     `?<Constant "\\r\\nPower Down CODEC ER...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_36:
+??DataTable30_36:
         DC32     `?<Constant "\\r\\nRuler[%d] POST stat...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_37:
+??DataTable30_37:
         DC32     `?<Constant "\\r\\n---Error Ruler[%d]:...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_38:
+??DataTable30_38:
         DC32     `?<Constant "\\r\\n---WARNING Ruler[%d...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_39:
+??DataTable30_39:
         DC32     `?<Constant "\\r\\nHi,man. Simple play...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_40:
+??DataTable30_40:
         DC32     `?<Constant {32000, 1, 6}>`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_41:
+??DataTable30_41:
         DC32     `?<Constant {32000, 0, 6}>`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_42:
+??DataTable30_42:
         DC32     `?<Constant {15, 0, 0}>`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_43:
+??DataTable30_43:
         DC32     Ruler_Setup_Sync_Data
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_44:
+??DataTable30_44:
         DC32     UART_MUX_Sem_lock
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_45:
+??DataTable30_45:
         DC32     Global_Ruler_Index
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_46:
+??DataTable30_46:
         DC32     EVENT_MsgQ_Noah2RulerUART
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_47:
+??DataTable30_47:
         DC32     Done_Sem_RulerUART
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_48:
+??DataTable30_48:
         DC32     `?<Constant "Ruler_Setup_Sync[%d] ...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_49:
+??DataTable30_49:
         DC32     Ruler_CMD_Result
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_50:
+??DataTable30_50:
         DC32     `?<Constant "Ruler_Setup_Sync[%d] ...">_1`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable29_51:
+??DataTable30_51:
         DC32     `?<Constant "Ruler[%d] pcSendDateT...">`
 
         SECTION `.iar_vfe_header`:DATA:NOALLOC:NOROOT(2)
@@ -3884,6 +3978,11 @@ Ruler_Setup_Sync:
         DC8 235, 144, 2, 0
 
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
+`?<Constant "Start_Audio : type = ...">`:
+        DATA
+        DC8 "Start_Audio : type = [%d]\015\012"
+
+        SECTION `.rodata`:CONST:REORDER:NOROOT(2)
 `?<Constant "\\r\\nStart_Audio ERROR: ...">`:
         DATA
         DC8 "\015\012Start_Audio ERROR: Timeout : %d\015\012"
@@ -3898,6 +3997,12 @@ Ruler_Setup_Sync:
 `?<Constant {235, 144, 3}>`:
         DATA
         DC8 235, 144, 3, 0
+
+        SECTION `.rodata`:CONST:REORDER:NOROOT(2)
+`?<Constant "Stop_Audio\\r\\n">`:
+        DATA
+        DC8 "Stop_Audio\015\012"
+        DC8 0, 0, 0
 
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
 `?<Constant "\\r\\nStop_Audio ERROR: t...">`:
@@ -3916,6 +4021,29 @@ Ruler_Setup_Sync:
         DATA
         DC8 "\015\012Stop_Audio Power Down CODEC ERROR: %d\015\012"
         DC8 0, 0
+
+        SECTION `.rodata`:CONST:REORDER:NOROOT(2)
+`?<Constant {235, 144, 16}>`:
+        DATA
+        DC8 235, 144, 16, 0
+
+        SECTION `.rodata`:CONST:REORDER:NOROOT(2)
+`?<Constant "Reset_Audio\\r\\n">`:
+        DATA
+        DC8 "Reset_Audio\015\012"
+        DC8 0, 0
+
+        SECTION `.rodata`:CONST:REORDER:NOROOT(2)
+`?<Constant "\\r\\nReset_Audio ERROR: ...">`:
+        DATA
+        DC8 "\015\012Reset_Audio ERROR: timeout\015\012"
+        DC8 0
+
+        SECTION `.rodata`:CONST:REORDER:NOROOT(2)
+`?<Constant "\\r\\nReset_Audio ERROR: ...">_1`:
+        DATA
+        DC8 "\015\012Reset_Audio ERROR: %d\015\012 "
+        DC8 0
 
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
 `?<Constant {235, 144, 11}>`:
@@ -4381,11 +4509,11 @@ Ruler_Setup_Sync:
 // 
 //     52 bytes in section .bss
 //      4 bytes in section .data
-//  2 830 bytes in section .rodata
-// 10 320 bytes in section .text
+//  2 954 bytes in section .rodata
+// 10 544 bytes in section .text
 // 
-// 10 320 bytes of CODE  memory
-//  2 830 bytes of CONST memory
+// 10 544 bytes of CODE  memory
+//  2 954 bytes of CONST memory
 //     56 bytes of DATA  memory
 //
 //Errors: none

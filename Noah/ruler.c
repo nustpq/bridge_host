@@ -171,12 +171,13 @@ unsigned char Setup_Audio( AUDIO_CFG *pAudioCfg )
     mic_num = Check_Actived_Mic_Number();
     if( mic_num > 6 ) {
         APP_TRACE_INFO(("\r\nERROR: Check_Actived_Mic_Number = %d > 6\r\n",mic_num));
-        return AUD_CFG_MIC_NUM_ERR;//if report err, need UI support!  
+        return AUD_CFG_MIC_NUM_MAX_ERR;//if report err, need UI support!  
     } 
     //check rec mic num    
     if( (pAudioCfg->type == 0) && ( mic_num != pAudioCfg->channels) ) {
         APP_TRACE_INFO(("WARN:(Setup_Audio Rec)pAudioCfg->channels(%d) !=  Active MICs Num(%d)\r\n",pAudioCfg->channels,mic_num));
-        buf[4] = mic_num;    
+        buf[4] = mic_num;
+        return AUD_CFG_MIC_NUM_DISMATCH_ERR;
     }
  #ifdef BOARD_TYPE_AB03    
     //check play ch num
@@ -246,7 +247,7 @@ unsigned char Start_Audio( unsigned char cmd_type )
 #if OS_CRITICAL_METHOD == 3u
     OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
 #endif 
-   
+    APP_TRACE_INFO(("Start_Audio : type = [%d]\r\n", cmd_type));
     UART2_Mixer(3); 
     USART_SendBuf( AUDIO_UART, buf,  sizeof(buf)) ;    
     err = USART_Read_Timeout( AUDIO_UART, &data, 1, TIMEOUT_AUDIO_COM);  
@@ -293,7 +294,7 @@ unsigned char Stop_Audio( void )
 #if OS_CRITICAL_METHOD == 3u
     OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
 #endif 
-    
+    APP_TRACE_INFO(("Stop_Audio\r\n"));
     UART2_Mixer(3); 
     USART_SendBuf( AUDIO_UART, buf,  sizeof(buf)) ;    
     err = USART_Read_Timeout( AUDIO_UART, &data, 1, TIMEOUT_AUDIO_COM); 
@@ -326,6 +327,41 @@ unsigned char Stop_Audio( void )
     }
 #endif
     
+    return 0 ;    
+}
+
+
+/*
+*********************************************************************************************************
+*                                           Reset_Audio()
+*
+* Description : Send command to reset USB audio data stream.
+* Argument(s) : None.
+* Return(s)   : NO_ERR :   execute successfully
+*               others :   refer to error code defines.           
+*
+* Note(s)     : None.
+*********************************************************************************************************
+*/
+unsigned char Reset_Audio( void )
+{  
+    unsigned char err   = 0xFF;  
+    unsigned char data  = 0xFF;    
+    unsigned char buf[] = { CMD_DATA_SYNC1, CMD_DATA_SYNC2, RULER_CMD_RESET_AUDIO };
+    
+    APP_TRACE_INFO(("Reset_Audio\r\n"));
+    UART2_Mixer(3); 
+    USART_SendBuf( AUDIO_UART, buf,  sizeof(buf)) ;    
+    err = USART_Read_Timeout( AUDIO_UART, &data, 1, TIMEOUT_AUDIO_COM); 
+    if( err != NO_ERR ) { 
+        APP_TRACE_INFO(("\r\nReset_Audio ERROR: timeout\r\n")); 
+        return err;
+    }
+    if( data != NO_ERR ) {
+        APP_TRACE_INFO(("\r\nReset_Audio ERROR: %d\r\n ",data)); 
+        return data; 
+    } 
+     
     return 0 ;    
 }
 

@@ -59,17 +59,18 @@
 #define ADDR_PARA_EEOR           188u
 #define UART_RD_TIMEOUT_ERR      189u     
 
-#define EMB_FORMAT_ERR           190u
-#define EMB_CMD_ERR              191u
-#define EMB_LEN_OERFLOW_ERR      192u
-#define RULER_STATE_ERR          193u
-#define SEND_DATA_LEN_ERR        194u
-#define POST_ERR_CODEC           195u
-#define POST_ERR_FM36            196u
-#define POST_ERR_AUDIO           197u
-#define POST_ERR_RULER           198u
-#define AUD_CFG_MIC_NUM_ERR      199u
-#define AUD_CFG_PLAY_CH_ERR      200u
+#define EMB_FORMAT_ERR                 190u
+#define EMB_CMD_ERR                    191u
+#define EMB_LEN_OERFLOW_ERR            192u
+#define RULER_STATE_ERR                193u
+#define SEND_DATA_LEN_ERR              194u
+#define POST_ERR_CODEC                 195u
+#define POST_ERR_FM36                  196u
+#define POST_ERR_AUDIO                 197u
+#define POST_ERR_RULER                 198u
+#define AUD_CFG_MIC_NUM_MAX_ERR        199u
+#define AUD_CFG_PLAY_CH_ERR            200u
+#define AUD_CFG_MIC_NUM_DISMATCH_ERR   201u
 
 #define FW_BIN_STATE_ERR         211u
 #define FW_BIN_STATE_0_ERR       212u
@@ -202,6 +203,8 @@
 #define  PC_CMD_RAW_DATA_TRANS       12
 #define  PC_CMD_RESET_MIC            13
 #define  PC_CMD_SET_VOLUME           14
+#define  PC_CMD_RESET_AUDIO          15
+
 #define  PC_CMD_DOWNLOAD_RULER_FW    100
 #define  PC_CMD_UPDATE_RULER_FW      101
 #define  PC_CMD_UPDATE_AB_FW         102

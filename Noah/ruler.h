@@ -68,6 +68,7 @@
 #define  RULER_CMD_ACTIVE_CTR           0x0D
 #define  RULER_CMD_GET_RULER_VERSION    0x0E
 #define  RULER_CMD_SETUP_SYNC           0x0F
+#define  RULER_CMD_RESET_AUDIO          0x10
 ////////////////////////////////////////////////////////////////////////////////
 
 #define DEF_VERSION_STR_LEN  ( 11 + 1 )
@@ -219,6 +220,7 @@ extern void          Init_Global_Var( void );
 extern unsigned char Setup_Audio( AUDIO_CFG *pAudioCfg );
 extern unsigned char Start_Audio( unsigned char cmd_type );
 extern unsigned char Stop_Audio( void );  
+extern unsigned char Reset_Audio( void );  
 extern unsigned char Get_Audio_Version( void );
 extern unsigned char Init_Ruler( unsigned char ruler_slot_id ) ;
 extern unsigned char Setup_Ruler( unsigned char ruler_slot_id );

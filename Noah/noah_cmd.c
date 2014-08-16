@@ -683,7 +683,13 @@ CPU_INT08U  EMB_Data_Parse (EMB_BUF  *pEBuf_Cmd)
             if( err != NO_ERR ) { Send_GACK(err); break; }
             err = Stop_Audio(); 
             Send_GACK(err);
-        break ;       
+        break ;    
+        
+        case PC_CMD_RESET_AUDIO :
+            Send_DACK(err);           
+            err = Reset_Audio(); 
+            Send_GACK(err);
+        break ; 
         ////////////////////////////////////////////////////////////////////////
         case PC_CMD_RAED_RULER_INFO : 
             Send_DACK(err);             
