@@ -71,6 +71,7 @@
 #define AUD_CFG_MIC_NUM_MAX_ERR        199u
 #define AUD_CFG_PLAY_CH_ERR            200u
 #define AUD_CFG_MIC_NUM_DISMATCH_ERR   201u
+#define AUD_CFG_PLAY_CH_ZERO_ERR       202u
 
 #define FW_BIN_STATE_ERR         211u
 #define FW_BIN_STATE_0_ERR       212u

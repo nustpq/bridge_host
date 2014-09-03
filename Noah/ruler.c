@@ -179,6 +179,19 @@ unsigned char Setup_Audio( AUDIO_CFG *pAudioCfg )
         buf[4] = mic_num;
         return AUD_CFG_MIC_NUM_DISMATCH_ERR;
     }
+    //check channel num    
+    if( (pAudioCfg->type == 1) && (pAudioCfg->channels == 0) ) {
+        APP_TRACE_INFO(("WARN:(Setup_Audio Play)pAudioCfg->channels =  0\r\n" ));        
+        //return AUD_CFG_PLAY_CH_ZERO_ERR;  UI not support
+    }  
+    if( (pAudioCfg->type == 0) && (pAudioCfg->channels == 0) && (pAudioCfg->lin_ch_mask == 0) ) {
+        APP_TRACE_INFO(("WARN:(Setup_Audio Rec)pAudioCfg->channels + ch_lin =  0\r\n" ));        
+        //return AUD_CFG_PLAY_CH_ZERO_ERR; UI not support
+    }
+    //check sample rate
+    //No add here!
+    //
+    //
  #ifdef BOARD_TYPE_AB03    
     //check play ch num
     if(  (pAudioCfg->type == 1) && ( pAudioCfg->channels > 4 ) ) { //for AB03

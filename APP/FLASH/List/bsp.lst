@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        21/Aug/2014  15:13:58
+# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        04/Sep/2014  10:10:13
 # Copyright 1999-2014 IAR Systems AB.
 #
 #    Cpu mode     =  arm
@@ -91,7 +91,7 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\BSP\bsp.c
      44          /*
      45          *********************************      Version Declaration       ****************************************
      46          */
-     47          const CPU_CHAR fw_version[]  = "[FW:H:V0.4.3]"; //fixed size string
+     47          const CPU_CHAR fw_version[]  = "[FW:H:V0.4.4]"; //fixed size string
      48          
      49          #ifdef  BOARD_TYPE_AB01
      50          const CPU_CHAR hw_version[]  = "[HW:V1.0]"; 
@@ -2590,8 +2590,7 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\BSP\bsp.c
      136  ?<Constant "---------------------...">_1
       64  ?<Constant "---------------------...">_2
      136  ?<Constant "---------------------...">_3
-      12  ?<Constant "15:13:57">
-      12  ?<Constant "Aug 21 2014">
+      12  ?<Constant "10:10:13">
       76  ?<Constant "CPU Usage = %d%%, CPU...">
       52  ?<Constant "Done_Sem_RulerUART:  ...">
        8  ?<Constant "Error">
@@ -2604,6 +2603,7 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\BSP\bsp.c
        4  ?<Constant "OK">
       68  ?<Constant "OS Running Time  =  %...">
       56  ?<Constant "Ruler FW Bin File:   ...">
+      12  ?<Constant "Sep  4 2014">
       52  ?<Constant "TWI_Sem_done:        ...">
       52  ?<Constant "TWI_Sem_lock:        ...">
       72  ?<Constant "Test Counter:        ...">
