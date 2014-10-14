@@ -191,6 +191,27 @@ unsigned char Codec_DAC_Attenuation( unsigned char DAC_NAME, unsigned int x10gai
 //    
 //}
 
+unsigned short SR_Support[] =         {
+                                            //8000,
+                                            16000,
+                                            24000,
+                                            32000,
+                                            //44100,
+                                            48000
+                                            //96000
+                                      };
+
+unsigned char Check_SR_Support( unsigned int sample_rate )
+{    
+   unsigned int i;
+   for( i = 0; i<(sizeof(SR_Support)/2); i++ ) {
+       if( SR_Support[i] == sample_rate ) {
+           return OS_ERR_NONE ; //find the SR
+       }
+   }   
+   return CODEC_SR_NOT_SUPPORT_ERR;  //SR not support
+    
+}
 
 // Main clock source = 12.288 MHz.   
 unsigned char Codec_SetFCLK( unsigned int fclk )

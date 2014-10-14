@@ -93,8 +93,9 @@
 #define CODEC_SETVOL_RANGE_ERR   231u
 #define CODEC_SETFCLK_RANGE_ERR  232u
 #define CODEC_SETMODE_RANGE_ERR  233u
+#define CODEC_SR_NOT_SUPPORT_ERR 234u
 
-
+//ERROR CODE from 245~ 255 reserved for Audio MCU
 /*
 *********************************************************************************************************
 *                                           Noah CMD Defines

@@ -50,4 +50,6 @@ extern unsigned char Init_CODEC_AIC3204( unsigned int sample_rate ) ;
 extern unsigned char CODEC_LOUT_Small_Gain_En( bool small_gain );
 extern unsigned char CODEC_Set_Volume( unsigned int vol_spk,  unsigned int vol_lin );
 
+ extern unsigned char Check_SR_Support( unsigned int sample_rate );
+
 #endif

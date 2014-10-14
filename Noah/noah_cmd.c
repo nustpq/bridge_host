@@ -670,10 +670,13 @@ CPU_INT08U  EMB_Data_Parse (EMB_BUF  *pEBuf_Cmd)
             Send_DACK(err);
             temp = emb_get_attr_int(&root, 1, -1);
             if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
-            PCCmd.start_audio.type = (CPU_INT08U)temp; 
-            err = Ruler_Active_Control(1);           
-            if( err != NO_ERR ) { Send_GACK(err); break; }
-            err = Start_Audio( PCCmd.start_audio.type );
+            PCCmd.start_audio.type = (CPU_INT08U)temp;             
+            temp = emb_get_attr_int(&root, 2, -1);
+            if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
+            PCCmd.start_audio.padding = (CPU_INT08U)temp; 
+            err = Ruler_Active_Control(1);              
+            if( err != NO_ERR ) { Send_GACK(err); break; }            
+            err = Start_Audio( PCCmd.start_audio );
             Send_GACK(err);
         break ;
         

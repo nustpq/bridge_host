@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       04/Sep/2014  10:10:13
+// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       05/Sep/2014  17:28:09
 // Copyright 1999-2014 IAR Systems AB.
 //
 //    Cpu mode     =  arm
@@ -61,6 +61,7 @@
         PUBLIC ALL_POWER_ON
         PUBLIC CODEC_LOUT_Small_Gain_En
         PUBLIC CODEC_Set_Volume
+        PUBLIC Check_SR_Support
         PUBLIC Codec_DAC_Attenuation
         PUBLIC Codec_Mixer
         PUBLIC Codec_Read
@@ -73,6 +74,7 @@
         PUBLIC I2CWrite_Codec
         PUBLIC I2CWrite_Codec_AIC3204
         PUBLIC Init_CODEC
+        PUBLIC SR_Support
         PUBLIC Set_Codec
 
 
@@ -356,7 +358,7 @@ Codec_DAC_Attenuation:
         BCC      ??Codec_DAC_Attenuation_2
         MOV      R0,#+231
         MOVS     R6,R0
-        LDR      R0,??DataTable2
+        LDR      R0,??DataTable3
         BL       BSP_Ser_Printf
         MOVS     R0,R6
         ANDS     R0,R0,#0xFF      ;; Zero extend
@@ -391,6 +393,35 @@ Codec_DAC_Attenuation:
         MOV      R0,#+0
 ??Codec_DAC_Attenuation_1:
         POP      {R1,R4-R7,LR}
+        BX       LR               ;; return
+
+        SECTION `.data`:DATA:REORDER:NOROOT(2)
+SR_Support:
+        DATA
+        DC16 16000, 24000, 32000, 48000
+
+        SECTION `.text`:CODE:NOROOT(2)
+        ARM
+Check_SR_Support:
+        MOVS     R1,R0
+        MOV      R0,#+0
+        MOVS     R2,R0
+??Check_SR_Support_0:
+        CMP      R2,#+4
+        BCS      ??Check_SR_Support_1
+        LSLS     R0,R2,#+1
+        LDR      R3,??DataTable3_1
+        LDRH     R0,[R0, +R3]
+        CMP      R0,R1
+        BNE      ??Check_SR_Support_2
+        MOV      R0,#+0
+        B        ??Check_SR_Support_3
+??Check_SR_Support_2:
+        ADDS     R2,R2,#+1
+        B        ??Check_SR_Support_0
+??Check_SR_Support_1:
+        MOV      R0,#+234
+??Check_SR_Support_3:
         BX       LR               ;; return
 
         SECTION `.text`:CODE:NOROOT(2)
@@ -605,17 +636,17 @@ Init_CODEC:
         SUB      SP,SP,#+24
         MOVS     R4,R0
         MOVS     R0,SP
-        LDR      R1,??DataTable2_1
+        LDR      R1,??DataTable3_2
         MOV      R2,#+20
         BL       __aeabi_memcpy4
-        LDR      R0,??DataTable2_2
+        LDR      R0,??DataTable3_3
         LDR      R0,[R0, #+0]
         CMP      R4,R0
         BNE      ??Init_CODEC_0
         MOV      R0,#+0
         B        ??Init_CODEC_1
 ??Init_CODEC_0:
-        LDR      R0,??DataTable2_2
+        LDR      R0,??DataTable3_3
         STR      R4,[R0, #+0]
         MOV      R0,#+0
         MOVS     R6,R0
@@ -705,13 +736,13 @@ CODEC_LOUT_Small_Gain_En:
         BEQ      ??CODEC_LOUT_Small_Gain_En_0
         MOV      R0,#+64
         MOVS     R5,R0
-        LDR      R0,??DataTable2_3
+        LDR      R0,??DataTable3_4
         BL       BSP_Ser_Printf
         B        ??CODEC_LOUT_Small_Gain_En_1
 ??CODEC_LOUT_Small_Gain_En_0:
         MOV      R0,#+0
         MOVS     R5,R0
-        LDR      R0,??DataTable2_4
+        LDR      R0,??DataTable3_5
         BL       BSP_Ser_Printf
 ??CODEC_LOUT_Small_Gain_En_1:
         MOVS     R1,R5
@@ -753,31 +784,37 @@ CODEC_LOUT_Small_Gain_En:
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable2:
+??DataTable3:
         DC32     `?<Constant "ERR: CODEC Gain Over ...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable2_1:
+??DataTable3_1:
+        DC32     SR_Support
+
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable3_2:
         DC32     `?<Constant {{0, 152}, {1, 0}, {4, 24}, {5, 240`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable2_2:
+??DataTable3_3:
         DC32     ??sr_saved
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable2_3:
+??DataTable3_4:
         DC32     `?<Constant "Lout Gain 24dB attenu...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable2_4:
+??DataTable3_5:
         DC32     `?<Constant "Lout Gain 24dB attenu...">_1`
 
         SECTION `.text`:CODE:NOROOT(2)
@@ -891,12 +928,13 @@ CODEC_Set_Volume:
         END
 // 
 //     4 bytes in section .bss
+//     8 bytes in section .data
 //   132 bytes in section .rodata
-// 2 512 bytes in section .text
+// 2 580 bytes in section .text
 // 
-// 2 512 bytes of CODE  memory
+// 2 580 bytes of CODE  memory
 //   132 bytes of CONST memory
-//     4 bytes of DATA  memory
+//    12 bytes of DATA  memory
 //
 //Errors: none
 //Warnings: none

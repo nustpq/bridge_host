@@ -167,7 +167,12 @@ unsigned char Setup_Audio( AUDIO_CFG *pAudioCfg )
     } else {
         APP_TRACE_INFO(("Setup_Audio [PLAY]:[%d SR]:[%d CH]\r\n", pAudioCfg->sr, pAudioCfg->channels ));
     }
-         
+    
+    err = Check_SR_Support( pAudioCfg->sr );
+    if( err != NO_ERR ) { 
+        APP_TRACE_INFO(("\r\nSetup_Audio ERROR: Sample rate NOT support!\r\n")); 
+        return err;
+    }    
     mic_num = Check_Actived_Mic_Number();
     if( mic_num > 6 ) {
         APP_TRACE_INFO(("\r\nERROR: Check_Actived_Mic_Number = %d > 6\r\n",mic_num));
@@ -244,28 +249,29 @@ unsigned char Setup_Audio( AUDIO_CFG *pAudioCfg )
 *
 * Description : Send command to start USB audio play/record.
 * Argument(s) : cmd_type : record£¨== 1£©/play£¨== 2£©/record & play £¨== 3£©
+*               padding :  used for usb audio BI/BO first package padding
 * Return(s)   : NO_ERR :   execute successfully
 *               others :   refer to error code defines.           
 *
 * Note(s)     : None.
 *********************************************************************************************************
 */
-unsigned char Start_Audio( unsigned char cmd_type )
+unsigned char Start_Audio( START_AUDIO start_audio )
 {   
     unsigned char err   = 0xFF;  
     unsigned char data  = 0xFF; 
     unsigned char ruler_id;    
-    unsigned char buf[] = { CMD_DATA_SYNC1, CMD_DATA_SYNC2, RULER_CMD_START_AUDIO, cmd_type&0x03 }; 
+    unsigned char buf[] = { CMD_DATA_SYNC1, CMD_DATA_SYNC2, RULER_CMD_START_AUDIO, start_audio.type&0x03, start_audio.padding }; 
     
 #if OS_CRITICAL_METHOD == 3u
     OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
 #endif 
-    APP_TRACE_INFO(("Start_Audio : type = [%d]\r\n", cmd_type));
+    APP_TRACE_INFO(("Start_Audio : type = [%d], padding = [0x%X]\r\n", start_audio.type, start_audio.padding));
     UART2_Mixer(3); 
-    USART_SendBuf( AUDIO_UART, buf,  sizeof(buf)) ;    
-    err = USART_Read_Timeout( AUDIO_UART, &data, 1, TIMEOUT_AUDIO_COM);  
+    USART_SendBuf( AUDIO_UART, buf,  sizeof(buf) );    
+    err = USART_Read_Timeout( AUDIO_UART, &data, 1, TIMEOUT_AUDIO_COM );  
     if( err != NO_ERR ) { 
-        APP_TRACE_INFO(("\r\nStart_Audio ERROR: Timeout : %d\r\n",err)); 
+        APP_TRACE_INFO(("\r\nStart_Audio ERROR: Timeout : %d\r\n",err));
         return err;
     }
     if( data != NO_ERR ) {
@@ -1754,7 +1760,7 @@ void simple_test_use( void )
     AUDIO_CFG audio_config_rec  = {SAMPLE_RATE_DEF, AUDIO_TYPE_REC,  6 };
     Setup_Audio( &audio_config_play );                   
     Setup_Audio( &audio_config_rec );                 
-    Start_Audio( AUDIO_START_PALYREC ); 
+    //Start_Audio( AUDIO_START_PALYREC ); 
     
 #endif
     

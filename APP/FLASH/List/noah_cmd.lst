@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        04/Sep/2014  10:10:19
+# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        05/Sep/2014  18:12:08
 # Copyright 1999-2014 IAR Systems AB.
 #
 #    Cpu mode     =  arm
@@ -719,255 +719,258 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\noah_cmd.c
     670                      Send_DACK(err);
     671                      temp = emb_get_attr_int(&root, 1, -1);
     672                      if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
-    673                      PCCmd.start_audio.type = (CPU_INT08U)temp; 
-    674                      err = Ruler_Active_Control(1);           
-    675                      if( err != NO_ERR ) { Send_GACK(err); break; }
-    676                      err = Start_Audio( PCCmd.start_audio.type );
-    677                      Send_GACK(err);
-    678                  break ;
-    679                  
-    680                  case PC_CMD_STOP_AUDIO :
-    681                      Send_DACK(err);  
-    682                      err = Ruler_Active_Control(0);                 
-    683                      if( err != NO_ERR ) { Send_GACK(err); break; }
-    684                      err = Stop_Audio(); 
-    685                      Send_GACK(err);
-    686                  break ;    
-    687                  
-    688                  case PC_CMD_RESET_AUDIO :
-    689                      Send_DACK(err);           
-    690                      err = Reset_Audio(); 
-    691                      Send_GACK(err);
-    692                  break ; 
-    693                  ////////////////////////////////////////////////////////////////////////
-    694                  case PC_CMD_RAED_RULER_INFO : 
-    695                      Send_DACK(err);             
-    696                      temp = emb_get_attr_int(&root, 1, -1);
-    697                      if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }            
-    698                      err = Read_Ruler_Info( temp );              
-    699                      if( err != NO_ERR ) { Send_GACK(err); break; }  
-    700                      emb_attach( &(pEBuf_Data->data[0]), pEBuf_Data->length, &root );
-    701                      emb_get_node_replace(&root, 1, temp);
-    702                      buf[0] = EMB_DATA_FRAME ;
-    703                      buf[1] = (pEBuf_Data->length) & 0xFF;    
-    704                      buf[2] = ((pEBuf_Data->length)>>8) & 0xFF;  
-    705                      err = pcSendDateToBuf( EVENT_MsgQ_Noah2PCUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ;            
-    706                      if( OS_ERR_NONE == err ) {  
-    707                          pdata = pEBuf_Data->data;
-    708                          data_length = pEBuf_Data->length;
-    709                          while( data_length > 0 ){        
-    710                              temp = data_length > NOAH_CMD_DATA_MLEN ? NOAH_CMD_DATA_MLEN : data_length ; 
-    711                              err = pcSendDateToBuf( EVENT_MsgQ_Noah2PCUART, FRAM_TYPE_DATA, pdata, temp, 0, NULL, 0 ) ; 
-    712                              if( OS_ERR_NONE != err ) { break;}
-    713                              data_length -= temp;
-    714                              pdata += temp;
-    715                          }  
-    716                      }  
-    717                      Send_GACK(err);          
-    718                  break ;
-    719                 
-    720                  case PC_CMD_WRITE_RULER_INFO : 
-    721                      Send_DACK(err); 
-    722                      temp = emb_get_attr_int(&root, 1, -1);            
-    723                      if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }            
-    724                      err = Write_Ruler_Info( temp ); 
-    725                      Send_GACK(err);             
-    726                  break ;
-    727          
-    728                  ////////////////////////////////////////////////////////////////////////
-    729                  case PC_CMD_READ_MIC_CALI_DATA :  
-    730                      Send_DACK(err);             
-    731                      temp = emb_get_attr_int(&root, 1, -1);
-    732                      if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; } 
-    733                      temp2 = emb_get_attr_int(&root, 2, -1);            
-    734                      if(temp2 == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }            
-    735                      err = Read_Mic_Cali_Data( temp, temp2 );             
-    736                      if( err != NO_ERR ) { Send_GACK(err); break; }  
-    737                      emb_attach( &(pEBuf_Data->data[0]), pEBuf_Data->length, &root );
-    738                      emb_get_node_replace(&root, 1, temp);
-    739                      emb_get_node_replace(&root, 2, temp2);
-    740                      buf[0] = EMB_DATA_FRAME ;
-    741                      buf[1] = (pEBuf_Data->length) & 0xFF;    
-    742                      buf[2] = ((pEBuf_Data->length)>>8) & 0xFF;  
-    743                      err = pcSendDateToBuf( EVENT_MsgQ_Noah2PCUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ;            
-    744                      if( OS_ERR_NONE == err ) {  
-    745                          pdata = pEBuf_Data->data;
-    746                          data_length = pEBuf_Data->length;
-    747                          while( data_length > 0 ){        
-    748                              temp = data_length > NOAH_CMD_DATA_MLEN ? NOAH_CMD_DATA_MLEN : data_length ; 
-    749                              err = pcSendDateToBuf( EVENT_MsgQ_Noah2PCUART, FRAM_TYPE_DATA, pdata, temp, 0, NULL, 0 ) ; 
-    750                              if( OS_ERR_NONE != err ) { break;}
-    751                              data_length -= temp;
-    752                              pdata += temp;
-    753                          }  
-    754                      }
-    755                      Send_GACK(err);            
-    756                  break ;
-    757          
-    758                  case PC_CMD_WRITE_MIC_CALI_DATA :   
-    759                      Send_DACK(err); 
-    760                      temp = emb_get_attr_int(&root, 1, -1);            
-    761                      if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }   
-    762                      temp2 = emb_get_attr_int(&root, 2, -1);            
-    763                      if(temp2 == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }          
-    764                      err = Write_Mic_Cali_Data( temp, temp2 ); 
-    765                      Send_GACK(err);              
-    766                  break ;
-    767                  ////////////////////////////////////////////////////////////////////////
-    768                  case PC_CMD_TOGGLE_MIC : 
-    769                      Send_DACK(err);
-    770                      temp = emb_get_attr_int(&root, 1, -1);
-    771                      if(temp == -1 ) { Send_GACK(EMB_CMD_ERR); break; }
-    772                      PCCmd.toggle_mic.ruler_id = (CPU_INT08U)temp;
-    773                      temp = emb_get_attr_int(&root, 2, -1);
+    673                      PCCmd.start_audio.type = (CPU_INT08U)temp;             
+    674                      temp = emb_get_attr_int(&root, 2, -1);
+    675                      if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }
+    676                      PCCmd.start_audio.padding = (CPU_INT08U)temp; 
+    677                      err = Ruler_Active_Control(1);              
+    678                      if( err != NO_ERR ) { Send_GACK(err); break; }            
+    679                      err = Start_Audio( PCCmd.start_audio );
+    680                      Send_GACK(err);
+    681                  break ;
+    682                  
+    683                  case PC_CMD_STOP_AUDIO :
+    684                      Send_DACK(err);  
+    685                      err = Ruler_Active_Control(0);                 
+    686                      if( err != NO_ERR ) { Send_GACK(err); break; }
+    687                      err = Stop_Audio(); 
+    688                      Send_GACK(err);
+    689                  break ;    
+    690                  
+    691                  case PC_CMD_RESET_AUDIO :
+    692                      Send_DACK(err);           
+    693                      err = Reset_Audio(); 
+    694                      Send_GACK(err);
+    695                  break ; 
+    696                  ////////////////////////////////////////////////////////////////////////
+    697                  case PC_CMD_RAED_RULER_INFO : 
+    698                      Send_DACK(err);             
+    699                      temp = emb_get_attr_int(&root, 1, -1);
+    700                      if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }            
+    701                      err = Read_Ruler_Info( temp );              
+    702                      if( err != NO_ERR ) { Send_GACK(err); break; }  
+    703                      emb_attach( &(pEBuf_Data->data[0]), pEBuf_Data->length, &root );
+    704                      emb_get_node_replace(&root, 1, temp);
+    705                      buf[0] = EMB_DATA_FRAME ;
+    706                      buf[1] = (pEBuf_Data->length) & 0xFF;    
+    707                      buf[2] = ((pEBuf_Data->length)>>8) & 0xFF;  
+    708                      err = pcSendDateToBuf( EVENT_MsgQ_Noah2PCUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ;            
+    709                      if( OS_ERR_NONE == err ) {  
+    710                          pdata = pEBuf_Data->data;
+    711                          data_length = pEBuf_Data->length;
+    712                          while( data_length > 0 ){        
+    713                              temp = data_length > NOAH_CMD_DATA_MLEN ? NOAH_CMD_DATA_MLEN : data_length ; 
+    714                              err = pcSendDateToBuf( EVENT_MsgQ_Noah2PCUART, FRAM_TYPE_DATA, pdata, temp, 0, NULL, 0 ) ; 
+    715                              if( OS_ERR_NONE != err ) { break;}
+    716                              data_length -= temp;
+    717                              pdata += temp;
+    718                          }  
+    719                      }  
+    720                      Send_GACK(err);          
+    721                  break ;
+    722                 
+    723                  case PC_CMD_WRITE_RULER_INFO : 
+    724                      Send_DACK(err); 
+    725                      temp = emb_get_attr_int(&root, 1, -1);            
+    726                      if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }            
+    727                      err = Write_Ruler_Info( temp ); 
+    728                      Send_GACK(err);             
+    729                  break ;
+    730          
+    731                  ////////////////////////////////////////////////////////////////////////
+    732                  case PC_CMD_READ_MIC_CALI_DATA :  
+    733                      Send_DACK(err);             
+    734                      temp = emb_get_attr_int(&root, 1, -1);
+    735                      if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; } 
+    736                      temp2 = emb_get_attr_int(&root, 2, -1);            
+    737                      if(temp2 == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }            
+    738                      err = Read_Mic_Cali_Data( temp, temp2 );             
+    739                      if( err != NO_ERR ) { Send_GACK(err); break; }  
+    740                      emb_attach( &(pEBuf_Data->data[0]), pEBuf_Data->length, &root );
+    741                      emb_get_node_replace(&root, 1, temp);
+    742                      emb_get_node_replace(&root, 2, temp2);
+    743                      buf[0] = EMB_DATA_FRAME ;
+    744                      buf[1] = (pEBuf_Data->length) & 0xFF;    
+    745                      buf[2] = ((pEBuf_Data->length)>>8) & 0xFF;  
+    746                      err = pcSendDateToBuf( EVENT_MsgQ_Noah2PCUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ;            
+    747                      if( OS_ERR_NONE == err ) {  
+    748                          pdata = pEBuf_Data->data;
+    749                          data_length = pEBuf_Data->length;
+    750                          while( data_length > 0 ){        
+    751                              temp = data_length > NOAH_CMD_DATA_MLEN ? NOAH_CMD_DATA_MLEN : data_length ; 
+    752                              err = pcSendDateToBuf( EVENT_MsgQ_Noah2PCUART, FRAM_TYPE_DATA, pdata, temp, 0, NULL, 0 ) ; 
+    753                              if( OS_ERR_NONE != err ) { break;}
+    754                              data_length -= temp;
+    755                              pdata += temp;
+    756                          }  
+    757                      }
+    758                      Send_GACK(err);            
+    759                  break ;
+    760          
+    761                  case PC_CMD_WRITE_MIC_CALI_DATA :   
+    762                      Send_DACK(err); 
+    763                      temp = emb_get_attr_int(&root, 1, -1);            
+    764                      if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }   
+    765                      temp2 = emb_get_attr_int(&root, 2, -1);            
+    766                      if(temp2 == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }          
+    767                      err = Write_Mic_Cali_Data( temp, temp2 ); 
+    768                      Send_GACK(err);              
+    769                  break ;
+    770                  ////////////////////////////////////////////////////////////////////////
+    771                  case PC_CMD_TOGGLE_MIC : 
+    772                      Send_DACK(err);
+    773                      temp = emb_get_attr_int(&root, 1, -1);
     774                      if(temp == -1 ) { Send_GACK(EMB_CMD_ERR); break; }
-    775                      PCCmd.toggle_mic.mic_id = (CPU_INT08U)temp;
-    776                      temp = emb_get_attr_int(&root, 3, -1);
+    775                      PCCmd.toggle_mic.ruler_id = (CPU_INT08U)temp;
+    776                      temp = emb_get_attr_int(&root, 2, -1);
     777                      if(temp == -1 ) { Send_GACK(EMB_CMD_ERR); break; }
-    778                      PCCmd.toggle_mic.on_off = (CPU_INT08U)temp;      
-    779                      err = Toggle_Mic( &PCCmd.toggle_mic ) ;
-    780                      Send_GACK(err);    
-    781                  break ;
-    782                  
-    783                  case PC_CMD_RESET_MIC :
-    784                      Send_DACK(err);
-    785                      temp = emb_get_attr_int(&root, 1, -1);
-    786                      if(temp == -1 ) { Send_GACK(EMB_CMD_ERR); break; }            
-    787                      err = Reset_Mic_Mask( (unsigned int*)&temp ) ;
-    788                      Send_GACK(err);    
-    789                  break ;
-    790            
-    791                  case PC_CMD_SET_VOLUME :
-    792                      Send_DACK(err);
-    793                      temp = emb_get_attr_int(&root, 1, -1);
-    794                      if(temp == -1 ) { Send_GACK(EMB_CMD_ERR); break; }
-    795                      PCCmd.set_volume.mic = (CPU_INT32U)temp;
-    796                      temp = emb_get_attr_int(&root, 2, -1);
+    778                      PCCmd.toggle_mic.mic_id = (CPU_INT08U)temp;
+    779                      temp = emb_get_attr_int(&root, 3, -1);
+    780                      if(temp == -1 ) { Send_GACK(EMB_CMD_ERR); break; }
+    781                      PCCmd.toggle_mic.on_off = (CPU_INT08U)temp;      
+    782                      err = Toggle_Mic( &PCCmd.toggle_mic ) ;
+    783                      Send_GACK(err);    
+    784                  break ;
+    785                  
+    786                  case PC_CMD_RESET_MIC :
+    787                      Send_DACK(err);
+    788                      temp = emb_get_attr_int(&root, 1, -1);
+    789                      if(temp == -1 ) { Send_GACK(EMB_CMD_ERR); break; }            
+    790                      err = Reset_Mic_Mask( (unsigned int*)&temp ) ;
+    791                      Send_GACK(err);    
+    792                  break ;
+    793            
+    794                  case PC_CMD_SET_VOLUME :
+    795                      Send_DACK(err);
+    796                      temp = emb_get_attr_int(&root, 1, -1);
     797                      if(temp == -1 ) { Send_GACK(EMB_CMD_ERR); break; }
-    798                      PCCmd.set_volume.lout = (CPU_INT32U)temp;
-    799                      temp = emb_get_attr_int(&root, 3, -1);
+    798                      PCCmd.set_volume.mic = (CPU_INT32U)temp;
+    799                      temp = emb_get_attr_int(&root, 2, -1);
     800                      if(temp == -1 ) { Send_GACK(EMB_CMD_ERR); break; }
-    801                      PCCmd.set_volume.spk = (CPU_INT32U)temp;      
-    802                      err = Set_Volume( &PCCmd.set_volume ) ;
-    803                      Send_GACK(err);    
-    804                  break ;
-    805                  
-    806                  case PC_CMD_READ_AB_STATUS : 
-    807                       Send_DACK(err);             
-    808                       err = EMB_Data_Build( pEBuf_Data, DATA_AB_STATUS );               
-    809                       pcSendDateToBuf( EVENT_MsgQ_Noah2PCUART, FRAM_TYPE_DATA, pEBuf_Data->data, pEBuf_Data->length, 0, NULL, 0 ) ; 
-    810                       Send_GACK(err);            
-    811                  break ;
-    812            
-    813                  case PC_CMD_RAED_AB_INFO :   
-    814                       Send_DACK(err);             
-    815                       err = EMB_Data_Build( pEBuf_Data, DATA_AB_INFO );             
-    816                       pcSendDateToBuf( EVENT_MsgQ_Noah2PCUART, FRAM_TYPE_DATA, pEBuf_Data->data, pEBuf_Data->length, 0, NULL, 0 ) ; 
-    817                       Send_GACK(err);            
-    818                  break ;      
-    819                  ////////////////////////////////////////////////////////////////////////
-    820                  case PC_CMD_RAW_DATA_TRANS :   
-    821                       Send_DACK(err);  
-    822                       
-    823                       Send_GACK(err);              
-    824                  break ;  
-    825                 
-    826                  case PC_CMD_DOWNLOAD_RULER_FW :
-    827                       Send_DACK(err);   
-    828                       temp = emb_get_attr_int(&root, 1, -1);            
-    829                       if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }  
-    830                       unsigned char *pBin,*pStr;
-    831                       unsigned int   size; 
-    832                       pBin = (unsigned char *)emb_get_attr_binary(&root, 2, (int *)&size);            
-    833                       if(pBin == NULL ) { Send_GACK(EMB_CMD_ERR);  break; }              
-    834                       pStr = (unsigned char *)emb_get_attr_string(&root, 3);            
-    835                       if(pStr == NULL ) { Send_GACK(EMB_CMD_ERR);  break; }            
-    836                       err = Save_Ruler_FW( temp, pBin, pStr, size );             
-    837                       Send_GACK(err);             
-    838                  break ; 
-    839                  
-    840                  case PC_CMD_UPDATE_RULER_FW :   
-    841                       Send_DACK(err);   
-    842                       temp = emb_get_attr_int(&root, 1, -1);            
-    843                       if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }                  
-    844                       err = Update_Ruler_FW( temp );          
-    845                       Send_GACK(err);             
-    846                  break ;  
-    847                  
-    848                  case PC_CMD_UPDATE_AB_FW :   
-    849                       Send_DACK(err);  
-    850                       
-    851                       Send_GACK(err);               
-    852                  break ;         
-    853                  
-    854                  default :            
-    855                      err = CMD_NOT_SURRPORT ;
-    856                      Send_DACK(err);
-    857                      
-    858                  break ;
-    859                  
-    860              }
-    861              
-    862              return err;
-    863          
-    864          }
-    865          
-    866          /*
-    867          *********************************************************************************************************
-    868          *                                           AB_Status_Change_Report()
-    869          *
-    870          * Description : Check ruler status, and report to PC only if any ruler's  attach/detach  status changed 
-    871          * Argument(s) : None.
-    872          * Return(s)   : NO_ERR :   execute successfully
-    873          *               others :   =error code . 
-    874          * Note(s)     : None.
-    875          *********************************************************************************************************
-    876          */
-    877          static CPU_INT08U Ruler_State_Previous[4];    //ruler previous status 
-    878          
-    879          CPU_INT08U  AB_Status_Change_Report (void)
-    880          {
-    881              
-    882              CPU_INT08U    err; 
-    883              EMB_BUF      *pEBuf;   
-    884              CPU_INT08U    flag; 
-    885              CPU_INT08U    i;   
-    886              
-    887              err   = NO_ERR;   
-    888              pEBuf = &Emb_Buf_Cmd;
-    889              flag  = 0;    
-    890          
-    891              for( i = 0; i < 4; i++ ) {
-    892                  if( (Ruler_State_Previous[i] == 0) && (Global_Ruler_State[i] > 1) ||
-    893                      (Ruler_State_Previous[i] > 1)  && (Global_Ruler_State[i] == 0) ) {
-    894                      flag = 1; 
-    895                      Ruler_State_Previous[i] =  Global_Ruler_State[i];   
-    896                  }
-    897              }
-    898              
-    899              if( flag == 0 ) {//no state changed
-    900                 return err;
-    901              }
-    902              
-    903              if( Global_Conn_Ready == 0 || Global_Idle_Ready == 0) { //no connection setup, or commu busy
-    904                  return err;
-    905              } 
-    906              Global_Idle_Ready = 0 ;
-    907              
-    908              err = EMB_Data_Build( pEBuf, DATA_AB_STATUS );  
-    909              if( err != NO_ERR ) {
-    910                  return err;
-    911              }
-    912              
-    913              err = pcSendDateToBuf( EVENT_MsgQ_Noah2PCUART, FRAM_TYPE_DATA, pEBuf->data, pEBuf->length, 0, NULL, 0 ) ;   
-    914              
-    915              return err;
-    916            
-    917          }
-    918          
-    919              
-    920          
+    801                      PCCmd.set_volume.lout = (CPU_INT32U)temp;
+    802                      temp = emb_get_attr_int(&root, 3, -1);
+    803                      if(temp == -1 ) { Send_GACK(EMB_CMD_ERR); break; }
+    804                      PCCmd.set_volume.spk = (CPU_INT32U)temp;      
+    805                      err = Set_Volume( &PCCmd.set_volume ) ;
+    806                      Send_GACK(err);    
+    807                  break ;
+    808                  
+    809                  case PC_CMD_READ_AB_STATUS : 
+    810                       Send_DACK(err);             
+    811                       err = EMB_Data_Build( pEBuf_Data, DATA_AB_STATUS );               
+    812                       pcSendDateToBuf( EVENT_MsgQ_Noah2PCUART, FRAM_TYPE_DATA, pEBuf_Data->data, pEBuf_Data->length, 0, NULL, 0 ) ; 
+    813                       Send_GACK(err);            
+    814                  break ;
+    815            
+    816                  case PC_CMD_RAED_AB_INFO :   
+    817                       Send_DACK(err);             
+    818                       err = EMB_Data_Build( pEBuf_Data, DATA_AB_INFO );             
+    819                       pcSendDateToBuf( EVENT_MsgQ_Noah2PCUART, FRAM_TYPE_DATA, pEBuf_Data->data, pEBuf_Data->length, 0, NULL, 0 ) ; 
+    820                       Send_GACK(err);            
+    821                  break ;      
+    822                  ////////////////////////////////////////////////////////////////////////
+    823                  case PC_CMD_RAW_DATA_TRANS :   
+    824                       Send_DACK(err);  
+    825                       
+    826                       Send_GACK(err);              
+    827                  break ;  
+    828                 
+    829                  case PC_CMD_DOWNLOAD_RULER_FW :
+    830                       Send_DACK(err);   
+    831                       temp = emb_get_attr_int(&root, 1, -1);            
+    832                       if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }  
+    833                       unsigned char *pBin,*pStr;
+    834                       unsigned int   size; 
+    835                       pBin = (unsigned char *)emb_get_attr_binary(&root, 2, (int *)&size);            
+    836                       if(pBin == NULL ) { Send_GACK(EMB_CMD_ERR);  break; }              
+    837                       pStr = (unsigned char *)emb_get_attr_string(&root, 3);            
+    838                       if(pStr == NULL ) { Send_GACK(EMB_CMD_ERR);  break; }            
+    839                       err = Save_Ruler_FW( temp, pBin, pStr, size );             
+    840                       Send_GACK(err);             
+    841                  break ; 
+    842                  
+    843                  case PC_CMD_UPDATE_RULER_FW :   
+    844                       Send_DACK(err);   
+    845                       temp = emb_get_attr_int(&root, 1, -1);            
+    846                       if(temp == -1 ) { Send_GACK(EMB_CMD_ERR);  break; }                  
+    847                       err = Update_Ruler_FW( temp );          
+    848                       Send_GACK(err);             
+    849                  break ;  
+    850                  
+    851                  case PC_CMD_UPDATE_AB_FW :   
+    852                       Send_DACK(err);  
+    853                       
+    854                       Send_GACK(err);               
+    855                  break ;         
+    856                  
+    857                  default :            
+    858                      err = CMD_NOT_SURRPORT ;
+    859                      Send_DACK(err);
+    860                      
+    861                  break ;
+    862                  
+    863              }
+    864              
+    865              return err;
+    866          
+    867          }
+    868          
+    869          /*
+    870          *********************************************************************************************************
+    871          *                                           AB_Status_Change_Report()
+    872          *
+    873          * Description : Check ruler status, and report to PC only if any ruler's  attach/detach  status changed 
+    874          * Argument(s) : None.
+    875          * Return(s)   : NO_ERR :   execute successfully
+    876          *               others :   =error code . 
+    877          * Note(s)     : None.
+    878          *********************************************************************************************************
+    879          */
+    880          static CPU_INT08U Ruler_State_Previous[4];    //ruler previous status 
+    881          
+    882          CPU_INT08U  AB_Status_Change_Report (void)
+    883          {
+    884              
+    885              CPU_INT08U    err; 
+    886              EMB_BUF      *pEBuf;   
+    887              CPU_INT08U    flag; 
+    888              CPU_INT08U    i;   
+    889              
+    890              err   = NO_ERR;   
+    891              pEBuf = &Emb_Buf_Cmd;
+    892              flag  = 0;    
+    893          
+    894              for( i = 0; i < 4; i++ ) {
+    895                  if( (Ruler_State_Previous[i] == 0) && (Global_Ruler_State[i] > 1) ||
+    896                      (Ruler_State_Previous[i] > 1)  && (Global_Ruler_State[i] == 0) ) {
+    897                      flag = 1; 
+    898                      Ruler_State_Previous[i] =  Global_Ruler_State[i];   
+    899                  }
+    900              }
+    901              
+    902              if( flag == 0 ) {//no state changed
+    903                 return err;
+    904              }
+    905              
+    906              if( Global_Conn_Ready == 0 || Global_Idle_Ready == 0) { //no connection setup, or commu busy
+    907                  return err;
+    908              } 
+    909              Global_Idle_Ready = 0 ;
+    910              
+    911              err = EMB_Data_Build( pEBuf, DATA_AB_STATUS );  
+    912              if( err != NO_ERR ) {
+    913                  return err;
+    914              }
+    915              
+    916              err = pcSendDateToBuf( EVENT_MsgQ_Noah2PCUART, FRAM_TYPE_DATA, pEBuf->data, pEBuf->length, 0, NULL, 0 ) ;   
+    917              
+    918              return err;
+    919            
+    920          }
     921          
+    922              
+    923          
+    924          
 
    Maximum stack usage in bytes:
 
@@ -1058,7 +1061,7 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\noah_cmd.c
      108  CheckSum
      404  EMB_Data_Build
      460  EMB_Data_Check
-    2848  EMB_Data_Parse
+    2900  EMB_Data_Parse
       40  Init_CMD_Read
       36  Init_EMB_BUF
      388  Noah_CMD_Parse_Ruler
@@ -1071,9 +1074,9 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\noah_cmd.c
  
      4 bytes in section .bss
     40 bytes in section .rodata
- 6 184 bytes in section .text
+ 6 236 bytes in section .text
  
- 6 184 bytes of CODE  memory
+ 6 236 bytes of CODE  memory
     40 bytes of CONST memory
      4 bytes of DATA  memory
 

@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       04/Sep/2014  10:10:19
+// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       05/Sep/2014  18:12:07
 // Copyright 1999-2014 IAR Systems AB.
 //
 //    Cpu mode     =  arm
@@ -1076,19 +1076,33 @@ EMB_Data_Parse:
 ??EMB_Data_Parse_22:
         LDR      R0,[SP, #+12]
         STRB     R0,[SP, #+32]
+        MVN      R2,#+0
+        MOV      R1,#+2
+        ADD      R0,SP,#+16
+        BL       emb_get_attr_int
+        STR      R0,[SP, #+12]
+        LDR      R0,[SP, #+12]
+        CMN      R0,#+1
+        BNE      ??EMB_Data_Parse_23
+        MOV      R0,#+191
+        BL       Send_GACK
+        B        ??EMB_Data_Parse_19
+??EMB_Data_Parse_23:
+        LDR      R0,[SP, #+12]
+        STRB     R0,[SP, #+33]
         MOV      R0,#+1
         BL       Ruler_Active_Control
         MOVS     R7,R0
         MOVS     R0,R7
         ANDS     R0,R0,#0xFF      ;; Zero extend
         CMP      R0,#+0
-        BEQ      ??EMB_Data_Parse_23
+        BEQ      ??EMB_Data_Parse_24
         MOVS     R0,R7
         ANDS     R0,R0,#0xFF      ;; Zero extend
         BL       Send_GACK
         B        ??EMB_Data_Parse_19
-??EMB_Data_Parse_23:
-        LDRB     R0,[SP, #+32]
+??EMB_Data_Parse_24:
+        LDR      R0,[SP, #+32]
         BL       Start_Audio
         MOVS     R7,R0
         MOVS     R0,R7
@@ -1105,12 +1119,12 @@ EMB_Data_Parse:
         MOVS     R0,R7
         ANDS     R0,R0,#0xFF      ;; Zero extend
         CMP      R0,#+0
-        BEQ      ??EMB_Data_Parse_24
+        BEQ      ??EMB_Data_Parse_25
         MOVS     R0,R7
         ANDS     R0,R0,#0xFF      ;; Zero extend
         BL       Send_GACK
         B        ??EMB_Data_Parse_19
-??EMB_Data_Parse_24:
+??EMB_Data_Parse_25:
         BL       Stop_Audio
         MOVS     R7,R0
         MOVS     R0,R7
@@ -1138,11 +1152,11 @@ EMB_Data_Parse:
         STR      R0,[SP, #+12]
         LDR      R0,[SP, #+12]
         CMN      R0,#+1
-        BNE      ??EMB_Data_Parse_25
+        BNE      ??EMB_Data_Parse_26
         MOV      R0,#+191
         BL       Send_GACK
         B        ??EMB_Data_Parse_19
-??EMB_Data_Parse_25:
+??EMB_Data_Parse_26:
         LDR      R0,[SP, #+12]
         ANDS     R0,R0,#0xFF      ;; Zero extend
         BL       Read_Ruler_Info
@@ -1150,12 +1164,12 @@ EMB_Data_Parse:
         MOVS     R0,R7
         ANDS     R0,R0,#0xFF      ;; Zero extend
         CMP      R0,#+0
-        BEQ      ??EMB_Data_Parse_26
+        BEQ      ??EMB_Data_Parse_27
         MOVS     R0,R7
         ANDS     R0,R0,#0xFF      ;; Zero extend
         BL       Send_GACK
         B        ??EMB_Data_Parse_19
-??EMB_Data_Parse_26:
+??EMB_Data_Parse_27:
         ADD      R2,SP,#+16
         LDR      R1,[R9, #+4]
         ADDS     R0,R9,#+12
@@ -1188,31 +1202,31 @@ EMB_Data_Parse:
         MOVS     R0,R7
         ANDS     R0,R0,#0xFF      ;; Zero extend
         CMP      R0,#+0
-        BNE      ??EMB_Data_Parse_27
+        BNE      ??EMB_Data_Parse_28
         ADDS     R0,R9,#+12
         MOVS     R10,R0
         LDR      R0,[R9, #+4]
         MOVS     R11,R0
-??EMB_Data_Parse_28:
-        MOVS     R0,R11
-        LSL      R0,R0,#+16
-        LSRS     R0,R0,#+16
-        CMP      R0,#+0
-        BEQ      ??EMB_Data_Parse_27
-        MOVS     R0,R11
-        LSL      R0,R0,#+16
-        LSRS     R0,R0,#+16
-        CMP      R0,#+256
-        BLT      ??EMB_Data_Parse_29
-        MOV      R0,#+255
-        STR      R0,[SP, #+12]
-        B        ??EMB_Data_Parse_30
 ??EMB_Data_Parse_29:
         MOVS     R0,R11
         LSL      R0,R0,#+16
         LSRS     R0,R0,#+16
+        CMP      R0,#+0
+        BEQ      ??EMB_Data_Parse_28
+        MOVS     R0,R11
+        LSL      R0,R0,#+16
+        LSRS     R0,R0,#+16
+        CMP      R0,#+256
+        BLT      ??EMB_Data_Parse_30
+        MOV      R0,#+255
         STR      R0,[SP, #+12]
+        B        ??EMB_Data_Parse_31
 ??EMB_Data_Parse_30:
+        MOVS     R0,R11
+        LSL      R0,R0,#+16
+        LSRS     R0,R0,#+16
+        STR      R0,[SP, #+12]
+??EMB_Data_Parse_31:
         MOV      R0,#+0
         STR      R0,[SP, #+8]
         MOV      R0,#+0
@@ -1230,14 +1244,14 @@ EMB_Data_Parse:
         MOVS     R0,R7
         ANDS     R0,R0,#0xFF      ;; Zero extend
         CMP      R0,#+0
-        BNE      ??EMB_Data_Parse_27
-??EMB_Data_Parse_31:
+        BNE      ??EMB_Data_Parse_28
+??EMB_Data_Parse_32:
         LDR      R0,[SP, #+12]
         SUBS     R11,R11,R0
         LDR      R0,[SP, #+12]
         ADDS     R10,R0,R10
-        B        ??EMB_Data_Parse_28
-??EMB_Data_Parse_27:
+        B        ??EMB_Data_Parse_29
+??EMB_Data_Parse_28:
         MOVS     R0,R7
         ANDS     R0,R0,#0xFF      ;; Zero extend
         BL       Send_GACK
@@ -1253,11 +1267,11 @@ EMB_Data_Parse:
         STR      R0,[SP, #+12]
         LDR      R0,[SP, #+12]
         CMN      R0,#+1
-        BNE      ??EMB_Data_Parse_32
+        BNE      ??EMB_Data_Parse_33
         MOV      R0,#+191
         BL       Send_GACK
         B        ??EMB_Data_Parse_19
-??EMB_Data_Parse_32:
+??EMB_Data_Parse_33:
         LDR      R0,[SP, #+12]
         ANDS     R0,R0,#0xFF      ;; Zero extend
         BL       Write_Ruler_Info
@@ -1277,22 +1291,22 @@ EMB_Data_Parse:
         STR      R0,[SP, #+12]
         LDR      R0,[SP, #+12]
         CMN      R0,#+1
-        BNE      ??EMB_Data_Parse_33
+        BNE      ??EMB_Data_Parse_34
         MOV      R0,#+191
         BL       Send_GACK
         B        ??EMB_Data_Parse_19
-??EMB_Data_Parse_33:
+??EMB_Data_Parse_34:
         MVN      R2,#+0
         MOV      R1,#+2
         ADD      R0,SP,#+16
         BL       emb_get_attr_int
         MOVS     R8,R0
         CMN      R8,#+1
-        BNE      ??EMB_Data_Parse_34
+        BNE      ??EMB_Data_Parse_35
         MOV      R0,#+191
         BL       Send_GACK
         B        ??EMB_Data_Parse_19
-??EMB_Data_Parse_34:
+??EMB_Data_Parse_35:
         MOVS     R1,R8
         ANDS     R1,R1,#0xFF      ;; Zero extend
         LDR      R0,[SP, #+12]
@@ -1302,12 +1316,12 @@ EMB_Data_Parse:
         MOVS     R0,R7
         ANDS     R0,R0,#0xFF      ;; Zero extend
         CMP      R0,#+0
-        BEQ      ??EMB_Data_Parse_35
+        BEQ      ??EMB_Data_Parse_36
         MOVS     R0,R7
         ANDS     R0,R0,#0xFF      ;; Zero extend
         BL       Send_GACK
         B        ??EMB_Data_Parse_19
-??EMB_Data_Parse_35:
+??EMB_Data_Parse_36:
         ADD      R2,SP,#+16
         LDR      R1,[R9, #+4]
         ADDS     R0,R9,#+12
@@ -1345,31 +1359,31 @@ EMB_Data_Parse:
         MOVS     R0,R7
         ANDS     R0,R0,#0xFF      ;; Zero extend
         CMP      R0,#+0
-        BNE      ??EMB_Data_Parse_36
+        BNE      ??EMB_Data_Parse_37
         ADDS     R0,R9,#+12
         MOVS     R10,R0
         LDR      R0,[R9, #+4]
         MOVS     R11,R0
-??EMB_Data_Parse_37:
-        MOVS     R0,R11
-        LSL      R0,R0,#+16
-        LSRS     R0,R0,#+16
-        CMP      R0,#+0
-        BEQ      ??EMB_Data_Parse_36
-        MOVS     R0,R11
-        LSL      R0,R0,#+16
-        LSRS     R0,R0,#+16
-        CMP      R0,#+256
-        BLT      ??EMB_Data_Parse_38
-        MOV      R0,#+255
-        STR      R0,[SP, #+12]
-        B        ??EMB_Data_Parse_39
 ??EMB_Data_Parse_38:
         MOVS     R0,R11
         LSL      R0,R0,#+16
         LSRS     R0,R0,#+16
+        CMP      R0,#+0
+        BEQ      ??EMB_Data_Parse_37
+        MOVS     R0,R11
+        LSL      R0,R0,#+16
+        LSRS     R0,R0,#+16
+        CMP      R0,#+256
+        BLT      ??EMB_Data_Parse_39
+        MOV      R0,#+255
         STR      R0,[SP, #+12]
+        B        ??EMB_Data_Parse_40
 ??EMB_Data_Parse_39:
+        MOVS     R0,R11
+        LSL      R0,R0,#+16
+        LSRS     R0,R0,#+16
+        STR      R0,[SP, #+12]
+??EMB_Data_Parse_40:
         MOV      R0,#+0
         STR      R0,[SP, #+8]
         MOV      R0,#+0
@@ -1387,14 +1401,14 @@ EMB_Data_Parse:
         MOVS     R0,R7
         ANDS     R0,R0,#0xFF      ;; Zero extend
         CMP      R0,#+0
-        BNE      ??EMB_Data_Parse_36
-??EMB_Data_Parse_40:
+        BNE      ??EMB_Data_Parse_37
+??EMB_Data_Parse_41:
         LDR      R0,[SP, #+12]
         SUBS     R11,R11,R0
         LDR      R0,[SP, #+12]
         ADDS     R10,R0,R10
-        B        ??EMB_Data_Parse_37
-??EMB_Data_Parse_36:
+        B        ??EMB_Data_Parse_38
+??EMB_Data_Parse_37:
         MOVS     R0,R7
         ANDS     R0,R0,#0xFF      ;; Zero extend
         BL       Send_GACK
@@ -1410,22 +1424,22 @@ EMB_Data_Parse:
         STR      R0,[SP, #+12]
         LDR      R0,[SP, #+12]
         CMN      R0,#+1
-        BNE      ??EMB_Data_Parse_41
+        BNE      ??EMB_Data_Parse_42
         MOV      R0,#+191
         BL       Send_GACK
         B        ??EMB_Data_Parse_19
-??EMB_Data_Parse_41:
+??EMB_Data_Parse_42:
         MVN      R2,#+0
         MOV      R1,#+2
         ADD      R0,SP,#+16
         BL       emb_get_attr_int
         MOVS     R8,R0
         CMN      R8,#+1
-        BNE      ??EMB_Data_Parse_42
+        BNE      ??EMB_Data_Parse_43
         MOV      R0,#+191
         BL       Send_GACK
         B        ??EMB_Data_Parse_19
-??EMB_Data_Parse_42:
+??EMB_Data_Parse_43:
         MOVS     R1,R8
         ANDS     R1,R1,#0xFF      ;; Zero extend
         LDR      R0,[SP, #+12]
@@ -1447,29 +1461,15 @@ EMB_Data_Parse:
         STR      R0,[SP, #+12]
         LDR      R0,[SP, #+12]
         CMN      R0,#+1
-        BNE      ??EMB_Data_Parse_43
-        MOV      R0,#+191
-        BL       Send_GACK
-        B        ??EMB_Data_Parse_19
-??EMB_Data_Parse_43:
-        LDR      R0,[SP, #+12]
-        STRB     R0,[SP, #+32]
-        MVN      R2,#+0
-        MOV      R1,#+2
-        ADD      R0,SP,#+16
-        BL       emb_get_attr_int
-        STR      R0,[SP, #+12]
-        LDR      R0,[SP, #+12]
-        CMN      R0,#+1
         BNE      ??EMB_Data_Parse_44
         MOV      R0,#+191
         BL       Send_GACK
         B        ??EMB_Data_Parse_19
 ??EMB_Data_Parse_44:
         LDR      R0,[SP, #+12]
-        STRB     R0,[SP, #+33]
+        STRB     R0,[SP, #+32]
         MVN      R2,#+0
-        MOV      R1,#+3
+        MOV      R1,#+2
         ADD      R0,SP,#+16
         BL       emb_get_attr_int
         STR      R0,[SP, #+12]
@@ -1480,6 +1480,20 @@ EMB_Data_Parse:
         BL       Send_GACK
         B        ??EMB_Data_Parse_19
 ??EMB_Data_Parse_45:
+        LDR      R0,[SP, #+12]
+        STRB     R0,[SP, #+33]
+        MVN      R2,#+0
+        MOV      R1,#+3
+        ADD      R0,SP,#+16
+        BL       emb_get_attr_int
+        STR      R0,[SP, #+12]
+        LDR      R0,[SP, #+12]
+        CMN      R0,#+1
+        BNE      ??EMB_Data_Parse_46
+        MOV      R0,#+191
+        BL       Send_GACK
+        B        ??EMB_Data_Parse_19
+??EMB_Data_Parse_46:
         LDR      R0,[SP, #+12]
         STRB     R0,[SP, #+34]
         ADD      R0,SP,#+32
@@ -1500,11 +1514,11 @@ EMB_Data_Parse:
         STR      R0,[SP, #+12]
         LDR      R0,[SP, #+12]
         CMN      R0,#+1
-        BNE      ??EMB_Data_Parse_46
+        BNE      ??EMB_Data_Parse_47
         MOV      R0,#+191
         BL       Send_GACK
         B        ??EMB_Data_Parse_19
-??EMB_Data_Parse_46:
+??EMB_Data_Parse_47:
         ADD      R0,SP,#+12
         BL       Reset_Mic_Mask
         MOVS     R7,R0
@@ -1523,29 +1537,15 @@ EMB_Data_Parse:
         STR      R0,[SP, #+12]
         LDR      R0,[SP, #+12]
         CMN      R0,#+1
-        BNE      ??EMB_Data_Parse_47
-        MOV      R0,#+191
-        BL       Send_GACK
-        B        ??EMB_Data_Parse_19
-??EMB_Data_Parse_47:
-        LDR      R0,[SP, #+12]
-        STR      R0,[SP, #+32]
-        MVN      R2,#+0
-        MOV      R1,#+2
-        ADD      R0,SP,#+16
-        BL       emb_get_attr_int
-        STR      R0,[SP, #+12]
-        LDR      R0,[SP, #+12]
-        CMN      R0,#+1
         BNE      ??EMB_Data_Parse_48
         MOV      R0,#+191
         BL       Send_GACK
         B        ??EMB_Data_Parse_19
 ??EMB_Data_Parse_48:
         LDR      R0,[SP, #+12]
-        STR      R0,[SP, #+36]
+        STR      R0,[SP, #+32]
         MVN      R2,#+0
-        MOV      R1,#+3
+        MOV      R1,#+2
         ADD      R0,SP,#+16
         BL       emb_get_attr_int
         STR      R0,[SP, #+12]
@@ -1556,6 +1556,20 @@ EMB_Data_Parse:
         BL       Send_GACK
         B        ??EMB_Data_Parse_19
 ??EMB_Data_Parse_49:
+        LDR      R0,[SP, #+12]
+        STR      R0,[SP, #+36]
+        MVN      R2,#+0
+        MOV      R1,#+3
+        ADD      R0,SP,#+16
+        BL       emb_get_attr_int
+        STR      R0,[SP, #+12]
+        LDR      R0,[SP, #+12]
+        CMN      R0,#+1
+        BNE      ??EMB_Data_Parse_50
+        MOV      R0,#+191
+        BL       Send_GACK
+        B        ??EMB_Data_Parse_19
+??EMB_Data_Parse_50:
         LDR      R0,[SP, #+12]
         STR      R0,[SP, #+40]
         ADD      R0,SP,#+32
@@ -1634,32 +1648,32 @@ EMB_Data_Parse:
         STR      R0,[SP, #+12]
         LDR      R0,[SP, #+12]
         CMN      R0,#+1
-        BNE      ??EMB_Data_Parse_50
+        BNE      ??EMB_Data_Parse_51
         MOV      R0,#+191
         BL       Send_GACK
         B        ??EMB_Data_Parse_19
-??EMB_Data_Parse_50:
+??EMB_Data_Parse_51:
         MOVS     R2,SP
         MOV      R1,#+2
         ADD      R0,SP,#+16
         BL       emb_get_attr_binary
         MOVS     R4,R0
         CMP      R4,#+0
-        BNE      ??EMB_Data_Parse_51
-        MOV      R0,#+191
-        BL       Send_GACK
-        B        ??EMB_Data_Parse_19
-??EMB_Data_Parse_51:
-        MOV      R1,#+3
-        ADD      R0,SP,#+16
-        BL       emb_get_attr_string
-        MOVS     R5,R0
-        CMP      R5,#+0
         BNE      ??EMB_Data_Parse_52
         MOV      R0,#+191
         BL       Send_GACK
         B        ??EMB_Data_Parse_19
 ??EMB_Data_Parse_52:
+        MOV      R1,#+3
+        ADD      R0,SP,#+16
+        BL       emb_get_attr_string
+        MOVS     R5,R0
+        CMP      R5,#+0
+        BNE      ??EMB_Data_Parse_53
+        MOV      R0,#+191
+        BL       Send_GACK
+        B        ??EMB_Data_Parse_19
+??EMB_Data_Parse_53:
         LDR      R3,[SP, #+0]
         MOVS     R2,R5
         MOVS     R1,R4
@@ -1681,11 +1695,11 @@ EMB_Data_Parse:
         STR      R0,[SP, #+12]
         LDR      R0,[SP, #+12]
         CMN      R0,#+1
-        BNE      ??EMB_Data_Parse_53
+        BNE      ??EMB_Data_Parse_54
         MOV      R0,#+191
         BL       Send_GACK
         B        ??EMB_Data_Parse_19
-??EMB_Data_Parse_53:
+??EMB_Data_Parse_54:
         LDR      R0,[SP, #+12]
         ANDS     R0,R0,#0xFF      ;; Zero extend
         BL       Update_Ruler_FW
@@ -1931,9 +1945,9 @@ AB_Status_Change_Report:
 // 
 //     4 bytes in section .bss
 //    40 bytes in section .rodata
-// 6 184 bytes in section .text
+// 6 236 bytes in section .text
 // 
-// 6 184 bytes of CODE  memory
+// 6 236 bytes of CODE  memory
 //    40 bytes of CONST memory
 //     4 bytes of DATA  memory
 //

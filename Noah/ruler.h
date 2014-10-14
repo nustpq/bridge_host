@@ -143,7 +143,8 @@ typedef struct {
 }AUDIO_CFG ;
 
 typedef struct {
-    unsigned char    type;  //rec = 1,  play = 2, rec&play = 3    
+    unsigned char    type;    //rec = 1,  play = 2, rec&play = 3   
+    unsigned char    padding; //usb first package padding
 }START_AUDIO;
 
 typedef struct {
@@ -218,7 +219,7 @@ extern volatile unsigned char Ruler_Setup_Sync_Data;
 
 extern void          Init_Global_Var( void );
 extern unsigned char Setup_Audio( AUDIO_CFG *pAudioCfg );
-extern unsigned char Start_Audio( unsigned char cmd_type );
+extern unsigned char Start_Audio( START_AUDIO start_audio  );
 extern unsigned char Stop_Audio( void );  
 extern unsigned char Reset_Audio( void );  
 extern unsigned char Get_Audio_Version( void );

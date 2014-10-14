@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       04/Sep/2014  10:10:25
+// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       05/Sep/2014  09:57:06
 // Copyright 1999-2014 IAR Systems AB.
 //
 //    Cpu mode     =  arm
@@ -48,6 +48,7 @@
         EXTERN BSP_Ser_Printf
         EXTERN Buzzer_OnOff
         EXTERN CODEC_Set_Volume
+        EXTERN Check_SR_Support
         EXTERN DMIC_PGA_Control
         EXTERN Done_Sem_RulerUART
         EXTERN EVENT_MsgQ_Noah2RulerUART
@@ -333,81 +334,94 @@ Setup_Audio:
         LDR      R0,??DataTable12_6
         BL       BSP_Ser_Printf
 ??Setup_Audio_3:
+        LDRH     R0,[R4, #+0]
+        BL       Check_SR_Support
+        MOVS     R5,R0
+        MOVS     R0,R5
+        ANDS     R0,R0,#0xFF      ;; Zero extend
+        CMP      R0,#+0
+        BEQ      ??Setup_Audio_4
+        LDR      R0,??DataTable12_7
+        BL       BSP_Ser_Printf
+        MOVS     R0,R5
+        ANDS     R0,R0,#0xFF      ;; Zero extend
+        B        ??Setup_Audio_5
+??Setup_Audio_4:
         BL       Check_Actived_Mic_Number
         MOVS     R6,R0
         MOVS     R0,R6
         ANDS     R0,R0,#0xFF      ;; Zero extend
         CMP      R0,#+7
-        BLT      ??Setup_Audio_4
+        BLT      ??Setup_Audio_6
         MOVS     R1,R6
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable12_7
+        LDR      R0,??DataTable12_8
         BL       BSP_Ser_Printf
         MOV      R0,#+199
         B        ??Setup_Audio_5
-??Setup_Audio_4:
+??Setup_Audio_6:
         LDRB     R0,[R4, #+2]
         CMP      R0,#+0
-        BNE      ??Setup_Audio_6
+        BNE      ??Setup_Audio_7
         LDRB     R0,[R4, #+3]
         ANDS     R6,R6,#0xFF      ;; Zero extend
         CMP      R6,R0
-        BEQ      ??Setup_Audio_6
+        BEQ      ??Setup_Audio_7
         MOVS     R2,R6
         ANDS     R2,R2,#0xFF      ;; Zero extend
         LDRB     R1,[R4, #+3]
-        LDR      R0,??DataTable12_8
+        LDR      R0,??DataTable12_9
         BL       BSP_Ser_Printf
         STRB     R6,[SP, #+8]
         MOV      R0,#+201
         B        ??Setup_Audio_5
-??Setup_Audio_6:
-        LDRB     R0,[R4, #+2]
-        CMP      R0,#+1
-        BNE      ??Setup_Audio_7
-        LDRB     R0,[R4, #+3]
-        CMP      R0,#+0
-        BNE      ??Setup_Audio_7
-        LDR      R0,??DataTable12_9
-        BL       BSP_Ser_Printf
 ??Setup_Audio_7:
         LDRB     R0,[R4, #+2]
-        CMP      R0,#+0
+        CMP      R0,#+1
         BNE      ??Setup_Audio_8
         LDRB     R0,[R4, #+3]
-        CMP      R0,#+0
-        BNE      ??Setup_Audio_8
-        LDRB     R0,[R4, #+4]
         CMP      R0,#+0
         BNE      ??Setup_Audio_8
         LDR      R0,??DataTable12_10
         BL       BSP_Ser_Printf
 ??Setup_Audio_8:
         LDRB     R0,[R4, #+2]
-        CMP      R0,#+1
+        CMP      R0,#+0
         BNE      ??Setup_Audio_9
         LDRB     R0,[R4, #+3]
-        CMP      R0,#+5
-        BLT      ??Setup_Audio_9
-        LDRB     R1,[R4, #+3]
+        CMP      R0,#+0
+        BNE      ??Setup_Audio_9
+        LDRB     R0,[R4, #+4]
+        CMP      R0,#+0
+        BNE      ??Setup_Audio_9
         LDR      R0,??DataTable12_11
+        BL       BSP_Ser_Printf
+??Setup_Audio_9:
+        LDRB     R0,[R4, #+2]
+        CMP      R0,#+1
+        BNE      ??Setup_Audio_10
+        LDRB     R0,[R4, #+3]
+        CMP      R0,#+5
+        BLT      ??Setup_Audio_10
+        LDRB     R1,[R4, #+3]
+        LDR      R0,??DataTable12_12
         BL       BSP_Ser_Printf
         MOV      R0,#+200
         B        ??Setup_Audio_5
-??Setup_Audio_9:
+??Setup_Audio_10:
         LDRB     R0,[R4, #+2]
         CMP      R0,#+0
-        BNE      ??Setup_Audio_10
+        BNE      ??Setup_Audio_11
         LDRB     R0,[R4, #+4]
         CMP      R0,#+0
-        BEQ      ??Setup_Audio_10
+        BEQ      ??Setup_Audio_11
         LDRB     R0,[SP, #+8]
         ADDS     R0,R0,#+2
         STRB     R0,[SP, #+8]
         LDRB     R1,[SP, #+8]
-        LDR      R0,??DataTable12_12
+        LDR      R0,??DataTable12_13
         BL       BSP_Ser_Printf
-??Setup_Audio_10:
+??Setup_Audio_11:
         MOV      R0,#+3
         BL       UART2_Mixer
         MOV      R2,#+7
@@ -423,34 +437,34 @@ Setup_Audio:
         MOVS     R0,R5
         ANDS     R0,R0,#0xFF      ;; Zero extend
         CMP      R0,#+0
-        BEQ      ??Setup_Audio_11
-        LDR      R0,??DataTable12_13
+        BEQ      ??Setup_Audio_12
+        LDR      R0,??DataTable12_14
         BL       BSP_Ser_Printf
         MOVS     R0,R5
         ANDS     R0,R0,#0xFF      ;; Zero extend
         B        ??Setup_Audio_5
-??Setup_Audio_11:
+??Setup_Audio_12:
         LDRB     R0,[SP, #+0]
         CMP      R0,#+0
-        BEQ      ??Setup_Audio_12
+        BEQ      ??Setup_Audio_13
         LDRB     R1,[SP, #+0]
-        LDR      R0,??DataTable13
+        LDR      R0,??DataTable12_15
         BL       BSP_Ser_Printf
         LDRB     R0,[SP, #+0]
         B        ??Setup_Audio_5
-??Setup_Audio_12:
+??Setup_Audio_13:
         LDRH     R0,[R4, #+0]
         BL       Init_CODEC
         MOVS     R5,R0
         MOVS     R0,R5
         ANDS     R0,R0,#0xFF      ;; Zero extend
         CMP      R0,#+0
-        BEQ      ??Setup_Audio_13
+        BEQ      ??Setup_Audio_14
         MOVS     R1,R5
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable13_1
+        LDR      R0,??DataTable13
         BL       BSP_Ser_Printf
-??Setup_Audio_13:
+??Setup_Audio_14:
         MOV      R3,#+0
         MOV      R2,#+1
         MOVS     R1,R6
@@ -461,12 +475,12 @@ Setup_Audio:
         MOVS     R0,R5
         ANDS     R0,R0,#0xFF      ;; Zero extend
         CMP      R0,#+0
-        BEQ      ??Setup_Audio_14
+        BEQ      ??Setup_Audio_15
         MOVS     R1,R5
         ANDS     R1,R1,#0xFF      ;; Zero extend
         LDR      R0,??DataTable14
         BL       BSP_Ser_Printf
-??Setup_Audio_14:
+??Setup_Audio_15:
         MOVS     R0,R5
         ANDS     R0,R0,#0xFF      ;; Zero extend
 ??Setup_Audio_5:
@@ -477,26 +491,30 @@ Setup_Audio:
         SECTION `.text`:CODE:NOROOT(2)
         ARM
 Start_Audio:
-        PUSH     {R4-R7,LR}
+        PUSH     {R0,R4-R6,LR}
         SUB      SP,SP,#+12
-        MOVS     R4,R0
-        MOV      R5,#+255
+        MOV      R4,#+255
         MOV      R0,#+255
         STRB     R0,[SP, #+0]
         ADD      R0,SP,#+4
-        LDR      R1,??DataTable13_2
-        LDR      R2,[R1, #0]
-        STR      R2,[R0, #+0]
-        ANDS     R0,R4,#0x3
+        LDR      R1,??DataTable13_1
+        LDM      R1!,{R2,R3}
+        STM      R0!,{R2,R3}
+        SUBS     R1,R1,#+8
+        SUBS     R0,R0,#+8
+        LDRB     R0,[SP, #+12]
+        ANDS     R0,R0,#0x3
         STRB     R0,[SP, #+7]
-        MOV      R7,#+0
-        MOVS     R1,R4
-        ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable13_3
+        LDRB     R0,[SP, #+13]
+        STRB     R0,[SP, #+8]
+        MOV      R6,#+0
+        LDRB     R2,[SP, #+13]
+        LDRB     R1,[SP, #+12]
+        LDR      R0,??DataTable13_2
         BL       BSP_Ser_Printf
         MOV      R0,#+3
         BL       UART2_Mixer
-        MOV      R2,#+4
+        MOV      R2,#+5
         ADD      R1,SP,#+4
         MOV      R0,#+2
         BL       USART_SendBuf
@@ -505,16 +523,16 @@ Start_Audio:
         MOVS     R1,SP
         MOV      R0,#+2
         BL       USART_Read_Timeout
-        MOVS     R5,R0
-        MOVS     R0,R5
+        MOVS     R4,R0
+        MOVS     R0,R4
         ANDS     R0,R0,#0xFF      ;; Zero extend
         CMP      R0,#+0
         BEQ      ??Start_Audio_0
-        MOVS     R1,R5
+        MOVS     R1,R4
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable13_4
+        LDR      R0,??DataTable13_3
         BL       BSP_Ser_Printf
-        MOVS     R0,R5
+        MOVS     R0,R4
         ANDS     R0,R0,#0xFF      ;; Zero extend
         B        ??Start_Audio_1
 ??Start_Audio_0:
@@ -522,40 +540,41 @@ Start_Audio:
         CMP      R0,#+0
         BEQ      ??Start_Audio_2
         LDRB     R1,[SP, #+0]
-        LDR      R0,??DataTable13_5
+        LDR      R0,??DataTable13_4
         BL       BSP_Ser_Printf
         LDRB     R0,[SP, #+0]
         B        ??Start_Audio_1
 ??Start_Audio_2:
         BL       OS_CPU_SR_Save
-        MOVS     R7,R0
-        MOV      R0,#+0
         MOVS     R6,R0
+        MOV      R0,#+0
+        MOVS     R5,R0
 ??Start_Audio_3:
-        MOVS     R0,R6
+        MOVS     R0,R5
         ANDS     R0,R0,#0xFF      ;; Zero extend
         CMP      R0,#+4
         BGE      ??Start_Audio_4
-        MOVS     R0,R6
+        MOVS     R0,R5
         ANDS     R0,R0,#0xFF      ;; Zero extend
         LDR      R1,??DataTable11
         LDRB     R0,[R0, +R1]
         CMP      R0,#+3
         BNE      ??Start_Audio_5
         MOV      R0,#+4
-        MOVS     R1,R6
+        MOVS     R1,R5
         ANDS     R1,R1,#0xFF      ;; Zero extend
         LDR      R2,??DataTable11
         STRB     R0,[R1, +R2]
 ??Start_Audio_5:
-        ADDS     R6,R6,#+1
+        ADDS     R5,R5,#+1
         B        ??Start_Audio_3
 ??Start_Audio_4:
-        MOVS     R0,R7
+        MOVS     R0,R6
         BL       OS_CPU_SR_Restore
         MOV      R0,#+0
 ??Start_Audio_1:
-        POP      {R1-R7,LR}
+        ADD      SP,SP,#+16       ;; stack cleaning
+        POP      {R4-R6,LR}
         BX       LR               ;; return
 
         SECTION `.text`:CODE:NOROOT(2)
@@ -1308,43 +1327,55 @@ Read_Ruler_Info:
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
 ??DataTable12_7:
-        DC32     `?<Constant "\\r\\nERROR: Check_Active...">`
+        DC32     `?<Constant "\\r\\nSetup_Audio ERROR: ...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
 ??DataTable12_8:
-        DC32     `?<Constant "WARN:(Setup_Audio Rec...">`
+        DC32     `?<Constant "\\r\\nERROR: Check_Active...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
 ??DataTable12_9:
-        DC32     `?<Constant "WARN:(Setup_Audio Pla...">`
+        DC32     `?<Constant "WARN:(Setup_Audio Rec...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
 ??DataTable12_10:
-        DC32     `?<Constant "WARN:(Setup_Audio Rec...">_1`
+        DC32     `?<Constant "WARN:(Setup_Audio Pla...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
 ??DataTable12_11:
-        DC32     `?<Constant "ERROR:(Setup_Audio Pl...">`
+        DC32     `?<Constant "WARN:(Setup_Audio Rec...">_1`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
 ??DataTable12_12:
-        DC32     `?<Constant "Lin 2 channels added....">`
+        DC32     `?<Constant "ERROR:(Setup_Audio Pl...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
 ??DataTable12_13:
-        DC32     `?<Constant "\\r\\nSetup_Audio ERROR: ...">`
+        DC32     `?<Constant "Lin 2 channels added....">`
+
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable12_14:
+        DC32     `?<Constant "\\r\\nSetup_Audio ERROR: ...">_1`
+
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable12_15:
+        DC32     `?<Constant "\\r\\nSetup_Audio ERROR: ...">_2`
 
         SECTION `.text`:CODE:NOROOT(2)
         ARM
@@ -1506,36 +1537,30 @@ Write_Ruler_Info:
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
 ??DataTable13:
-        DC32     `?<Constant "\\r\\nSetup_Audio ERROR: ...">_1`
-
-        SECTION `.text`:CODE:NOROOT(2)
-        SECTION_TYPE SHT_PROGBITS, 0
-        DATA
-??DataTable13_1:
         DC32     `?<Constant "\\r\\nSetup_Audio Init_CO...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable13_2:
-        DC32     `?<Constant {235, 144, 2, 0}>`
+??DataTable13_1:
+        DC32     `?<Constant {235, 144, 2, 0, 0}>`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable13_3:
+??DataTable13_2:
         DC32     `?<Constant "Start_Audio : type = ...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable13_4:
+??DataTable13_3:
         DC32     `?<Constant "\\r\\nStart_Audio ERROR: ...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable13_5:
+??DataTable13_4:
         DC32     `?<Constant "\\r\\nStart_Audio ERROR: ...">_1`
 
         SECTION `.text`:CODE:NOROOT(2)
@@ -3458,8 +3483,6 @@ simple_test_use:
         BL       Setup_Audio
         MOVS     R0,SP
         BL       Setup_Audio
-        MOV      R0,#+3
-        BL       Start_Audio
         ADD      SP,SP,#+20       ;; stack cleaning
         POP      {LR}
         BX       LR               ;; return
@@ -3944,6 +3967,11 @@ Ruler_Setup_Sync:
         DC8 0, 0, 0
 
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
+`?<Constant "\\r\\nSetup_Audio ERROR: ...">`:
+        DATA
+        DC8 "\015\012Setup_Audio ERROR: Sample rate NOT support!\015\012"
+
+        SECTION `.rodata`:CONST:REORDER:NOROOT(2)
 `?<Constant "\\r\\nERROR: Check_Active...">`:
         DATA
         DC8 "\015\012ERROR: Check_Actived_Mic_Number = %d > 6\015\012"
@@ -4001,13 +4029,13 @@ Ruler_Setup_Sync:
         DC8 "Lin 2 channels added...%d\015\012"
 
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
-`?<Constant "\\r\\nSetup_Audio ERROR: ...">`:
+`?<Constant "\\r\\nSetup_Audio ERROR: ...">_1`:
         DATA
         DC8 "\015\012Setup_Audio ERROR: timeout\015\012"
         DC8 0
 
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
-`?<Constant "\\r\\nSetup_Audio ERROR: ...">_1`:
+`?<Constant "\\r\\nSetup_Audio ERROR: ...">_2`:
         DATA
         DC8 "\015\012Setup_Audio ERROR: %d\015\012 "
         DC8 0
@@ -4025,14 +4053,15 @@ Ruler_Setup_Sync:
         DC8 0, 0
 
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
-`?<Constant {235, 144, 2, 0}>`:
+`?<Constant {235, 144, 2, 0, 0}>`:
         DATA
-        DC8 235, 144, 2, 0
+        DC8 235, 144, 2, 0, 0, 0, 0, 0
 
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
 `?<Constant "Start_Audio : type = ...">`:
         DATA
-        DC8 "Start_Audio : type = [%d]\015\012"
+        DC8 "Start_Audio : type = [%d], padding = [0x%X]\015\012"
+        DC8 0, 0
 
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
 `?<Constant "\\r\\nStart_Audio ERROR: ...">`:
@@ -4561,11 +4590,11 @@ Ruler_Setup_Sync:
 // 
 //     52 bytes in section .bss
 //      4 bytes in section .data
-//  3 066 bytes in section .rodata
-// 10 628 bytes in section .text
+//  3 138 bytes in section .rodata
+// 10 692 bytes in section .text
 // 
-// 10 628 bytes of CODE  memory
-//  3 066 bytes of CONST memory
+// 10 692 bytes of CODE  memory
+//  3 138 bytes of CONST memory
 //     56 bytes of DATA  memory
 //
 //Errors: none
