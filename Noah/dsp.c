@@ -369,10 +369,10 @@ static unsigned short int fm36_para_table_3[][2] =
 
   //////////////////////////////////////////////////////////////
   
-  //SP0 port setting
+  //SP0 port setting to 
   //{0x2260, 0x78df},//16bit TDM
   //{0x2260, 0x78ff},//32bit TDM
-  {0x2260, 0x7AFF},//32bit TDM,MSB first,Left alignment,8 slot 
+  {0x2260, 0x78FF},//32bit TDM,MSB first,Left alignment,8 slot 
   //{0x2260, 0x7AFD},//32bit TDM,MSB first,Left alignment,6 slot 
   {0x2266, 0x0013}, //3.072Hz
   //{0x2266, 0x001B}, //2.048M
