@@ -528,6 +528,21 @@ unsigned char DMIC_PGA_Control( unsigned short gain )
     
 }
 
+unsigned char DMIC_Ploarity_Control( unsigned char mic_revert_en ) 
+{
+    unsigned char  err  ;
+    unsigned short data = 0 ; 
+    
+    if( mic_revert_en != 0 ) {
+        data = 1;
+    } 
+    
+    err = DM_SingleWrite( FM36_I2C_ADDR, 0x3F99, data ) ;
+    if( OS_ERR_NONE != err ) {
+        return FM36_WR_DM_ERR;;
+    }    
+    
+}
 
 //Setup External Lin data input source
 //From : SP0_RX, SP1_RX

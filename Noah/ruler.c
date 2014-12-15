@@ -100,6 +100,36 @@ static unsigned char Check_Actived_Mic_Number( void )
 
 /*
 *********************************************************************************************************
+*                                           Check_Watch_Attach_State()
+*
+* Description : Check if Mics on Watch ruler is used. For MIC revert issue on W01 mickup
+* Argument(s) : None.
+* Return(s)   : 0 : no watch attachd or Mics on watch not used.
+*               1 : Mics on watch used.
+*
+* Note(s)     : pass this info for revert mic in FM36 PDM input.
+*********************************************************************************************************
+*/
+unsigned char Check_Watch_Attach_State( void )
+{
+    unsigned char ruler_id;
+    
+    for( ruler_id = 0; ruler_id < 4; ruler_id++ ) {
+        
+        if( Global_Ruler_State[ruler_id] < RULER_STATE_SELECTED ) {
+            continue;
+        }
+        if( Global_Ruler_Type[ruler_id] == RULER_TYPE_W01 ) {
+             return 1;
+        }    
+        
+    }
+    
+    return 0;    
+}
+
+/*
+*********************************************************************************************************
 *                                           Check_UART_Mixer_Ready()
 *
 * Description : Check and wait until all data transmission inbuffer for current channel ruler is done .
@@ -231,7 +261,14 @@ unsigned char Setup_Audio( AUDIO_CFG *pAudioCfg )
     if( err != NO_ERR ) {
         APP_TRACE_INFO(("\r\nSetup_Audio ReInit_FM36 ERROR: %d\r\n",err)); 
     }
-    
+    data = Check_Watch_Attach_State();
+    if( data ) {
+        APP_TRACE_INFO(("Revert DMIC polarity for W01.\r\n")); 
+    }
+    err = DMIC_Ploarity_Control( data );
+    if( err != NO_ERR ) {
+        APP_TRACE_INFO(("\r\nDMIC_Ploarity_Control ERROR: %d\r\n",err)); 
+    }
 //    if ( pAudioCfg->lin_ch_mask != 0 ) {
 //        err = Set_AIC3204_DSP_Offset( mic_num );
 //        if( err != NO_ERR ) {

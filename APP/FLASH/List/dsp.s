@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       05/Sep/2014  09:57:03
+// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       15/Dec/2014  17:49:59
 // Copyright 1999-2014 IAR Systems AB.
 //
 //    Cpu mode     =  arm
@@ -55,6 +55,7 @@
         EXTERN Pin_Reset_FM36
 
         PUBLIC DMIC_PGA_Control
+        PUBLIC DMIC_Ploarity_Control
         PUBLIC Init_FM36
         PUBLIC Init_FM36_AB03
         PUBLIC ReInit_FM36
@@ -225,6 +226,38 @@ DMIC_PGA_Control:
 ??DMIC_PGA_Control_9:
 ??DMIC_PGA_Control_7:
         POP      {R1,R4-R7,LR}
+        BX       LR               ;; return
+
+        SECTION `.text`:CODE:NOROOT(2)
+        ARM
+DMIC_Ploarity_Control:
+        PUSH     {R4-R6,LR}
+        MOVS     R4,R0
+        MOV      R6,#+0
+        MOVS     R0,R4
+        ANDS     R0,R0,#0xFF      ;; Zero extend
+        CMP      R0,#+0
+        BEQ      ??DMIC_Ploarity_Control_0
+        MOV      R0,#+1
+        MOVS     R6,R0
+??DMIC_Ploarity_Control_0:
+        MOVS     R2,R6
+        LSL      R2,R2,#+16
+        LSRS     R2,R2,#+16
+        MOV      R1,#+153
+        ORR      R1,R1,#0x3F00
+        MOV      R0,#+192
+        BL       DM_SingleWrite
+        MOVS     R5,R0
+        MOVS     R0,R5
+        ANDS     R0,R0,#0xFF      ;; Zero extend
+        CMP      R0,#+0
+        BEQ      ??DMIC_Ploarity_Control_1
+        MOV      R0,#+220
+        B        ??DMIC_Ploarity_Control_2
+??DMIC_Ploarity_Control_1:
+??DMIC_Ploarity_Control_2:
+        POP      {R4-R6,LR}
         BX       LR               ;; return
 
         SECTION `.text`:CODE:NOROOT(2)
@@ -1238,11 +1271,11 @@ Init_FM36_AB03:
 //     8 bytes in section .bss
 // 1 049 bytes in section .data
 //    88 bytes in section .rodata
-// 3 516 bytes in section .text
+// 3 616 bytes in section .text
 // 
-// 3 516 bytes of CODE  memory
+// 3 616 bytes of CODE  memory
 //    88 bytes of CONST memory
 // 1 057 bytes of DATA  memory
 //
 //Errors: none
-//Warnings: 1
+//Warnings: 2

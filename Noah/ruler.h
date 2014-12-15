@@ -30,6 +30,12 @@
 #define RULER_TYPE_R01                    0x00
 #define RULER_TYPE_R02                    0x01
 #define RULER_TYPE_R03                    0x02
+
+#define RULER_TYPE_TA01                   0x10
+#define RULER_TYPE_TD01                   0x11
+
+#define RULER_TYPE_W01                    0x20
+
 #define RULER_TYPE_H01                    0x80
 #define RULER_TYPE_H02                    0x81
 #define RULER_TYPE_H03                    0x82
@@ -245,5 +251,6 @@ extern void          simple_test_use( void );
 extern unsigned char Update_Ruler_FW( unsigned char ruler_slot_id );
 extern unsigned char Save_Ruler_FW( unsigned int cmd, unsigned char *pBin, unsigned char *pStr, unsigned int size );
 extern unsigned char Ruler_Setup_Sync(unsigned char ruler_slot_id);
+extern unsigned char Check_Watch_Attach_State( void );
 
 #endif

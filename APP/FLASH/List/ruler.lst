@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        05/Sep/2014  09:57:06
+# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        15/Dec/2014  18:01:18
 # Copyright 1999-2014 IAR Systems AB.
 #
 #    Cpu mode     =  arm
@@ -147,1717 +147,1754 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
     100          
     101          /*
     102          *********************************************************************************************************
-    103          *                                           Check_UART_Mixer_Ready()
+    103          *                                           Check_Watch_Attach_State()
     104          *
-    105          * Description : Check and wait until all data transmission inbuffer for current channel ruler is done .
-    106          *               To make sure ruler channels will not be mix up.
-    107          *               HW switch is important for this !
-    108          * Argument(s) : None.
-    109          * Return(s)   : mic_counter : the total actived MICs number.
-    110          *
-    111          * Note(s)     : If HW switch fast enough, no need this routine.
-    112          *********************************************************************************************************
-    113          */
-    114          void Check_UART_Mixer_Ready( void )
-    115          {
-    116              unsigned char err; 
-    117              unsigned int  counter;
-    118              
-    119              counter = 0;
-    120              while( OSQGet( EVENT_MsgQ_Noah2RulerUART, &err ) ) {
-    121                  OSTimeDly(1);
-    122                  counter++;        
-    123              } 
-    124              if( counter) {
-    125                  APP_TRACE_INFO(("Check_UART_Mixer_Ready, stage 1 : wait %d ms\r\n",counter));  
+    105          * Description : Check if Mics on Watch ruler is used. For MIC revert issue on W01 mickup
+    106          * Argument(s) : None.
+    107          * Return(s)   : 0 : no watch attachd or Mics on watch not used.
+    108          *               1 : Mics on watch used.
+    109          *
+    110          * Note(s)     : pass this info for revert mic in FM36 PDM input.
+    111          *********************************************************************************************************
+    112          */
+    113          unsigned char Check_Watch_Attach_State( void )
+    114          {
+    115              unsigned char ruler_id;
+    116              
+    117              for( ruler_id = 0; ruler_id < 4; ruler_id++ ) {
+    118                  
+    119                  if( Global_Ruler_State[ruler_id] < RULER_STATE_SELECTED ) {
+    120                      continue;
+    121                  }
+    122                  if( Global_Ruler_Type[ruler_id] == RULER_TYPE_W01 ) {
+    123                       return 1;
+    124                  }    
+    125                  
     126              }
-    127                  
-    128              counter = 0;
-    129              while( Queue_NData((void*)pUART_Send_Buf[RULER_UART]) ) {
-    130                  OSTimeDly(1);
-    131                  counter++;  
-    132              } 
-    133              if( counter) {
-    134                  APP_TRACE_INFO(("Check_UART_Mixer_Ready, stage 2 : wait %d ms\r\n",counter));  
-    135              }
-    136              OSTimeDly(5);   
-    137              
-    138          }
-    139          
-    140          
-    141          /*
+    127              
+    128              return 0;    
+    129          }
+    130          
+    131          /*
+    132          *********************************************************************************************************
+    133          *                                           Check_UART_Mixer_Ready()
+    134          *
+    135          * Description : Check and wait until all data transmission inbuffer for current channel ruler is done .
+    136          *               To make sure ruler channels will not be mix up.
+    137          *               HW switch is important for this !
+    138          * Argument(s) : None.
+    139          * Return(s)   : mic_counter : the total actived MICs number.
+    140          *
+    141          * Note(s)     : If HW switch fast enough, no need this routine.
     142          *********************************************************************************************************
-    143          *                                           Setup_Audio()
-    144          *
-    145          * Description : Send command to configure USB audio.
-    146          * Argument(s) : pAudioCfg : pointer to AUDIO_CFG type data.
-    147          * Return(s)   : NO_ERR :   execute successfully
-    148          *               others :   refer to error code defines.           
-    149          *
-    150          * Note(s)     : None.
-    151          *********************************************************************************************************
-    152          */
-    153          unsigned char Setup_Audio( AUDIO_CFG *pAudioCfg )
-    154          {
-    155              unsigned char err; 
-    156              unsigned char mic_num; 
-    157              unsigned char data  = 0xFF;
-    158              unsigned char buf[] = { 
-    159                  CMD_DATA_SYNC1, CMD_DATA_SYNC2, RULER_CMD_SET_AUDIO_CFG,\
-    160                  pAudioCfg->type, pAudioCfg->channels,\
-    161                 (pAudioCfg->sr)&0xFF, ((pAudioCfg->sr)>>8)&0xFF
-    162              };
-    163              
-    164              //APP_TRACE_INFO(("Setup_Audio [%s]:[%d SR]:[%d CH]: %s\r\n",(pAudioCfg->type == 0) ? "REC " : "PLAY", pAudioCfg->sr, pAudioCfg->channels,((pAudioCfg->type == 0) && (pAudioCfg->lin_ch_mask == 0)) ? "LIN Disabled" : "LIN Enabled"));
-    165              if( pAudioCfg->type == 0 ) {
-    166                  APP_TRACE_INFO(("Setup_Audio [REC]:[%d SR]:[%d CH]: %s\r\n", pAudioCfg->sr, pAudioCfg->channels, pAudioCfg->lin_ch_mask == 0 ? "LIN Disabled" : "LIN Enabled" ));
-    167              } else {
-    168                  APP_TRACE_INFO(("Setup_Audio [PLAY]:[%d SR]:[%d CH]\r\n", pAudioCfg->sr, pAudioCfg->channels ));
-    169              }
-    170              
-    171              err = Check_SR_Support( pAudioCfg->sr );
-    172              if( err != NO_ERR ) { 
-    173                  APP_TRACE_INFO(("\r\nSetup_Audio ERROR: Sample rate NOT support!\r\n")); 
-    174                  return err;
-    175              }    
-    176              mic_num = Check_Actived_Mic_Number();
-    177              if( mic_num > 6 ) {
-    178                  APP_TRACE_INFO(("\r\nERROR: Check_Actived_Mic_Number = %d > 6\r\n",mic_num));
-    179                  return AUD_CFG_MIC_NUM_MAX_ERR;//if report err, need UI support!  
-    180              } 
-    181              //check rec mic num    
-    182              if( (pAudioCfg->type == 0) && ( mic_num != pAudioCfg->channels) ) {
-    183                  APP_TRACE_INFO(("WARN:(Setup_Audio Rec)pAudioCfg->channels(%d) !=  Active MICs Num(%d)\r\n",pAudioCfg->channels,mic_num));
-    184                  buf[4] = mic_num;
-    185                  return AUD_CFG_MIC_NUM_DISMATCH_ERR;
-    186              }
-    187              //check channel num    
-    188              if( (pAudioCfg->type == 1) && (pAudioCfg->channels == 0) ) {
-    189                  APP_TRACE_INFO(("WARN:(Setup_Audio Play)pAudioCfg->channels =  0\r\n" ));        
-    190                  //return AUD_CFG_PLAY_CH_ZERO_ERR;  UI not support
-    191              }  
-    192              if( (pAudioCfg->type == 0) && (pAudioCfg->channels == 0) && (pAudioCfg->lin_ch_mask == 0) ) {
-    193                  APP_TRACE_INFO(("WARN:(Setup_Audio Rec)pAudioCfg->channels + ch_lin =  0\r\n" ));        
-    194                  //return AUD_CFG_PLAY_CH_ZERO_ERR; UI not support
-    195              }
-    196              //check sample rate
-    197              //No add here!
-    198              //
-    199              //
-    200           #ifdef BOARD_TYPE_AB03    
-    201              //check play ch num
-    202              if(  (pAudioCfg->type == 1) && ( pAudioCfg->channels > 4 ) ) { //for AB03
-    203                  APP_TRACE_INFO(("ERROR:(Setup_Audio Play)pAudioCfg->channels(=%d) > 4 NOT allowed for AB03\r\n",pAudioCfg->channels));
-    204                  return AUD_CFG_PLAY_CH_ERR ;
-    205              }
-    206          #endif
-    207              if ( (pAudioCfg->type == 0) && (pAudioCfg->lin_ch_mask != 0) ) {         
-    208                   buf[4] += 2; //add 2 channel  
-    209                   APP_TRACE_INFO(("Lin 2 channels added...%d\r\n",buf[4])); 
-    210              }
-    211              UART2_Mixer(3); 
-    212              USART_SendBuf( AUDIO_UART, buf, sizeof(buf)) ; 
-    213              err = USART_Read_Timeout( AUDIO_UART, &data, 1, TIMEOUT_AUDIO_COM);
-    214              if( err != NO_ERR ) { 
-    215                  APP_TRACE_INFO(("\r\nSetup_Audio ERROR: timeout\r\n")); 
-    216                  return err;
-    217              }
-    218              if( data != NO_ERR ) {
-    219                  APP_TRACE_INFO(("\r\nSetup_Audio ERROR: %d\r\n ",data)); 
-    220                  return data; 
-    221              }
-    222              err = Init_CODEC( pAudioCfg->sr );
-    223              if( err != NO_ERR ) {
-    224                  APP_TRACE_INFO(("\r\nSetup_Audio Init_CODEC ERROR: %d\r\n",err)); 
-    225              } 
-    226          #ifdef BOARD_TYPE_AB03    
-    227              err = Init_FM36_AB03( pAudioCfg->sr, mic_num, 1, 0 ); //Lin from SP1_RX, slot0~1
-    228          #else
-    229              err = ReInit_FM36( pAudioCfg->sr ); 
-    230          #endif
-    231              if( err != NO_ERR ) {
-    232                  APP_TRACE_INFO(("\r\nSetup_Audio ReInit_FM36 ERROR: %d\r\n",err)); 
-    233              }
-    234              
-    235          //    if ( pAudioCfg->lin_ch_mask != 0 ) {
-    236          //        err = Set_AIC3204_DSP_Offset( mic_num );
-    237          //        if( err != NO_ERR ) {
-    238          //            APP_TRACE_INFO(("\r\nSetup_Audio Init AIC3204 ERROR: %d\r\n",err)); 
-    239          //        }
-    240          //    }
-    241              
-    242              return err ; 
-    243          }
-    244          
-    245          
-    246          /*
-    247          *********************************************************************************************************
-    248          *                                           Start_Audio()
-    249          *
-    250          * Description : Send command to start USB audio play/record.
-    251          * Argument(s) : cmd_type : record£¨== 1£©/play£¨== 2£©/record & play £¨== 3£©
-    252          *               padding :  used for usb audio BI/BO first package padding
-    253          * Return(s)   : NO_ERR :   execute successfully
-    254          *               others :   refer to error code defines.           
-    255          *
-    256          * Note(s)     : None.
-    257          *********************************************************************************************************
-    258          */
-    259          unsigned char Start_Audio( START_AUDIO start_audio )
-    260          {   
-    261              unsigned char err   = 0xFF;  
-    262              unsigned char data  = 0xFF; 
-    263              unsigned char ruler_id;    
-    264              unsigned char buf[] = { CMD_DATA_SYNC1, CMD_DATA_SYNC2, RULER_CMD_START_AUDIO, start_audio.type&0x03, start_audio.padding }; 
-    265              
-    266          #if OS_CRITICAL_METHOD == 3u
-    267              OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
-    268          #endif 
-    269              APP_TRACE_INFO(("Start_Audio : type = [%d], padding = [0x%X]\r\n", start_audio.type, start_audio.padding));
-    270              UART2_Mixer(3); 
-    271              USART_SendBuf( AUDIO_UART, buf,  sizeof(buf) );    
-    272              err = USART_Read_Timeout( AUDIO_UART, &data, 1, TIMEOUT_AUDIO_COM );  
-    273              if( err != NO_ERR ) { 
-    274                  APP_TRACE_INFO(("\r\nStart_Audio ERROR: Timeout : %d\r\n",err));
-    275                  return err;
-    276              }
-    277              if( data != NO_ERR ) {
-    278                  APP_TRACE_INFO(("\r\nStart_Audio ERROR: Data : %d\r\n ",data)); 
-    279                  return data; 
-    280              } else {
-    281                  OS_ENTER_CRITICAL(); 
-    282                  for( ruler_id = 0 ; ruler_id < 4 ; ruler_id++ ) {       
-    283                      if( Global_Ruler_State[ruler_id] ==  RULER_STATE_SELECTED ) {//given: if mic selected, then ruler used
-    284                          Global_Ruler_State[ruler_id] = RULER_STATE_RUN;                 
-    285                      }      
-    286                  }
-    287                  OS_EXIT_CRITICAL();  
-    288                  
-    289              }
-    290              return 0 ;   
-    291          }
-    292          
-    293          
-    294          /*
-    295          *********************************************************************************************************
-    296          *                                           Stop_Audio()
-    297          *
-    298          * Description : Send command to stop USB audio play/record.
-    299          * Argument(s) : None.
-    300          * Return(s)   : NO_ERR :   execute successfully
-    301          *               others :   refer to error code defines.           
-    302          *
-    303          * Note(s)     : None.
-    304          *********************************************************************************************************
-    305          */
-    306          unsigned char Stop_Audio( void )
-    307          {  
-    308              unsigned char err   = 0xFF;  
-    309              unsigned char data  = 0xFF; 
-    310              unsigned char ruler_id;     
-    311              unsigned char buf[] = { CMD_DATA_SYNC1, CMD_DATA_SYNC2, RULER_CMD_STOP_AUDIO };
-    312              
-    313          #if OS_CRITICAL_METHOD == 3u
-    314              OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
-    315          #endif 
-    316              APP_TRACE_INFO(("Stop_Audio\r\n"));
-    317              UART2_Mixer(3); 
-    318              USART_SendBuf( AUDIO_UART, buf,  sizeof(buf)) ;    
-    319              err = USART_Read_Timeout( AUDIO_UART, &data, 1, TIMEOUT_AUDIO_COM); 
-    320              if( err != NO_ERR ) { 
-    321                  APP_TRACE_INFO(("\r\nStop_Audio ERROR: timeout\r\n")); 
-    322                  return err;
-    323              }
-    324              if( data != NO_ERR ) {
-    325                  APP_TRACE_INFO(("\r\nStop_Audio ERROR: %d\r\n ",data)); 
-    326                  return data; 
-    327              } 
-    328             
-    329              err = Init_CODEC( 0 );
-    330              if( err != NO_ERR ) {
-    331                  APP_TRACE_INFO(("\r\nStop_Audio Power Down CODEC ERROR: %d\r\n",err)); 
-    332              }
-    333              
-    334              OS_ENTER_CRITICAL(); 
-    335              for( ruler_id = 0 ; ruler_id < 4 ; ruler_id++ ) {       
-    336                  if( Global_Ruler_State[ruler_id] ==  RULER_STATE_RUN ) {//given: if mic selected, then ruler used
-    337                      Global_Ruler_State[ruler_id] = RULER_STATE_SELECTED;            
-    338                  }                   
-    339              }
-    340              OS_EXIT_CRITICAL();
-    341                
-    342          //clear mic toggle after each audio stop to avoid issues in scripts test using USBTEST.exe
-    343          #ifdef FOR_USE_USBTEST_EXE    
-    344              for( ruler_id = 0; ruler_id < 4; ruler_id++ ) {
-    345                  Global_Mic_Mask[ruler_id] = 0 ;
-    346              }
-    347          #endif
-    348              
-    349              return 0 ;    
-    350          }
-    351          
-    352          
-    353          /*
-    354          *********************************************************************************************************
-    355          *                                           Reset_Audio()
-    356          *
-    357          * Description : Send command to reset USB audio data stream.
-    358          * Argument(s) : None.
-    359          * Return(s)   : NO_ERR :   execute successfully
-    360          *               others :   refer to error code defines.           
-    361          *
-    362          * Note(s)     : None.
-    363          *********************************************************************************************************
-    364          */
-    365          unsigned char Reset_Audio( void )
-    366          {  
-    367              unsigned char err   = 0xFF;  
-    368              unsigned char data  = 0xFF;    
-    369              unsigned char buf[] = { CMD_DATA_SYNC1, CMD_DATA_SYNC2, RULER_CMD_RESET_AUDIO };
+    143          */
+    144          void Check_UART_Mixer_Ready( void )
+    145          {
+    146              unsigned char err; 
+    147              unsigned int  counter;
+    148              
+    149              counter = 0;
+    150              while( OSQGet( EVENT_MsgQ_Noah2RulerUART, &err ) ) {
+    151                  OSTimeDly(1);
+    152                  counter++;        
+    153              } 
+    154              if( counter) {
+    155                  APP_TRACE_INFO(("Check_UART_Mixer_Ready, stage 1 : wait %d ms\r\n",counter));  
+    156              }
+    157                  
+    158              counter = 0;
+    159              while( Queue_NData((void*)pUART_Send_Buf[RULER_UART]) ) {
+    160                  OSTimeDly(1);
+    161                  counter++;  
+    162              } 
+    163              if( counter) {
+    164                  APP_TRACE_INFO(("Check_UART_Mixer_Ready, stage 2 : wait %d ms\r\n",counter));  
+    165              }
+    166              OSTimeDly(5);   
+    167              
+    168          }
+    169          
+    170          
+    171          /*
+    172          *********************************************************************************************************
+    173          *                                           Setup_Audio()
+    174          *
+    175          * Description : Send command to configure USB audio.
+    176          * Argument(s) : pAudioCfg : pointer to AUDIO_CFG type data.
+    177          * Return(s)   : NO_ERR :   execute successfully
+    178          *               others :   refer to error code defines.           
+    179          *
+    180          * Note(s)     : None.
+    181          *********************************************************************************************************
+    182          */
+    183          unsigned char Setup_Audio( AUDIO_CFG *pAudioCfg )
+    184          {
+    185              unsigned char err; 
+    186              unsigned char mic_num; 
+    187              unsigned char data  = 0xFF;
+    188              unsigned char buf[] = { 
+    189                  CMD_DATA_SYNC1, CMD_DATA_SYNC2, RULER_CMD_SET_AUDIO_CFG,\
+    190                  pAudioCfg->type, pAudioCfg->channels,\
+    191                 (pAudioCfg->sr)&0xFF, ((pAudioCfg->sr)>>8)&0xFF
+    192              };
+    193              
+    194              //APP_TRACE_INFO(("Setup_Audio [%s]:[%d SR]:[%d CH]: %s\r\n",(pAudioCfg->type == 0) ? "REC " : "PLAY", pAudioCfg->sr, pAudioCfg->channels,((pAudioCfg->type == 0) && (pAudioCfg->lin_ch_mask == 0)) ? "LIN Disabled" : "LIN Enabled"));
+    195              if( pAudioCfg->type == 0 ) {
+    196                  APP_TRACE_INFO(("Setup_Audio [REC]:[%d SR]:[%d CH]: %s\r\n", pAudioCfg->sr, pAudioCfg->channels, pAudioCfg->lin_ch_mask == 0 ? "LIN Disabled" : "LIN Enabled" ));
+    197              } else {
+    198                  APP_TRACE_INFO(("Setup_Audio [PLAY]:[%d SR]:[%d CH]\r\n", pAudioCfg->sr, pAudioCfg->channels ));
+    199              }
+    200              
+    201              err = Check_SR_Support( pAudioCfg->sr );
+    202              if( err != NO_ERR ) { 
+    203                  APP_TRACE_INFO(("\r\nSetup_Audio ERROR: Sample rate NOT support!\r\n")); 
+    204                  return err;
+    205              }    
+    206              mic_num = Check_Actived_Mic_Number();
+    207              if( mic_num > 6 ) {
+    208                  APP_TRACE_INFO(("\r\nERROR: Check_Actived_Mic_Number = %d > 6\r\n",mic_num));
+    209                  return AUD_CFG_MIC_NUM_MAX_ERR;//if report err, need UI support!  
+    210              } 
+    211              //check rec mic num    
+    212              if( (pAudioCfg->type == 0) && ( mic_num != pAudioCfg->channels) ) {
+    213                  APP_TRACE_INFO(("WARN:(Setup_Audio Rec)pAudioCfg->channels(%d) !=  Active MICs Num(%d)\r\n",pAudioCfg->channels,mic_num));
+    214                  buf[4] = mic_num;
+    215                  return AUD_CFG_MIC_NUM_DISMATCH_ERR;
+    216              }
+    217              //check channel num    
+    218              if( (pAudioCfg->type == 1) && (pAudioCfg->channels == 0) ) {
+    219                  APP_TRACE_INFO(("WARN:(Setup_Audio Play)pAudioCfg->channels =  0\r\n" ));        
+    220                  //return AUD_CFG_PLAY_CH_ZERO_ERR;  UI not support
+    221              }  
+    222              if( (pAudioCfg->type == 0) && (pAudioCfg->channels == 0) && (pAudioCfg->lin_ch_mask == 0) ) {
+    223                  APP_TRACE_INFO(("WARN:(Setup_Audio Rec)pAudioCfg->channels + ch_lin =  0\r\n" ));        
+    224                  //return AUD_CFG_PLAY_CH_ZERO_ERR; UI not support
+    225              }
+    226              //check sample rate
+    227              //No add here!
+    228              //
+    229              //
+    230           #ifdef BOARD_TYPE_AB03    
+    231              //check play ch num
+    232              if(  (pAudioCfg->type == 1) && ( pAudioCfg->channels > 4 ) ) { //for AB03
+    233                  APP_TRACE_INFO(("ERROR:(Setup_Audio Play)pAudioCfg->channels(=%d) > 4 NOT allowed for AB03\r\n",pAudioCfg->channels));
+    234                  return AUD_CFG_PLAY_CH_ERR ;
+    235              }
+    236          #endif
+    237              if ( (pAudioCfg->type == 0) && (pAudioCfg->lin_ch_mask != 0) ) {         
+    238                   buf[4] += 2; //add 2 channel  
+    239                   APP_TRACE_INFO(("Lin 2 channels added...%d\r\n",buf[4])); 
+    240              }
+    241              UART2_Mixer(3); 
+    242              USART_SendBuf( AUDIO_UART, buf, sizeof(buf)) ; 
+    243              err = USART_Read_Timeout( AUDIO_UART, &data, 1, TIMEOUT_AUDIO_COM);
+    244              if( err != NO_ERR ) { 
+    245                  APP_TRACE_INFO(("\r\nSetup_Audio ERROR: timeout\r\n")); 
+    246                  return err;
+    247              }
+    248              if( data != NO_ERR ) {
+    249                  APP_TRACE_INFO(("\r\nSetup_Audio ERROR: %d\r\n ",data)); 
+    250                  return data; 
+    251              }
+    252              err = Init_CODEC( pAudioCfg->sr );
+    253              if( err != NO_ERR ) {
+    254                  APP_TRACE_INFO(("\r\nSetup_Audio Init_CODEC ERROR: %d\r\n",err)); 
+    255              } 
+    256          #ifdef BOARD_TYPE_AB03    
+    257              err = Init_FM36_AB03( pAudioCfg->sr, mic_num, 1, 0 ); //Lin from SP1_RX, slot0~1
+    258          #else
+    259              err = ReInit_FM36( pAudioCfg->sr ); 
+    260          #endif
+    261              if( err != NO_ERR ) {
+    262                  APP_TRACE_INFO(("\r\nSetup_Audio ReInit_FM36 ERROR: %d\r\n",err)); 
+    263              }
+    264              data = Check_Watch_Attach_State();
+    265              if( data ) {
+    266                  APP_TRACE_INFO(("Revert DMIC polarity for W01.\r\n")); 
+    267              }
+    268              err = DMIC_Ploarity_Control( data );
+    269              if( err != NO_ERR ) {
+    270                  APP_TRACE_INFO(("\r\nDMIC_Ploarity_Control ERROR: %d\r\n",err)); 
+    271              }
+    272          //    if ( pAudioCfg->lin_ch_mask != 0 ) {
+    273          //        err = Set_AIC3204_DSP_Offset( mic_num );
+    274          //        if( err != NO_ERR ) {
+    275          //            APP_TRACE_INFO(("\r\nSetup_Audio Init AIC3204 ERROR: %d\r\n",err)); 
+    276          //        }
+    277          //    }
+    278              
+    279              return err ; 
+    280          }
+    281          
+    282          
+    283          /*
+    284          *********************************************************************************************************
+    285          *                                           Start_Audio()
+    286          *
+    287          * Description : Send command to start USB audio play/record.
+    288          * Argument(s) : cmd_type : record£¨== 1£©/play£¨== 2£©/record & play £¨== 3£©
+    289          *               padding :  used for usb audio BI/BO first package padding
+    290          * Return(s)   : NO_ERR :   execute successfully
+    291          *               others :   refer to error code defines.           
+    292          *
+    293          * Note(s)     : None.
+    294          *********************************************************************************************************
+    295          */
+    296          unsigned char Start_Audio( START_AUDIO start_audio )
+    297          {   
+    298              unsigned char err   = 0xFF;  
+    299              unsigned char data  = 0xFF; 
+    300              unsigned char ruler_id;    
+    301              unsigned char buf[] = { CMD_DATA_SYNC1, CMD_DATA_SYNC2, RULER_CMD_START_AUDIO, start_audio.type&0x03, start_audio.padding }; 
+    302              
+    303          #if OS_CRITICAL_METHOD == 3u
+    304              OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
+    305          #endif 
+    306              APP_TRACE_INFO(("Start_Audio : type = [%d], padding = [0x%X]\r\n", start_audio.type, start_audio.padding));
+    307              UART2_Mixer(3); 
+    308              USART_SendBuf( AUDIO_UART, buf,  sizeof(buf) );    
+    309              err = USART_Read_Timeout( AUDIO_UART, &data, 1, TIMEOUT_AUDIO_COM );  
+    310              if( err != NO_ERR ) { 
+    311                  APP_TRACE_INFO(("\r\nStart_Audio ERROR: Timeout : %d\r\n",err));
+    312                  return err;
+    313              }
+    314              if( data != NO_ERR ) {
+    315                  APP_TRACE_INFO(("\r\nStart_Audio ERROR: Data : %d\r\n ",data)); 
+    316                  return data; 
+    317              } else {
+    318                  OS_ENTER_CRITICAL(); 
+    319                  for( ruler_id = 0 ; ruler_id < 4 ; ruler_id++ ) {       
+    320                      if( Global_Ruler_State[ruler_id] ==  RULER_STATE_SELECTED ) {//given: if mic selected, then ruler used
+    321                          Global_Ruler_State[ruler_id] = RULER_STATE_RUN;                 
+    322                      }      
+    323                  }
+    324                  OS_EXIT_CRITICAL();  
+    325                  
+    326              }
+    327              return 0 ;   
+    328          }
+    329          
+    330          
+    331          /*
+    332          *********************************************************************************************************
+    333          *                                           Stop_Audio()
+    334          *
+    335          * Description : Send command to stop USB audio play/record.
+    336          * Argument(s) : None.
+    337          * Return(s)   : NO_ERR :   execute successfully
+    338          *               others :   refer to error code defines.           
+    339          *
+    340          * Note(s)     : None.
+    341          *********************************************************************************************************
+    342          */
+    343          unsigned char Stop_Audio( void )
+    344          {  
+    345              unsigned char err   = 0xFF;  
+    346              unsigned char data  = 0xFF; 
+    347              unsigned char ruler_id;     
+    348              unsigned char buf[] = { CMD_DATA_SYNC1, CMD_DATA_SYNC2, RULER_CMD_STOP_AUDIO };
+    349              
+    350          #if OS_CRITICAL_METHOD == 3u
+    351              OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
+    352          #endif 
+    353              APP_TRACE_INFO(("Stop_Audio\r\n"));
+    354              UART2_Mixer(3); 
+    355              USART_SendBuf( AUDIO_UART, buf,  sizeof(buf)) ;    
+    356              err = USART_Read_Timeout( AUDIO_UART, &data, 1, TIMEOUT_AUDIO_COM); 
+    357              if( err != NO_ERR ) { 
+    358                  APP_TRACE_INFO(("\r\nStop_Audio ERROR: timeout\r\n")); 
+    359                  return err;
+    360              }
+    361              if( data != NO_ERR ) {
+    362                  APP_TRACE_INFO(("\r\nStop_Audio ERROR: %d\r\n ",data)); 
+    363                  return data; 
+    364              } 
+    365             
+    366              err = Init_CODEC( 0 );
+    367              if( err != NO_ERR ) {
+    368                  APP_TRACE_INFO(("\r\nStop_Audio Power Down CODEC ERROR: %d\r\n",err)); 
+    369              }
     370              
-    371              APP_TRACE_INFO(("Reset_Audio\r\n"));
-    372              UART2_Mixer(3); 
-    373              USART_SendBuf( AUDIO_UART, buf,  sizeof(buf)) ;    
-    374              err = USART_Read_Timeout( AUDIO_UART, &data, 1, TIMEOUT_AUDIO_COM); 
-    375              if( err != NO_ERR ) { 
-    376                  APP_TRACE_INFO(("\r\nReset_Audio ERROR: timeout\r\n")); 
-    377                  return err;
-    378              }
-    379              if( data != NO_ERR ) {
-    380                  APP_TRACE_INFO(("\r\nReset_Audio ERROR: %d\r\n ",data)); 
-    381                  return data; 
-    382              } 
-    383               
-    384              return 0 ;    
-    385          }
-    386          
-    387          
-    388          /*
-    389          *********************************************************************************************************
-    390          *                                       Get_Audio_Version()
-    391          *
-    392          * Description : Get USB audio MCU firmware version info, and stored in a global variable.
-    393          * Argument(s) : None.
-    394          * Return(s)   : NO_ERR :   execute successfully
-    395          *               others :   refer to error code defines.           
-    396          *
-    397          * Note(s)     : None.
-    398          *********************************************************************************************************
-    399          */
-    400          unsigned char Get_Audio_Version( void )
-    401          {  
-    402              unsigned char err;      
-    403              unsigned char buf[] = { CMD_DATA_SYNC1, CMD_DATA_SYNC2, RULER_CMD_GET_AUDIO_VERSION };
-    404             
-    405              UART2_Mixer(3); 
-    406              USART_SendBuf( AUDIO_UART, buf,  sizeof(buf)) ;    
-    407              err = USART_Read_Timeout( AUDIO_UART, &Audio_Version, sizeof(Audio_Version), TIMEOUT_AUDIO_COM); 
-    408              if( err != NO_ERR ) { 
-    409                  APP_TRACE_INFO(("\r\nGet_Audio_Version ERROR: timeout\r\n")); 
-    410                  return err;        
-    411              } else {        
-    412                  APP_TRACE_INFO(("\r\nUSB Audio FW Version: %s\r\n ",Audio_Version));
-    413              }     
-    414              return 0 ;   
-    415          }
-    416          
-    417          
-    418          
-    419          
-    420          
-    421          /*
-    422          *********************************************************************************************************
-    423          *                                       Init_Ruler()
-    424          *
-    425          * Description : Communicate with ruler to check connected or not
-    426          *    
-    427          * Argument(s) : ruler_slot_id: 0~ 3.
-    428          * Return(s)   : NO_ERR :   ruler connected
-    429          *               others :   =error code . ruler connection error,           
-    430          *
-    431          * Note(s)     : None.
-    432          *********************************************************************************************************
-    433          */
-    434          unsigned char Init_Ruler( unsigned char ruler_slot_id ) //0 ~ 3
-    435          {
-    436              unsigned char err ;
-    437          
-    438          #if OS_CRITICAL_METHOD == 3u
-    439              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
-    440          #endif 
-    441                
-    442              //check ruler connection state 
-    443              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_ATTACHED ) {      
-    444                  return RULER_STATE_ERR ;         
-    445              } 
-    446              OSSemPend( UART_MUX_Sem_lock, 0, &err );
-    447              if( Global_Ruler_Index != ruler_slot_id ) {
-    448                  Check_UART_Mixer_Ready();
-    449                  //OS_ENTER_CRITICAL(); 
-    450                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
-    451                  //OS_EXIT_CRITICAL();  
-    452                  UART1_Mixer( ruler_slot_id );
-    453              } 
-    454              
-    455              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_EST, NULL, 0, 0, NULL, 0 ) ; 
-    456              if( OS_ERR_NONE == err ) {
-    457                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
-    458                  if( OS_ERR_TIMEOUT == err ) {
-    459                      APP_TRACE_INFO(("Init ruler[%d] timeout!\r\n",ruler_slot_id));            
-    460                  } else {
-    461                      err = Ruler_CMD_Result; //exe result from GACK
-    462                      if(OS_ERR_NONE != err ){
-    463                          APP_TRACE_INFO(("Init_Ruler[%d] err = %d\r\n",ruler_slot_id,err));
-    464                      }
-    465                  }
-    466                  
-    467              } else {
-    468                  APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));        
-    469              }    
-    470              OSSemPost( UART_MUX_Sem_lock );    
-    471              return err ;    
-    472          }
-    473                          
+    371              OS_ENTER_CRITICAL(); 
+    372              for( ruler_id = 0 ; ruler_id < 4 ; ruler_id++ ) {       
+    373                  if( Global_Ruler_State[ruler_id] ==  RULER_STATE_RUN ) {//given: if mic selected, then ruler used
+    374                      Global_Ruler_State[ruler_id] = RULER_STATE_SELECTED;            
+    375                  }                   
+    376              }
+    377              OS_EXIT_CRITICAL();
+    378                
+    379          //clear mic toggle after each audio stop to avoid issues in scripts test using USBTEST.exe
+    380          #ifdef FOR_USE_USBTEST_EXE    
+    381              for( ruler_id = 0; ruler_id < 4; ruler_id++ ) {
+    382                  Global_Mic_Mask[ruler_id] = 0 ;
+    383              }
+    384          #endif
+    385              
+    386              return 0 ;    
+    387          }
+    388          
+    389          
+    390          /*
+    391          *********************************************************************************************************
+    392          *                                           Reset_Audio()
+    393          *
+    394          * Description : Send command to reset USB audio data stream.
+    395          * Argument(s) : None.
+    396          * Return(s)   : NO_ERR :   execute successfully
+    397          *               others :   refer to error code defines.           
+    398          *
+    399          * Note(s)     : None.
+    400          *********************************************************************************************************
+    401          */
+    402          unsigned char Reset_Audio( void )
+    403          {  
+    404              unsigned char err   = 0xFF;  
+    405              unsigned char data  = 0xFF;    
+    406              unsigned char buf[] = { CMD_DATA_SYNC1, CMD_DATA_SYNC2, RULER_CMD_RESET_AUDIO };
+    407              
+    408              APP_TRACE_INFO(("Reset_Audio\r\n"));
+    409              UART2_Mixer(3); 
+    410              USART_SendBuf( AUDIO_UART, buf,  sizeof(buf)) ;    
+    411              err = USART_Read_Timeout( AUDIO_UART, &data, 1, TIMEOUT_AUDIO_COM); 
+    412              if( err != NO_ERR ) { 
+    413                  APP_TRACE_INFO(("\r\nReset_Audio ERROR: timeout\r\n")); 
+    414                  return err;
+    415              }
+    416              if( data != NO_ERR ) {
+    417                  APP_TRACE_INFO(("\r\nReset_Audio ERROR: %d\r\n ",data)); 
+    418                  return data; 
+    419              } 
+    420               
+    421              return 0 ;    
+    422          }
+    423          
+    424          
+    425          /*
+    426          *********************************************************************************************************
+    427          *                                       Get_Audio_Version()
+    428          *
+    429          * Description : Get USB audio MCU firmware version info, and stored in a global variable.
+    430          * Argument(s) : None.
+    431          * Return(s)   : NO_ERR :   execute successfully
+    432          *               others :   refer to error code defines.           
+    433          *
+    434          * Note(s)     : None.
+    435          *********************************************************************************************************
+    436          */
+    437          unsigned char Get_Audio_Version( void )
+    438          {  
+    439              unsigned char err;      
+    440              unsigned char buf[] = { CMD_DATA_SYNC1, CMD_DATA_SYNC2, RULER_CMD_GET_AUDIO_VERSION };
+    441             
+    442              UART2_Mixer(3); 
+    443              USART_SendBuf( AUDIO_UART, buf,  sizeof(buf)) ;    
+    444              err = USART_Read_Timeout( AUDIO_UART, &Audio_Version, sizeof(Audio_Version), TIMEOUT_AUDIO_COM); 
+    445              if( err != NO_ERR ) { 
+    446                  APP_TRACE_INFO(("\r\nGet_Audio_Version ERROR: timeout\r\n")); 
+    447                  return err;        
+    448              } else {        
+    449                  APP_TRACE_INFO(("\r\nUSB Audio FW Version: %s\r\n ",Audio_Version));
+    450              }     
+    451              return 0 ;   
+    452          }
+    453          
+    454          
+    455          
+    456          
+    457          
+    458          /*
+    459          *********************************************************************************************************
+    460          *                                       Init_Ruler()
+    461          *
+    462          * Description : Communicate with ruler to check connected or not
+    463          *    
+    464          * Argument(s) : ruler_slot_id: 0~ 3.
+    465          * Return(s)   : NO_ERR :   ruler connected
+    466          *               others :   =error code . ruler connection error,           
+    467          *
+    468          * Note(s)     : None.
+    469          *********************************************************************************************************
+    470          */
+    471          unsigned char Init_Ruler( unsigned char ruler_slot_id ) //0 ~ 3
+    472          {
+    473              unsigned char err ;
     474          
-    475          /*
-    476          *********************************************************************************************************
-    477          *                                       Setup_Ruler()
-    478          *
-    479          * Description : Send ruler slot id to ruler for identification.
-    480          *             
-    481          * Argument(s) : ruler_slot_id: 0~ 3.
-    482          * Return(s)   : NO_ERR :   execute successfully
-    483          *               others :   =error code . ruler connection error,           
-    484          *
-    485          * Note(s)     : None.
-    486          *********************************************************************************************************
-    487          */
-    488          unsigned char Setup_Ruler( unsigned char ruler_slot_id ) //0 ~ 3
-    489          {    
-    490              unsigned char err ;
-    491              EMB_BUF        *pEBuf_Data; 
-    492              unsigned char buf[] = { RULER_CMD_SET_RULER, ruler_slot_id };
-    493              
-    494          #if OS_CRITICAL_METHOD == 3u
-    495              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
-    496          #endif 
-    497              
-    498              pEBuf_Data  = &Emb_Buf_Data; //Golbal var
-    499              //check ruler connection state 
-    500              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_ATTACHED ) {      
-    501                  return RULER_STATE_ERR ;         
-    502              } 
-    503              
-    504              OSSemPend( UART_MUX_Sem_lock, 0, &err );
-    505              if( Global_Ruler_Index != ruler_slot_id ) {
-    506                  Check_UART_Mixer_Ready();
-    507                  //OS_ENTER_CRITICAL(); 
-    508                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
-    509                  //OS_EXIT_CRITICAL();  
-    510                  UART1_Mixer( ruler_slot_id );
-    511              }
-    512              
-    513              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
-    514              if( OS_ERR_NONE == err ) {
-    515                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
-    516                  if( OS_ERR_TIMEOUT == err ) {
-    517                      APP_TRACE_INFO(("Setup_Ruler[%d] timeout\r\n",ruler_slot_id));
-    518                  } else {            
-    519                      Ruler_Setup_Sync_Data = pEBuf_Data->data[0] ;
-    520                      APP_TRACE_INFO(("Get Ruler_Setup_Sync_Data : 0x%X\r\n",Ruler_Setup_Sync_Data));
-    521                      err = Ruler_CMD_Result; //exe result from GACK
-    522                      if(OS_ERR_NONE != err ){
-    523                          APP_TRACE_INFO(("Setup_Ruler[%d] err = %d\r\n",ruler_slot_id,err));
-    524                      }
-    525                  }
-    526                  
-    527              } else {
-    528                  APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));
-    529              }    
-    530              OSSemPost( UART_MUX_Sem_lock );    
-    531              return err ;    
-    532          }
-    533          
-    534          
-    535          /*
-    536          *********************************************************************************************************
-    537          *                                       Get_Ruler_Type()
-    538          *
-    539          * Description : Get the specified ruler's type, and stored in a global variable, in which
-    540          *               bit7: 0-ruler, 1- handset. Other bits reserved.
-    541          * Argument(s) : ruler_slot_id: 0~ 3.
-    542          * Return(s)   : NO_ERR :   execute successfully
-    543          *               others :   refer to error code defines.           
-    544          *
-    545          * Note(s)     : None.
-    546          *********************************************************************************************************
-    547          */
-    548          unsigned char Get_Ruler_Type(  unsigned char ruler_slot_id )
-    549          {  
-    550              unsigned char err ;
-    551              EMB_BUF        *pEBuf_Data; 
-    552              unsigned char buf[] = { RULER_CMD_GET_RULER_TYPE };
-    553              
-    554          #if OS_CRITICAL_METHOD == 3u
-    555              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
-    556          #endif 
-    557              
-    558              pEBuf_Data  = &Emb_Buf_Data; //Golbal var
-    559              //check ruler connection state 
-    560              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_ATTACHED ) {      
-    561                  return RULER_STATE_ERR ;         
-    562              } 
-    563          
-    564              OSSemPend( UART_MUX_Sem_lock, 0, &err ); 
-    565              if( Global_Ruler_Index != ruler_slot_id ) {
-    566                  Check_UART_Mixer_Ready();
-    567                  //OS_ENTER_CRITICAL(); 
-    568                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
-    569                  //OS_EXIT_CRITICAL();  
-    570                  UART1_Mixer( ruler_slot_id );
-    571              }
-    572              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
-    573              if( OS_ERR_NONE == err ) {
-    574                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
-    575                  if( OS_ERR_TIMEOUT == err ) {
-    576                      APP_TRACE_INFO(("Read_Ruler_Type[%d] timeout\r\n",ruler_slot_id));
-    577                  } else {
-    578                      Global_Ruler_Type[ruler_slot_id] =  pEBuf_Data->data[0] ;
-    579                      err = Ruler_CMD_Result; //exe result from GACK 
-    580                      if(OS_ERR_NONE != err ){
-    581                          APP_TRACE_INFO(("Get_Ruler_Type[%d] err = %d\r\n",ruler_slot_id,err));
-    582                      }
-    583                  }          
-    584                  
-    585              } else {
-    586                  APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));        
-    587              }       
-    588              OSSemPost( UART_MUX_Sem_lock );    
-    589              return err ;    
-    590          }
-    591          
-    592          
-    593          /*
-    594          *********************************************************************************************************
-    595          *                                       Read_Ruler_Status()
-    596          *
-    597          * Description : Get back specified ruler's POST status.
-    598          *             
-    599          * Argument(s) : ruler_slot_id: 0~ 3.
-    600          *               status_data:   pointer to the address that store the read status data 
-    601          * Return(s)   : NO_ERR :   execute successfully
-    602          *               others :   =error code .           
-    603          *
-    604          * Note(s)     : None.
-    605          *********************************************************************************************************
-    606          */
-    607          unsigned char Read_Ruler_Status( unsigned char ruler_slot_id, unsigned short *status_data )
-    608          {    
-    609              unsigned char err ;
-    610              EMB_BUF        *pEBuf_Data; 
-    611              unsigned char buf[] = { RULER_CMD_RAED_RULER_STATUS };
-    612              
-    613          #if OS_CRITICAL_METHOD == 3u
-    614              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
-    615          #endif 
-    616              
-    617              pEBuf_Data  = &Emb_Buf_Data; //Golbal var
-    618              //check ruler connection state 
-    619              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_ATTACHED ) {      
-    620                  return RULER_STATE_ERR ;         
-    621              } 
-    622              OSSemPend( UART_MUX_Sem_lock, 0, &err ); 
-    623              if( Global_Ruler_Index != ruler_slot_id ) {
-    624                  Check_UART_Mixer_Ready();
-    625                  //OS_ENTER_CRITICAL(); 
-    626                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
-    627                  //OS_EXIT_CRITICAL();  
-    628                  UART1_Mixer( ruler_slot_id );
-    629              }
-    630              
-    631              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
-    632              if( OS_ERR_NONE == err ) {
-    633                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
-    634                  if( OS_ERR_TIMEOUT == err ) {
-    635                      APP_TRACE_INFO(("Read_Ruler_Status[%d] timeout\r\n",ruler_slot_id));
-    636                  } else {
-    637                      *status_data = (pEBuf_Data->data[1] << 8) + pEBuf_Data->data[0] ;       
-    638                      err = Ruler_CMD_Result; //exe result from GACK
-    639                      if(OS_ERR_NONE != err ){
-    640                          APP_TRACE_INFO(("Read_Ruler_Status[%d] err = %d\r\n",ruler_slot_id,err));
-    641                      } 
-    642                  }   
-    643                  
-    644              } else {
-    645                  APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));
-    646              }        
-    647              OSSemPost( UART_MUX_Sem_lock );    
-    648              return err ;    
-    649          }
-    650          
-    651          
-    652          /*
-    653          *********************************************************************************************************
-    654          *                                       Read_Ruler_Info()
-    655          *
-    656          * Description : Get back specified ruler's infomation data.
-    657          *               And the read back data is stored in global varies : Emb_Buf_Data
-    658          * Argument(s) : ruler_slot_id: 0~ 3.
-    659          * Return(s)   : NO_ERR :   execute successfully
-    660          *               others :   =error code . ruler connection error,           
-    661          *
-    662          * Note(s)     : None.
-    663          *********************************************************************************************************
-    664          */
-    665          unsigned char Read_Ruler_Info( unsigned char ruler_slot_id )
-    666          {    
-    667              unsigned char  err ; 
-    668              unsigned char  buf[] = { RULER_CMD_RAED_RULER_INFO }; 
-    669              
-    670          #if OS_CRITICAL_METHOD == 3u
-    671              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
-    672          #endif 
-    673           
-    674              //check ruler connection state 
-    675              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_CONFIGURED ) {      
-    676                  return RULER_STATE_ERR ;         
-    677              }    
-    678              OSSemPend( UART_MUX_Sem_lock, 0, &err );  
-    679              if( Global_Ruler_Index != ruler_slot_id ) {
-    680                  Check_UART_Mixer_Ready();
-    681                  //OS_ENTER_CRITICAL(); 
-    682                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
-    683                  //OS_EXIT_CRITICAL();  
-    684                  UART1_Mixer( ruler_slot_id );
-    685              }
-    686              
-    687              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
-    688              if( OS_ERR_NONE == err ) {
-    689                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
-    690                  if( OS_ERR_TIMEOUT == err ) {
-    691                      APP_TRACE_INFO(("Read_Ruler_Info[%d] timeout\r\n",ruler_slot_id));
-    692                  } else {
-    693                      err = Ruler_CMD_Result;
-    694                      if(OS_ERR_NONE != err ){
-    695                          APP_TRACE_INFO(("Read_Ruler_Info[%d] err = %d\r\n",ruler_slot_id,err));
-    696                      }
-    697                  }
-    698                  
-    699              } else {
-    700                  APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));
-    701              }    
-    702              OSSemPost( UART_MUX_Sem_lock );    
-    703              return err ;    
-    704          }
-    705          
-    706          
-    707          /*
-    708          *********************************************************************************************************
-    709          *                                       Write_Ruler_Info()
-    710          *
-    711          * Description : Write infomation data to specified ruler.
-    712          *               And before this function is called, the data to be written need have been stored in global varies : Emb_Buf_Cmd
-    713          * Argument(s) : ruler_slot_id: 0~ 3.
-    714          * Return(s)   : NO_ERR :   execute successfully
-    715          *               others :   =error code .       
-    716          *
-    717          * Note(s)     : None.
-    718          *********************************************************************************************************
-    719          */
-    720          unsigned char Write_Ruler_Info( unsigned char ruler_slot_id )
-    721          {
-    722              unsigned char   err;
-    723              unsigned short  data_length;
-    724              unsigned char   temp;
-    725              unsigned char  *pdata;
-    726              unsigned char   buf[4];  
-    727              EMB_BUF        *pEBuf_Cmd;        
-    728            
-    729           #if OS_CRITICAL_METHOD == 3u
-    730              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
-    731          #endif 
-    732              
-    733              pEBuf_Cmd  = &Emb_Buf_Cmd; //Golbal var
-    734              buf[0] =  RULER_CMD_WRITE_RULER_INFO;
-    735              buf[1] =  EMB_DATA_FRAME;  
-    736              buf[2] = (pEBuf_Cmd->length) & 0xFF;    
-    737              buf[3] = ((pEBuf_Cmd->length)>>8) & 0xFF;     
-    738          
-    739              //check ruler connection state 
-    740              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_CONFIGURED ) {      
-    741                  return RULER_STATE_ERR ;         
-    742              } 
-    743              OSSemPend( UART_MUX_Sem_lock, 0, &err );    
-    744              if( Global_Ruler_Index != ruler_slot_id ) {
-    745                  Check_UART_Mixer_Ready();
-    746                  //OS_ENTER_CRITICAL(); 
-    747                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
-    748                  //OS_EXIT_CRITICAL();  
-    749                  UART1_Mixer( ruler_slot_id );
-    750              }  
-    751              
-    752              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
-    753              if( OS_ERR_NONE != err ) { return err ; }
-    754              pdata = pEBuf_Cmd->data;
-    755              data_length = pEBuf_Cmd->length;
-    756              while( data_length > 0 ){ 
-    757                  temp = data_length > (NOAH_CMD_DATA_MLEN-1) ? (NOAH_CMD_DATA_MLEN-1) : data_length ;  
-    758                  err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, pdata, temp, 0, buf, 1 ) ; 
-    759                  if( OS_ERR_NONE != err ) { break;}
-    760                  OSTimeDly(50); //wait for ruler operation
-    761                  data_length -= temp;
-    762                  pdata += temp;
-    763              }
-    764              if( OS_ERR_NONE == err ) {
-    765                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
-    766                  if( OS_ERR_TIMEOUT == err ) {
-    767                      APP_TRACE_INFO(("Write_Ruler_Info[%d] timeout\r\n",ruler_slot_id));
-    768                  } else {
-    769                      err = Ruler_CMD_Result; //exe result from GACK
-    770                      if(OS_ERR_NONE != err ){
-    771                          APP_TRACE_INFO(("Write_Ruler_Info[%d] err = %d\r\n",ruler_slot_id,err));
-    772                      }
-    773                  }
-    774                  
-    775              } else {
-    776                  APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));
-    777              }
-    778              OSSemPost( UART_MUX_Sem_lock );
-    779              
-    780              return err ;
-    781              
-    782          }
-    783          
-    784          
-    785          /*
-    786          *********************************************************************************************************
-    787          *                                       Read_Mic_Cali_Data()
-    788          *
-    789          * Description : Get back specified ruler specified mic's calibration data.
-    790          *               And the read back data is stored in global varies : Emb_Buf_Data
-    791          * Argument(s) : ruler_slot_id : 0~ 3.
-    792          *               mic_id        : 0~ 7
-    793          * Return(s)   : NO_ERR :   execute successfully
-    794          *               others :   =error code .  
-    795          *
-    796          * Note(s)     : None.
-    797          *********************************************************************************************************
-    798          */
-    799          unsigned char Read_Mic_Cali_Data(unsigned char ruler_slot_id, unsigned char mic_id)
-    800          {    
-    801              unsigned char  err ; 
-    802              unsigned char  buf[] = { RULER_CMD_READ_MIC_CALI_DATA, mic_id }; 
-    803              
-    804          #if OS_CRITICAL_METHOD == 3u
-    805              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
-    806          #endif 
-    807           
-    808              //check ruler connection state 
-    809              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_CONFIGURED ) {      
-    810                  return RULER_STATE_ERR ;         
-    811              }   
-    812             
-    813              OSSemPend( UART_MUX_Sem_lock, 0, &err );   
-    814              if( Global_Ruler_Index != ruler_slot_id ) {
-    815                  Check_UART_Mixer_Ready();
-    816                  //OS_ENTER_CRITICAL(); 
-    817                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
-    818                  //OS_EXIT_CRITICAL();  
-    819                  UART1_Mixer( ruler_slot_id );
-    820              }
-    821              
-    822              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
-    823              if( OS_ERR_NONE == err ) {
-    824                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
-    825                  if( OS_ERR_TIMEOUT == err ) {
-    826                      APP_TRACE_INFO(("Read_Mic_Cali_Data[%d] timeout\r\n",ruler_slot_id));
-    827                  } else {
-    828                      err = Ruler_CMD_Result; 
-    829                      if(OS_ERR_NONE != err ){
-    830                          APP_TRACE_INFO(("Read_Mic_Cali_Data[%d] err = %d\r\n",ruler_slot_id,err));
-    831                      }
-    832                  }
-    833                  
-    834              } else {
-    835                  APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));
-    836              }      
-    837              OSSemPost( UART_MUX_Sem_lock );    
-    838              return err ;    
-    839          }
-    840          
-    841          
-    842          /*
-    843          *********************************************************************************************************
-    844          *                                       Write_Mic_Cali_Data()
-    845          *
-    846          * Description : Write calibration data to specified ruler specified mic.
-    847          *               And before this function is called, the data to be written need have been stored in global varies : Emb_Buf_Cmd
-    848          * Argument(s) : ruler_slot_id : 0~ 3.
-    849          *               mic_id        : 0~ 7
-    850          * Return(s)   : NO_ERR :   execute successfully
-    851          *               others :   =error code .    
-    852          *
-    853          * Note(s)     : None.
-    854          *********************************************************************************************************
-    855          */
-    856          unsigned char Write_Mic_Cali_Data(unsigned char ruler_slot_id, unsigned char mic_id)
-    857          {    
-    858              unsigned char   err;
-    859              unsigned short  data_length;
-    860              unsigned char   temp;
-    861              unsigned char  *pdata;
-    862              unsigned char   buf[5];  
-    863              EMB_BUF        *pEBuf_Cmd;        
-    864            
-    865           #if OS_CRITICAL_METHOD == 3u
-    866              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
-    867          #endif 
-    868              
-    869              pEBuf_Cmd  = &Emb_Buf_Cmd; //Golbal var
-    870              buf[0] =  RULER_CMD_WRITE_MIC_CALI_DATA; 
-    871              buf[1] =  mic_id;  
-    872              buf[2] =  EMB_DATA_FRAME;  
-    873              buf[3] = (pEBuf_Cmd->length) & 0xFF;    
-    874              buf[4] = ((pEBuf_Cmd->length)>>8) & 0xFF;     
-    875          
-    876              //check ruler connection state 
-    877              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_CONFIGURED ) {      
-    878                  return RULER_STATE_ERR ;         
-    879              } 
-    880              OSSemPend( UART_MUX_Sem_lock, 0, &err ); 
-    881              if( Global_Ruler_Index != ruler_slot_id ) {
-    882                  Check_UART_Mixer_Ready();
-    883                  //OS_ENTER_CRITICAL(); 
-    884                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
-    885                  //OS_EXIT_CRITICAL();  
-    886                  UART1_Mixer( ruler_slot_id );
-    887              } 
-    888              
-    889              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
-    890              if( OS_ERR_NONE != err ) { return err ; }
-    891              pdata = pEBuf_Cmd->data;
-    892              data_length = pEBuf_Cmd->length;
-    893              while( data_length > 0 ){ 
-    894                  temp = data_length > (NOAH_CMD_DATA_MLEN-2) ? (NOAH_CMD_DATA_MLEN-2) : data_length ;  
-    895                  err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, pdata, temp, 0, buf, 2 ) ; 
-    896                  if( OS_ERR_NONE != err ) { break;}
-    897                  OSTimeDly(50); //wait for ruler operation       
-    898                  data_length -= temp;
-    899                  pdata += temp;        
-    900              }
-    901              if( OS_ERR_NONE == err ) {
-    902                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
-    903                  if( OS_ERR_TIMEOUT == err ) {
-    904                      APP_TRACE_INFO(("Write_Mic_Cali_Data[%d][%d] timeout\r\n",ruler_slot_id, mic_id));
-    905                  } else {
-    906                      err = Ruler_CMD_Result; //exe result from GACK
-    907                      if(OS_ERR_NONE != err ){
-    908                          APP_TRACE_INFO(("Write_Mic_Cali_Data[%d] err = %d\r\n",ruler_slot_id,err));
-    909                      }
-    910                  }
-    911              } else {
-    912                  APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));
-    913              }
-    914              OSSemPost( UART_MUX_Sem_lock );
-    915              
-    916              return err ;
-    917              
-    918          }
-    919          
-    920          
-    921          /*
-    922          *********************************************************************************************************
-    923          *                                       Update_Mic_Mask()
-    924          *
-    925          * Description : Update specified ruler's all mic's active state.
-    926          * Argument(s) : ruler_slot_id : 0~ 3.
-    927          *               mic_mask      : bit[0..31]. 0 - deactive, 1 - active.
-    928          * Return(s)   : NO_ERR :   execute successfully
-    929          *               others :   =error code .    
-    930          *
-    931          * Note(s)     : Support: Ruler(8Mic) for Ruler
-    932          *                        Handset(16Mic) for H01/H02/H02A
-    933          *                        Handset(18Mic) for H03
-    934          *********************************************************************************************************
-    935          */
-    936          unsigned char Update_Mic_Mask( unsigned char ruler_slot_id, unsigned int mic_mask )
-    937          {    
-    938              unsigned char err ;
-    939              unsigned char buf_size_send ;
-    940              unsigned char buf[] = { RULER_CMD_TOGGLE_MIC, mic_mask&0xFF, (mic_mask>>8)&0xFF,
-    941                                      (mic_mask>>16)&0xFF,  (mic_mask>>24)&0xFF };
-    942              
-    943          #if OS_CRITICAL_METHOD == 3u
-    944              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
-    945          #endif 
-    946              //check ruler connection state 
-    947              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_CONFIGURED ) {      
-    948                  return RULER_STATE_ERR ;         
-    949              }  
-    950              
-    951              OSSemPend( UART_MUX_Sem_lock, 0, &err );  
-    952              if( Global_Ruler_Index != ruler_slot_id ) {
-    953                  Check_UART_Mixer_Ready();
-    954                  //OS_ENTER_CRITICAL(); 
-    955                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
-    956                  //OS_EXIT_CRITICAL();  
-    957                  UART1_Mixer( ruler_slot_id );
-    958              }
-    959              if( Global_Ruler_Type[ruler_slot_id] == RULER_TYPE_H03 ) {
-    960                  buf_size_send = 5; //H03 cmd data size = 1+4 for 16> mic
-    961              } else {
-    962                  buf_size_send = 3; //Default cmd data size = 1+2 for <16 mic
-    963              }
-    964              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, buf_size_send, 0, NULL, 0 ) ; 
-    965              if( OS_ERR_NONE == err ) {
-    966                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
-    967                  if( OS_ERR_TIMEOUT == err ) {
-    968                      APP_TRACE_INFO(("Update_Mic_Mask for Ruler[%d] timeout\r\n",ruler_slot_id));
-    969                  }
-    970                  
-    971              } else {
-    972                  APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));
-    973              }
-    974              OSSemPost( UART_MUX_Sem_lock );    
-    975              return err ;    
-    976          }
-    977          
-    978          /*
-    979          *********************************************************************************************************
-    980          *                                       Ruler_Active_Control()
-    981          *
-    982          * Description : Active/Deactive ruler(LED)when play and record start/stop.  
-    983          * Argument(s) : active_state : 0 - deactive ruler (LED)
-    984          *                              1 - active ruler (LED).
-    985          * Return(s)   : NO_ERR :   execute successfully
-    986          *               others :   =error code .    
-    987          *
-    988          * Note(s)     : Support Ruler(8Mic) and Handset(16Mic)
-    989          *********************************************************************************************************
-    990          */
-    991          unsigned char Ruler_Active_Control( unsigned char active_state )  
-    992          {    
-    993              unsigned char err ;
-    994              unsigned char ruler_id;
-    995              unsigned char buf[] = { RULER_CMD_ACTIVE_CTR, active_state };
-    996          
-    997          #if OS_CRITICAL_METHOD == 3u
-    998              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
-    999          #endif 
-   1000              
-   1001              err = 0;        
-   1002              
-   1003              for( ruler_id = 0 ; ruler_id < 4 ; ruler_id++ ) {   
-   1004                  //check ruler connection state 
-   1005                  if( //RULER_TYPE_MASK(Global_Ruler_Type[ruler_id]) == RULER_TYPE_HANDSET ||
-   1006                      Global_Ruler_State[ruler_id] < RULER_STATE_CONFIGURED || 
-   1007                      Global_Mic_Mask[ruler_id] == 0 ) {      
-   1008                      continue;       
-   1009                  } 
-   1010                  APP_TRACE_INFO(("Ruler[%d]_Active_Control : [%d]\r\n",ruler_id,active_state));      
-   1011                  OSSemPend( UART_MUX_Sem_lock, 0, &err );
-   1012                  if( Global_Ruler_Index != ruler_id ) {
-   1013                      Check_UART_Mixer_Ready();
-   1014                      //OS_ENTER_CRITICAL(); 
-   1015                      Global_Ruler_Index = ruler_id ; //for ruler status switch in TX/RX/Noah 
-   1016                      //OS_EXIT_CRITICAL();  
-   1017                      UART1_Mixer( ruler_id );
-   1018                  }   
-   1019                  err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
-   1020                  if( OS_ERR_NONE == err ) {
-   1021                      OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
-   1022                      if( OS_ERR_TIMEOUT == err ) {
-   1023                          APP_TRACE_INFO(("Ruler[%d]_Active_Control timeout\r\n",ruler_id));
-   1024                      } else {
-   1025                          err = Ruler_CMD_Result; //exe result from GACK
-   1026                          if(OS_ERR_NONE != err ){
-   1027                              APP_TRACE_INFO(("Ruler[%d]_Active_Control err = %d\r\n",ruler_id,err));
-   1028                          }
-   1029                      }
-   1030                      
-   1031                  } else {
-   1032                      APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_id,err));
-   1033                  }    
-   1034                  OSSemPost( UART_MUX_Sem_lock );
-   1035                  if( err != NO_ERR ) {
-   1036                      break;
-   1037                  }
-   1038              }        
-   1039              return err ;    
-   1040          }
-   1041          
-   1042          
-   1043          /*
-   1044          *********************************************************************************************************
-   1045          *                                       Get_Ruler_Version()
-   1046          *
-   1047          * Description : Get back specified ruler's version info.
-   1048          *               And the version data is stored in global varies : Emb_Buf_Data
-   1049          * Argument(s) : ruler_slot_id : 0~ 3.
-   1050          * Return(s)   : NO_ERR :   execute successfully
-   1051          *               others :   =error code .  
-   1052          *
-   1053          * Note(s)     : None.
-   1054          *********************************************************************************************************
-   1055          */
-   1056          unsigned char Get_Ruler_Version( unsigned char ruler_slot_id )
-   1057          {  
-   1058              unsigned char err ;
-   1059              unsigned char buf[] = { RULER_CMD_GET_RULER_VERSION };
-   1060              EMB_BUF      *pEBuf_Data;         
-   1061                
-   1062              pEBuf_Data  = &Emb_Buf_Data;  //Global var   
-   1063              
-   1064          #if OS_CRITICAL_METHOD == 3u
-   1065              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
-   1066          #endif 
-   1067              //check ruler connection state 
-   1068              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_ATTACHED ) {      
-   1069                  return RULER_STATE_ERR ;         
-   1070              }  
-   1071              
-   1072              OSSemPend( UART_MUX_Sem_lock, 0, &err ); 
-   1073              if( Global_Ruler_Index != ruler_slot_id ) {
-   1074                  Check_UART_Mixer_Ready();
-   1075                  //OS_ENTER_CRITICAL(); 
-   1076                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
-   1077                  //OS_EXIT_CRITICAL();  
-   1078                  UART1_Mixer( ruler_slot_id );
-   1079              }
-   1080              
-   1081              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
-   1082              if( OS_ERR_NONE == err ) {
-   1083                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
-   1084                  if( OS_ERR_TIMEOUT == err ) {
-   1085                      APP_TRACE_INFO(("Get_Ruler_Version[%d] timeout\r\n",ruler_slot_id));
-   1086                  } else {
-   1087                      err = Ruler_CMD_Result;
-   1088                      if(OS_ERR_NONE != err ){
-   1089                          APP_TRACE_INFO(("Get_Ruler_Version[%d] err = %d\r\n",ruler_slot_id,err));
-   1090                      }
-   1091                  }
-   1092                  if(err == OS_ERR_NONE ) {
-   1093                      APP_TRACE_INFO(("Ruler[%d] FW Version: %s\r\n",ruler_slot_id, pEBuf_Data->data)); 
-   1094                  }
-   1095                  
-   1096              } else {
-   1097                  APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));
-   1098              }    
-   1099              OSSemPost( UART_MUX_Sem_lock );    
-   1100              return err ;        
-   1101          }
-   1102            
-   1103          
-   1104          
-   1105          /*
-   1106          *********************************************************************************************************
-   1107          *                                       FLASHD_Write_Safe()
-   1108          *
-   1109          * Description : Add code area protection for FLASHD_Write()
-   1110          *               Writes a data buffer in the internal flash. This function works in polling
-   1111          *               mode, and thus only returns when the data has been effectively written.    
-   1112          * Argument(s) :  address  Write address.
-   1113          *                pBuffer  Data buffer.
-   1114          *                size     Size of data buffer in bytes.
-   1115          * Return(s)   : NO_ERR :   execute successfully
-   1116          *               others :   =error code .  
-   1117          *
-   1118          * Note(s)     : None.
-   1119          *********************************************************************************************************
-   1120          */
-   1121          unsigned char FLASHD_Write_Safe( unsigned int address, const void *pBuffer,  unsigned int size)
-   1122          {
-   1123              unsigned char err;
-   1124              if( address < AT91C_IFLASH + AT91C_IFLASH_CODE_SIZE ) {
-   1125                  APP_TRACE_INFO(("ERROR: this operation wanna flush code area!\r\n"));  
-   1126                  return FW_BIN_SAVE_ADDR_ERR;
-   1127              }
-   1128              err = FLASHD_Write(  address, pBuffer, size );
-   1129              return err;  
-   1130              
-   1131          }
-   1132          
-   1133          
-   1134          /*
-   1135          *********************************************************************************************************
-   1136          *                                       Read_Flash_State()
-   1137          *
-   1138          * Description : Save ruler FW bin file to flash
-   1139          *               
-   1140          * Argument(s) : *pFlash_Info : pointer to FLASH_INFO type data where to save read data
-   1141          *
-   1142          * Return(s)   : None.
-   1143          *
-   1144          * Note(s)     : None.
-   1145          *********************************************************************************************************
-   1146          */
-   1147          void Read_Flash_State( FLASH_INFO  *pFlash_Info )
-   1148          {
-   1149              
-   1150              *pFlash_Info = *(FLASH_INFO *)FLASH_ADDR_FW_STATE ;    
-   1151              
-   1152          }
-   1153          
-   1154          
-   1155          /*
+    475          #if OS_CRITICAL_METHOD == 3u
+    476              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
+    477          #endif 
+    478                
+    479              //check ruler connection state 
+    480              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_ATTACHED ) {      
+    481                  return RULER_STATE_ERR ;         
+    482              } 
+    483              OSSemPend( UART_MUX_Sem_lock, 0, &err );
+    484              if( Global_Ruler_Index != ruler_slot_id ) {
+    485                  Check_UART_Mixer_Ready();
+    486                  //OS_ENTER_CRITICAL(); 
+    487                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
+    488                  //OS_EXIT_CRITICAL();  
+    489                  UART1_Mixer( ruler_slot_id );
+    490              } 
+    491              
+    492              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_EST, NULL, 0, 0, NULL, 0 ) ; 
+    493              if( OS_ERR_NONE == err ) {
+    494                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
+    495                  if( OS_ERR_TIMEOUT == err ) {
+    496                      APP_TRACE_INFO(("Init ruler[%d] timeout!\r\n",ruler_slot_id));            
+    497                  } else {
+    498                      err = Ruler_CMD_Result; //exe result from GACK
+    499                      if(OS_ERR_NONE != err ){
+    500                          APP_TRACE_INFO(("Init_Ruler[%d] err = %d\r\n",ruler_slot_id,err));
+    501                      }
+    502                  }
+    503                  
+    504              } else {
+    505                  APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));        
+    506              }    
+    507              OSSemPost( UART_MUX_Sem_lock );    
+    508              return err ;    
+    509          }
+    510                          
+    511          
+    512          /*
+    513          *********************************************************************************************************
+    514          *                                       Setup_Ruler()
+    515          *
+    516          * Description : Send ruler slot id to ruler for identification.
+    517          *             
+    518          * Argument(s) : ruler_slot_id: 0~ 3.
+    519          * Return(s)   : NO_ERR :   execute successfully
+    520          *               others :   =error code . ruler connection error,           
+    521          *
+    522          * Note(s)     : None.
+    523          *********************************************************************************************************
+    524          */
+    525          unsigned char Setup_Ruler( unsigned char ruler_slot_id ) //0 ~ 3
+    526          {    
+    527              unsigned char err ;
+    528              EMB_BUF        *pEBuf_Data; 
+    529              unsigned char buf[] = { RULER_CMD_SET_RULER, ruler_slot_id };
+    530              
+    531          #if OS_CRITICAL_METHOD == 3u
+    532              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
+    533          #endif 
+    534              
+    535              pEBuf_Data  = &Emb_Buf_Data; //Golbal var
+    536              //check ruler connection state 
+    537              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_ATTACHED ) {      
+    538                  return RULER_STATE_ERR ;         
+    539              } 
+    540              
+    541              OSSemPend( UART_MUX_Sem_lock, 0, &err );
+    542              if( Global_Ruler_Index != ruler_slot_id ) {
+    543                  Check_UART_Mixer_Ready();
+    544                  //OS_ENTER_CRITICAL(); 
+    545                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
+    546                  //OS_EXIT_CRITICAL();  
+    547                  UART1_Mixer( ruler_slot_id );
+    548              }
+    549              
+    550              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
+    551              if( OS_ERR_NONE == err ) {
+    552                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
+    553                  if( OS_ERR_TIMEOUT == err ) {
+    554                      APP_TRACE_INFO(("Setup_Ruler[%d] timeout\r\n",ruler_slot_id));
+    555                  } else {            
+    556                      Ruler_Setup_Sync_Data = pEBuf_Data->data[0] ;
+    557                      APP_TRACE_INFO(("Get Ruler_Setup_Sync_Data : 0x%X\r\n",Ruler_Setup_Sync_Data));
+    558                      err = Ruler_CMD_Result; //exe result from GACK
+    559                      if(OS_ERR_NONE != err ){
+    560                          APP_TRACE_INFO(("Setup_Ruler[%d] err = %d\r\n",ruler_slot_id,err));
+    561                      }
+    562                  }
+    563                  
+    564              } else {
+    565                  APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));
+    566              }    
+    567              OSSemPost( UART_MUX_Sem_lock );    
+    568              return err ;    
+    569          }
+    570          
+    571          
+    572          /*
+    573          *********************************************************************************************************
+    574          *                                       Get_Ruler_Type()
+    575          *
+    576          * Description : Get the specified ruler's type, and stored in a global variable, in which
+    577          *               bit7: 0-ruler, 1- handset. Other bits reserved.
+    578          * Argument(s) : ruler_slot_id: 0~ 3.
+    579          * Return(s)   : NO_ERR :   execute successfully
+    580          *               others :   refer to error code defines.           
+    581          *
+    582          * Note(s)     : None.
+    583          *********************************************************************************************************
+    584          */
+    585          unsigned char Get_Ruler_Type(  unsigned char ruler_slot_id )
+    586          {  
+    587              unsigned char err ;
+    588              EMB_BUF        *pEBuf_Data; 
+    589              unsigned char buf[] = { RULER_CMD_GET_RULER_TYPE };
+    590              
+    591          #if OS_CRITICAL_METHOD == 3u
+    592              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
+    593          #endif 
+    594              
+    595              pEBuf_Data  = &Emb_Buf_Data; //Golbal var
+    596              //check ruler connection state 
+    597              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_ATTACHED ) {      
+    598                  return RULER_STATE_ERR ;         
+    599              } 
+    600          
+    601              OSSemPend( UART_MUX_Sem_lock, 0, &err ); 
+    602              if( Global_Ruler_Index != ruler_slot_id ) {
+    603                  Check_UART_Mixer_Ready();
+    604                  //OS_ENTER_CRITICAL(); 
+    605                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
+    606                  //OS_EXIT_CRITICAL();  
+    607                  UART1_Mixer( ruler_slot_id );
+    608              }
+    609              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
+    610              if( OS_ERR_NONE == err ) {
+    611                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
+    612                  if( OS_ERR_TIMEOUT == err ) {
+    613                      APP_TRACE_INFO(("Read_Ruler_Type[%d] timeout\r\n",ruler_slot_id));
+    614                  } else {
+    615                      Global_Ruler_Type[ruler_slot_id] =  pEBuf_Data->data[0] ;
+    616                      err = Ruler_CMD_Result; //exe result from GACK 
+    617                      if(OS_ERR_NONE != err ){
+    618                          APP_TRACE_INFO(("Get_Ruler_Type[%d] err = %d\r\n",ruler_slot_id,err));
+    619                      }
+    620                  }          
+    621                  
+    622              } else {
+    623                  APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));        
+    624              }       
+    625              OSSemPost( UART_MUX_Sem_lock );    
+    626              return err ;    
+    627          }
+    628          
+    629          
+    630          /*
+    631          *********************************************************************************************************
+    632          *                                       Read_Ruler_Status()
+    633          *
+    634          * Description : Get back specified ruler's POST status.
+    635          *             
+    636          * Argument(s) : ruler_slot_id: 0~ 3.
+    637          *               status_data:   pointer to the address that store the read status data 
+    638          * Return(s)   : NO_ERR :   execute successfully
+    639          *               others :   =error code .           
+    640          *
+    641          * Note(s)     : None.
+    642          *********************************************************************************************************
+    643          */
+    644          unsigned char Read_Ruler_Status( unsigned char ruler_slot_id, unsigned short *status_data )
+    645          {    
+    646              unsigned char err ;
+    647              EMB_BUF        *pEBuf_Data; 
+    648              unsigned char buf[] = { RULER_CMD_RAED_RULER_STATUS };
+    649              
+    650          #if OS_CRITICAL_METHOD == 3u
+    651              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
+    652          #endif 
+    653              
+    654              pEBuf_Data  = &Emb_Buf_Data; //Golbal var
+    655              //check ruler connection state 
+    656              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_ATTACHED ) {      
+    657                  return RULER_STATE_ERR ;         
+    658              } 
+    659              OSSemPend( UART_MUX_Sem_lock, 0, &err ); 
+    660              if( Global_Ruler_Index != ruler_slot_id ) {
+    661                  Check_UART_Mixer_Ready();
+    662                  //OS_ENTER_CRITICAL(); 
+    663                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
+    664                  //OS_EXIT_CRITICAL();  
+    665                  UART1_Mixer( ruler_slot_id );
+    666              }
+    667              
+    668              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
+    669              if( OS_ERR_NONE == err ) {
+    670                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
+    671                  if( OS_ERR_TIMEOUT == err ) {
+    672                      APP_TRACE_INFO(("Read_Ruler_Status[%d] timeout\r\n",ruler_slot_id));
+    673                  } else {
+    674                      *status_data = (pEBuf_Data->data[1] << 8) + pEBuf_Data->data[0] ;       
+    675                      err = Ruler_CMD_Result; //exe result from GACK
+    676                      if(OS_ERR_NONE != err ){
+    677                          APP_TRACE_INFO(("Read_Ruler_Status[%d] err = %d\r\n",ruler_slot_id,err));
+    678                      } 
+    679                  }   
+    680                  
+    681              } else {
+    682                  APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));
+    683              }        
+    684              OSSemPost( UART_MUX_Sem_lock );    
+    685              return err ;    
+    686          }
+    687          
+    688          
+    689          /*
+    690          *********************************************************************************************************
+    691          *                                       Read_Ruler_Info()
+    692          *
+    693          * Description : Get back specified ruler's infomation data.
+    694          *               And the read back data is stored in global varies : Emb_Buf_Data
+    695          * Argument(s) : ruler_slot_id: 0~ 3.
+    696          * Return(s)   : NO_ERR :   execute successfully
+    697          *               others :   =error code . ruler connection error,           
+    698          *
+    699          * Note(s)     : None.
+    700          *********************************************************************************************************
+    701          */
+    702          unsigned char Read_Ruler_Info( unsigned char ruler_slot_id )
+    703          {    
+    704              unsigned char  err ; 
+    705              unsigned char  buf[] = { RULER_CMD_RAED_RULER_INFO }; 
+    706              
+    707          #if OS_CRITICAL_METHOD == 3u
+    708              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
+    709          #endif 
+    710           
+    711              //check ruler connection state 
+    712              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_CONFIGURED ) {      
+    713                  return RULER_STATE_ERR ;         
+    714              }    
+    715              OSSemPend( UART_MUX_Sem_lock, 0, &err );  
+    716              if( Global_Ruler_Index != ruler_slot_id ) {
+    717                  Check_UART_Mixer_Ready();
+    718                  //OS_ENTER_CRITICAL(); 
+    719                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
+    720                  //OS_EXIT_CRITICAL();  
+    721                  UART1_Mixer( ruler_slot_id );
+    722              }
+    723              
+    724              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
+    725              if( OS_ERR_NONE == err ) {
+    726                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
+    727                  if( OS_ERR_TIMEOUT == err ) {
+    728                      APP_TRACE_INFO(("Read_Ruler_Info[%d] timeout\r\n",ruler_slot_id));
+    729                  } else {
+    730                      err = Ruler_CMD_Result;
+    731                      if(OS_ERR_NONE != err ){
+    732                          APP_TRACE_INFO(("Read_Ruler_Info[%d] err = %d\r\n",ruler_slot_id,err));
+    733                      }
+    734                  }
+    735                  
+    736              } else {
+    737                  APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));
+    738              }    
+    739              OSSemPost( UART_MUX_Sem_lock );    
+    740              return err ;    
+    741          }
+    742          
+    743          
+    744          /*
+    745          *********************************************************************************************************
+    746          *                                       Write_Ruler_Info()
+    747          *
+    748          * Description : Write infomation data to specified ruler.
+    749          *               And before this function is called, the data to be written need have been stored in global varies : Emb_Buf_Cmd
+    750          * Argument(s) : ruler_slot_id: 0~ 3.
+    751          * Return(s)   : NO_ERR :   execute successfully
+    752          *               others :   =error code .       
+    753          *
+    754          * Note(s)     : None.
+    755          *********************************************************************************************************
+    756          */
+    757          unsigned char Write_Ruler_Info( unsigned char ruler_slot_id )
+    758          {
+    759              unsigned char   err;
+    760              unsigned short  data_length;
+    761              unsigned char   temp;
+    762              unsigned char  *pdata;
+    763              unsigned char   buf[4];  
+    764              EMB_BUF        *pEBuf_Cmd;        
+    765            
+    766           #if OS_CRITICAL_METHOD == 3u
+    767              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
+    768          #endif 
+    769              
+    770              pEBuf_Cmd  = &Emb_Buf_Cmd; //Golbal var
+    771              buf[0] =  RULER_CMD_WRITE_RULER_INFO;
+    772              buf[1] =  EMB_DATA_FRAME;  
+    773              buf[2] = (pEBuf_Cmd->length) & 0xFF;    
+    774              buf[3] = ((pEBuf_Cmd->length)>>8) & 0xFF;     
+    775          
+    776              //check ruler connection state 
+    777              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_CONFIGURED ) {      
+    778                  return RULER_STATE_ERR ;         
+    779              } 
+    780              OSSemPend( UART_MUX_Sem_lock, 0, &err );    
+    781              if( Global_Ruler_Index != ruler_slot_id ) {
+    782                  Check_UART_Mixer_Ready();
+    783                  //OS_ENTER_CRITICAL(); 
+    784                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
+    785                  //OS_EXIT_CRITICAL();  
+    786                  UART1_Mixer( ruler_slot_id );
+    787              }  
+    788              
+    789              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
+    790              if( OS_ERR_NONE != err ) { return err ; }
+    791              pdata = pEBuf_Cmd->data;
+    792              data_length = pEBuf_Cmd->length;
+    793              while( data_length > 0 ){ 
+    794                  temp = data_length > (NOAH_CMD_DATA_MLEN-1) ? (NOAH_CMD_DATA_MLEN-1) : data_length ;  
+    795                  err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, pdata, temp, 0, buf, 1 ) ; 
+    796                  if( OS_ERR_NONE != err ) { break;}
+    797                  OSTimeDly(50); //wait for ruler operation
+    798                  data_length -= temp;
+    799                  pdata += temp;
+    800              }
+    801              if( OS_ERR_NONE == err ) {
+    802                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
+    803                  if( OS_ERR_TIMEOUT == err ) {
+    804                      APP_TRACE_INFO(("Write_Ruler_Info[%d] timeout\r\n",ruler_slot_id));
+    805                  } else {
+    806                      err = Ruler_CMD_Result; //exe result from GACK
+    807                      if(OS_ERR_NONE != err ){
+    808                          APP_TRACE_INFO(("Write_Ruler_Info[%d] err = %d\r\n",ruler_slot_id,err));
+    809                      }
+    810                  }
+    811                  
+    812              } else {
+    813                  APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));
+    814              }
+    815              OSSemPost( UART_MUX_Sem_lock );
+    816              
+    817              return err ;
+    818              
+    819          }
+    820          
+    821          
+    822          /*
+    823          *********************************************************************************************************
+    824          *                                       Read_Mic_Cali_Data()
+    825          *
+    826          * Description : Get back specified ruler specified mic's calibration data.
+    827          *               And the read back data is stored in global varies : Emb_Buf_Data
+    828          * Argument(s) : ruler_slot_id : 0~ 3.
+    829          *               mic_id        : 0~ 7
+    830          * Return(s)   : NO_ERR :   execute successfully
+    831          *               others :   =error code .  
+    832          *
+    833          * Note(s)     : None.
+    834          *********************************************************************************************************
+    835          */
+    836          unsigned char Read_Mic_Cali_Data(unsigned char ruler_slot_id, unsigned char mic_id)
+    837          {    
+    838              unsigned char  err ; 
+    839              unsigned char  buf[] = { RULER_CMD_READ_MIC_CALI_DATA, mic_id }; 
+    840              
+    841          #if OS_CRITICAL_METHOD == 3u
+    842              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
+    843          #endif 
+    844           
+    845              //check ruler connection state 
+    846              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_CONFIGURED ) {      
+    847                  return RULER_STATE_ERR ;         
+    848              }   
+    849             
+    850              OSSemPend( UART_MUX_Sem_lock, 0, &err );   
+    851              if( Global_Ruler_Index != ruler_slot_id ) {
+    852                  Check_UART_Mixer_Ready();
+    853                  //OS_ENTER_CRITICAL(); 
+    854                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
+    855                  //OS_EXIT_CRITICAL();  
+    856                  UART1_Mixer( ruler_slot_id );
+    857              }
+    858              
+    859              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
+    860              if( OS_ERR_NONE == err ) {
+    861                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
+    862                  if( OS_ERR_TIMEOUT == err ) {
+    863                      APP_TRACE_INFO(("Read_Mic_Cali_Data[%d] timeout\r\n",ruler_slot_id));
+    864                  } else {
+    865                      err = Ruler_CMD_Result; 
+    866                      if(OS_ERR_NONE != err ){
+    867                          APP_TRACE_INFO(("Read_Mic_Cali_Data[%d] err = %d\r\n",ruler_slot_id,err));
+    868                      }
+    869                  }
+    870                  
+    871              } else {
+    872                  APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));
+    873              }      
+    874              OSSemPost( UART_MUX_Sem_lock );    
+    875              return err ;    
+    876          }
+    877          
+    878          
+    879          /*
+    880          *********************************************************************************************************
+    881          *                                       Write_Mic_Cali_Data()
+    882          *
+    883          * Description : Write calibration data to specified ruler specified mic.
+    884          *               And before this function is called, the data to be written need have been stored in global varies : Emb_Buf_Cmd
+    885          * Argument(s) : ruler_slot_id : 0~ 3.
+    886          *               mic_id        : 0~ 7
+    887          * Return(s)   : NO_ERR :   execute successfully
+    888          *               others :   =error code .    
+    889          *
+    890          * Note(s)     : None.
+    891          *********************************************************************************************************
+    892          */
+    893          unsigned char Write_Mic_Cali_Data(unsigned char ruler_slot_id, unsigned char mic_id)
+    894          {    
+    895              unsigned char   err;
+    896              unsigned short  data_length;
+    897              unsigned char   temp;
+    898              unsigned char  *pdata;
+    899              unsigned char   buf[5];  
+    900              EMB_BUF        *pEBuf_Cmd;        
+    901            
+    902           #if OS_CRITICAL_METHOD == 3u
+    903              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
+    904          #endif 
+    905              
+    906              pEBuf_Cmd  = &Emb_Buf_Cmd; //Golbal var
+    907              buf[0] =  RULER_CMD_WRITE_MIC_CALI_DATA; 
+    908              buf[1] =  mic_id;  
+    909              buf[2] =  EMB_DATA_FRAME;  
+    910              buf[3] = (pEBuf_Cmd->length) & 0xFF;    
+    911              buf[4] = ((pEBuf_Cmd->length)>>8) & 0xFF;     
+    912          
+    913              //check ruler connection state 
+    914              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_CONFIGURED ) {      
+    915                  return RULER_STATE_ERR ;         
+    916              } 
+    917              OSSemPend( UART_MUX_Sem_lock, 0, &err ); 
+    918              if( Global_Ruler_Index != ruler_slot_id ) {
+    919                  Check_UART_Mixer_Ready();
+    920                  //OS_ENTER_CRITICAL(); 
+    921                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
+    922                  //OS_EXIT_CRITICAL();  
+    923                  UART1_Mixer( ruler_slot_id );
+    924              } 
+    925              
+    926              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
+    927              if( OS_ERR_NONE != err ) { return err ; }
+    928              pdata = pEBuf_Cmd->data;
+    929              data_length = pEBuf_Cmd->length;
+    930              while( data_length > 0 ){ 
+    931                  temp = data_length > (NOAH_CMD_DATA_MLEN-2) ? (NOAH_CMD_DATA_MLEN-2) : data_length ;  
+    932                  err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, pdata, temp, 0, buf, 2 ) ; 
+    933                  if( OS_ERR_NONE != err ) { break;}
+    934                  OSTimeDly(50); //wait for ruler operation       
+    935                  data_length -= temp;
+    936                  pdata += temp;        
+    937              }
+    938              if( OS_ERR_NONE == err ) {
+    939                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
+    940                  if( OS_ERR_TIMEOUT == err ) {
+    941                      APP_TRACE_INFO(("Write_Mic_Cali_Data[%d][%d] timeout\r\n",ruler_slot_id, mic_id));
+    942                  } else {
+    943                      err = Ruler_CMD_Result; //exe result from GACK
+    944                      if(OS_ERR_NONE != err ){
+    945                          APP_TRACE_INFO(("Write_Mic_Cali_Data[%d] err = %d\r\n",ruler_slot_id,err));
+    946                      }
+    947                  }
+    948              } else {
+    949                  APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));
+    950              }
+    951              OSSemPost( UART_MUX_Sem_lock );
+    952              
+    953              return err ;
+    954              
+    955          }
+    956          
+    957          
+    958          /*
+    959          *********************************************************************************************************
+    960          *                                       Update_Mic_Mask()
+    961          *
+    962          * Description : Update specified ruler's all mic's active state.
+    963          * Argument(s) : ruler_slot_id : 0~ 3.
+    964          *               mic_mask      : bit[0..31]. 0 - deactive, 1 - active.
+    965          * Return(s)   : NO_ERR :   execute successfully
+    966          *               others :   =error code .    
+    967          *
+    968          * Note(s)     : Support: Ruler(8Mic) for Ruler
+    969          *                        Handset(16Mic) for H01/H02/H02A
+    970          *                        Handset(18Mic) for H03
+    971          *********************************************************************************************************
+    972          */
+    973          unsigned char Update_Mic_Mask( unsigned char ruler_slot_id, unsigned int mic_mask )
+    974          {    
+    975              unsigned char err ;
+    976              unsigned char buf_size_send ;
+    977              unsigned char buf[] = { RULER_CMD_TOGGLE_MIC, mic_mask&0xFF, (mic_mask>>8)&0xFF,
+    978                                      (mic_mask>>16)&0xFF,  (mic_mask>>24)&0xFF };
+    979              
+    980          #if OS_CRITICAL_METHOD == 3u
+    981              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
+    982          #endif 
+    983              //check ruler connection state 
+    984              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_CONFIGURED ) {      
+    985                  return RULER_STATE_ERR ;         
+    986              }  
+    987              
+    988              OSSemPend( UART_MUX_Sem_lock, 0, &err );  
+    989              if( Global_Ruler_Index != ruler_slot_id ) {
+    990                  Check_UART_Mixer_Ready();
+    991                  //OS_ENTER_CRITICAL(); 
+    992                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
+    993                  //OS_EXIT_CRITICAL();  
+    994                  UART1_Mixer( ruler_slot_id );
+    995              }
+    996              if( Global_Ruler_Type[ruler_slot_id] == RULER_TYPE_H03 ) {
+    997                  buf_size_send = 5; //H03 cmd data size = 1+4 for 16> mic
+    998              } else {
+    999                  buf_size_send = 3; //Default cmd data size = 1+2 for <16 mic
+   1000              }
+   1001              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, buf_size_send, 0, NULL, 0 ) ; 
+   1002              if( OS_ERR_NONE == err ) {
+   1003                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
+   1004                  if( OS_ERR_TIMEOUT == err ) {
+   1005                      APP_TRACE_INFO(("Update_Mic_Mask for Ruler[%d] timeout\r\n",ruler_slot_id));
+   1006                  }
+   1007                  
+   1008              } else {
+   1009                  APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));
+   1010              }
+   1011              OSSemPost( UART_MUX_Sem_lock );    
+   1012              return err ;    
+   1013          }
+   1014          
+   1015          /*
+   1016          *********************************************************************************************************
+   1017          *                                       Ruler_Active_Control()
+   1018          *
+   1019          * Description : Active/Deactive ruler(LED)when play and record start/stop.  
+   1020          * Argument(s) : active_state : 0 - deactive ruler (LED)
+   1021          *                              1 - active ruler (LED).
+   1022          * Return(s)   : NO_ERR :   execute successfully
+   1023          *               others :   =error code .    
+   1024          *
+   1025          * Note(s)     : Support Ruler(8Mic) and Handset(16Mic)
+   1026          *********************************************************************************************************
+   1027          */
+   1028          unsigned char Ruler_Active_Control( unsigned char active_state )  
+   1029          {    
+   1030              unsigned char err ;
+   1031              unsigned char ruler_id;
+   1032              unsigned char buf[] = { RULER_CMD_ACTIVE_CTR, active_state };
+   1033          
+   1034          #if OS_CRITICAL_METHOD == 3u
+   1035              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
+   1036          #endif 
+   1037              
+   1038              err = 0;        
+   1039              
+   1040              for( ruler_id = 0 ; ruler_id < 4 ; ruler_id++ ) {   
+   1041                  //check ruler connection state 
+   1042                  if( //RULER_TYPE_MASK(Global_Ruler_Type[ruler_id]) == RULER_TYPE_HANDSET ||
+   1043                      Global_Ruler_State[ruler_id] < RULER_STATE_CONFIGURED || 
+   1044                      Global_Mic_Mask[ruler_id] == 0 ) {      
+   1045                      continue;       
+   1046                  } 
+   1047                  APP_TRACE_INFO(("Ruler[%d]_Active_Control : [%d]\r\n",ruler_id,active_state));      
+   1048                  OSSemPend( UART_MUX_Sem_lock, 0, &err );
+   1049                  if( Global_Ruler_Index != ruler_id ) {
+   1050                      Check_UART_Mixer_Ready();
+   1051                      //OS_ENTER_CRITICAL(); 
+   1052                      Global_Ruler_Index = ruler_id ; //for ruler status switch in TX/RX/Noah 
+   1053                      //OS_EXIT_CRITICAL();  
+   1054                      UART1_Mixer( ruler_id );
+   1055                  }   
+   1056                  err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
+   1057                  if( OS_ERR_NONE == err ) {
+   1058                      OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
+   1059                      if( OS_ERR_TIMEOUT == err ) {
+   1060                          APP_TRACE_INFO(("Ruler[%d]_Active_Control timeout\r\n",ruler_id));
+   1061                      } else {
+   1062                          err = Ruler_CMD_Result; //exe result from GACK
+   1063                          if(OS_ERR_NONE != err ){
+   1064                              APP_TRACE_INFO(("Ruler[%d]_Active_Control err = %d\r\n",ruler_id,err));
+   1065                          }
+   1066                      }
+   1067                      
+   1068                  } else {
+   1069                      APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_id,err));
+   1070                  }    
+   1071                  OSSemPost( UART_MUX_Sem_lock );
+   1072                  if( err != NO_ERR ) {
+   1073                      break;
+   1074                  }
+   1075              }        
+   1076              return err ;    
+   1077          }
+   1078          
+   1079          
+   1080          /*
+   1081          *********************************************************************************************************
+   1082          *                                       Get_Ruler_Version()
+   1083          *
+   1084          * Description : Get back specified ruler's version info.
+   1085          *               And the version data is stored in global varies : Emb_Buf_Data
+   1086          * Argument(s) : ruler_slot_id : 0~ 3.
+   1087          * Return(s)   : NO_ERR :   execute successfully
+   1088          *               others :   =error code .  
+   1089          *
+   1090          * Note(s)     : None.
+   1091          *********************************************************************************************************
+   1092          */
+   1093          unsigned char Get_Ruler_Version( unsigned char ruler_slot_id )
+   1094          {  
+   1095              unsigned char err ;
+   1096              unsigned char buf[] = { RULER_CMD_GET_RULER_VERSION };
+   1097              EMB_BUF      *pEBuf_Data;         
+   1098                
+   1099              pEBuf_Data  = &Emb_Buf_Data;  //Global var   
+   1100              
+   1101          #if OS_CRITICAL_METHOD == 3u
+   1102              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
+   1103          #endif 
+   1104              //check ruler connection state 
+   1105              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_ATTACHED ) {      
+   1106                  return RULER_STATE_ERR ;         
+   1107              }  
+   1108              
+   1109              OSSemPend( UART_MUX_Sem_lock, 0, &err ); 
+   1110              if( Global_Ruler_Index != ruler_slot_id ) {
+   1111                  Check_UART_Mixer_Ready();
+   1112                  //OS_ENTER_CRITICAL(); 
+   1113                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
+   1114                  //OS_EXIT_CRITICAL();  
+   1115                  UART1_Mixer( ruler_slot_id );
+   1116              }
+   1117              
+   1118              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
+   1119              if( OS_ERR_NONE == err ) {
+   1120                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
+   1121                  if( OS_ERR_TIMEOUT == err ) {
+   1122                      APP_TRACE_INFO(("Get_Ruler_Version[%d] timeout\r\n",ruler_slot_id));
+   1123                  } else {
+   1124                      err = Ruler_CMD_Result;
+   1125                      if(OS_ERR_NONE != err ){
+   1126                          APP_TRACE_INFO(("Get_Ruler_Version[%d] err = %d\r\n",ruler_slot_id,err));
+   1127                      }
+   1128                  }
+   1129                  if(err == OS_ERR_NONE ) {
+   1130                      APP_TRACE_INFO(("Ruler[%d] FW Version: %s\r\n",ruler_slot_id, pEBuf_Data->data)); 
+   1131                  }
+   1132                  
+   1133              } else {
+   1134                  APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));
+   1135              }    
+   1136              OSSemPost( UART_MUX_Sem_lock );    
+   1137              return err ;        
+   1138          }
+   1139            
+   1140          
+   1141          
+   1142          /*
+   1143          *********************************************************************************************************
+   1144          *                                       FLASHD_Write_Safe()
+   1145          *
+   1146          * Description : Add code area protection for FLASHD_Write()
+   1147          *               Writes a data buffer in the internal flash. This function works in polling
+   1148          *               mode, and thus only returns when the data has been effectively written.    
+   1149          * Argument(s) :  address  Write address.
+   1150          *                pBuffer  Data buffer.
+   1151          *                size     Size of data buffer in bytes.
+   1152          * Return(s)   : NO_ERR :   execute successfully
+   1153          *               others :   =error code .  
+   1154          *
+   1155          * Note(s)     : None.
    1156          *********************************************************************************************************
-   1157          *                                       Write_Flash_State()
-   1158          *
-   1159          * Description : Save ruler FW bin file to flash
-   1160          *               
-   1161          * Argument(s) : *pFlash_Info : pointer to FLASH_INFO type data need to be saved
-   1162          *
-   1163          * Return(s)   : NO_ERR :   execute successfully
-   1164          *               others :   =error code .  
-   1165          *
-   1166          * Note(s)     : None.
-   1167          *********************************************************************************************************
-   1168          */
-   1169          unsigned char Write_Flash_State( FLASH_INFO   *pFlash_Info )
-   1170          {
-   1171              
-   1172              unsigned char err;   
-   1173              //save state to flash
-   1174              pFlash_Info->s_w_counter++ ;
-   1175              err = FLASHD_Write_Safe( FLASH_ADDR_FW_STATE, pFlash_Info, AT91C_IFLASH_PAGE_SIZE); 
-   1176              if(err != NO_ERR ) {                     
-   1177                  APP_TRACE_INFO(("ERROR: Write flash state failed!\r\n"));  
-   1178              }
-   1179              
-   1180              return err;
-   1181              
-   1182          }
-   1183          
-   1184          
-   1185          /*
-   1186          *********************************************************************************************************
-   1187          *                                       Save_Ruler_FW()
-   1188          *
-   1189          * Description : Save ruler FW bin file to flash
-   1190          *               
-   1191          * Argument(s) :  cmd  :  1~ 3.
-   1192          *               *pBin : pointer to bin file data packge to be wriiten to flash
-   1193          *               *pStr : pointer to file name string
-   1194          *                size : bin package file size 
+   1157          */
+   1158          unsigned char FLASHD_Write_Safe( unsigned int address, const void *pBuffer,  unsigned int size)
+   1159          {
+   1160              unsigned char err;
+   1161              if( address < AT91C_IFLASH + AT91C_IFLASH_CODE_SIZE ) {
+   1162                  APP_TRACE_INFO(("ERROR: this operation wanna flush code area!\r\n"));  
+   1163                  return FW_BIN_SAVE_ADDR_ERR;
+   1164              }
+   1165              err = FLASHD_Write(  address, pBuffer, size );
+   1166              return err;  
+   1167              
+   1168          }
+   1169          
+   1170          
+   1171          /*
+   1172          *********************************************************************************************************
+   1173          *                                       Read_Flash_State()
+   1174          *
+   1175          * Description : Save ruler FW bin file to flash
+   1176          *               
+   1177          * Argument(s) : *pFlash_Info : pointer to FLASH_INFO type data where to save read data
+   1178          *
+   1179          * Return(s)   : None.
+   1180          *
+   1181          * Note(s)     : None.
+   1182          *********************************************************************************************************
+   1183          */
+   1184          void Read_Flash_State( FLASH_INFO  *pFlash_Info )
+   1185          {
+   1186              
+   1187              *pFlash_Info = *(FLASH_INFO *)FLASH_ADDR_FW_STATE ;    
+   1188              
+   1189          }
+   1190          
+   1191          
+   1192          /*
+   1193          *********************************************************************************************************
+   1194          *                                       Write_Flash_State()
    1195          *
-   1196          * Return(s)   : NO_ERR :   execute successfully
-   1197          *               others :   =error code .  
-   1198          *
-   1199          * Note(s)     : None.
-   1200          *********************************************************************************************************
-   1201          */
-   1202          unsigned char Save_Ruler_FW( unsigned int cmd, unsigned char *pBin, unsigned char *pStr, unsigned int size )
-   1203          {  
-   1204              unsigned char err; 
-   1205              static unsigned int flash_addr = FLASH_ADDR_FW_BIN;
-   1206           
-   1207              FLASH_INFO    flash_info;
+   1196          * Description : Save ruler FW bin file to flash
+   1197          *               
+   1198          * Argument(s) : *pFlash_Info : pointer to FLASH_INFO type data need to be saved
+   1199          *
+   1200          * Return(s)   : NO_ERR :   execute successfully
+   1201          *               others :   =error code .  
+   1202          *
+   1203          * Note(s)     : None.
+   1204          *********************************************************************************************************
+   1205          */
+   1206          unsigned char Write_Flash_State( FLASH_INFO   *pFlash_Info )
+   1207          {
    1208              
-   1209              err = NO_ERR;
-   1210              Read_Flash_State(&flash_info);
-   1211               
-   1212              switch( cmd ) {
-   1213                  case FW_DOWNLAD_CMD_START :
-   1214                      APP_TRACE_INFO(("Start loading ruler bin file to AB01 flash ... \r\n"));
-   1215                      flash_addr = FLASH_ADDR_FW_BIN;                
-   1216                      flash_info.f_w_state = FW_DOWNLAD_STATE_UNFINISHED ;
-   1217                      flash_info.bin_size  = 0;
-   1218                  break;   
-   1219                  case FW_DOWNLAD_CMD_DOING :
-   1220                      APP_TRACE_INFO(("> ")); 
-   1221                      if( flash_info.f_w_state != FW_DOWNLAD_STATE_UNFINISHED ) {
-   1222                          APP_TRACE_INFO(("ERROR: flash state not match!\r\n"));
-   1223                          err  =  FW_BIN_STATE_0_ERR;                
-   1224                      } 
-   1225                  break;
-   1226                  case FW_DOWNLAD_CMD_DONE :
-   1227                      APP_TRACE_INFO((">\r\n")); 
-   1228                      if( flash_info.f_w_state != FW_DOWNLAD_STATE_UNFINISHED ) {
-   1229                          APP_TRACE_INFO(("ERROR: flash state not match!\r\n"));
-   1230                          err  =  FW_BIN_STATE_1_ERR;
-   1231                          break;
-   1232                      }
-   1233                      flash_info.f_w_state = FW_DOWNLAD_STATE_FINISHED ;
-   1234                      flash_info.f_w_counter++;            
-   1235                   break;
-   1236                   
-   1237                   default:
-   1238                      APP_TRACE_INFO(("ERROR:  Save ruler FW bad cmd!\r\n"));
-   1239                      err = FW_BIN_SAVE_CMD_ERR;    
-   1240                   break;
-   1241                  
-   1242              }
-   1243              if( err != NO_ERR ) {
-   1244                  return err;
-   1245              }    
-   1246              Buzzer_OnOff(1);               
-   1247              LED_Toggle(LED_DS2);    
-   1248              err = FLASHD_Write_Safe( flash_addr, pBin, size ); 
-   1249              Buzzer_OnOff(0); 
-   1250              if(err != NO_ERR ) {                     
-   1251                  APP_TRACE_INFO(("ERROR: Write MCU flash failed!\r\n"));
-   1252                  return err;
-   1253              }
-   1254              flash_addr += size;
-   1255              flash_info.bin_size   = flash_addr - FLASH_ADDR_FW_BIN ;
-   1256              strcpy(flash_info.bin_name, (char const*)pStr);  
-   1257              if( cmd != FW_DOWNLAD_CMD_DOING ) {        
-   1258                  err = Write_Flash_State( &flash_info ); 
-   1259                  if( err == NO_ERR && cmd == FW_DOWNLAD_CMD_DONE ) { 
-   1260                        APP_TRACE_INFO(("Bin file[%d Btyes] saved successfully!\r\n",flash_info.bin_size));     
-   1261                  }   
-   1262              } 
-   1263              return err;  
-   1264              
-   1265          }
-   1266          
-   1267          
-   1268          
-   1269          /*
-   1270          *********************************************************************************************************
-   1271          *                                       Update_Ruler_FW()
-   1272          *
-   1273          * Description :  Write firmware to specified ruler's MCU flash
-   1274          *               
-   1275          * Argument(s) :  ruler_slot_id :  0~ 3.     
-   1276          *
-   1277          * Return(s)   : NO_ERR :   execute successfully
-   1278          *               others :   =error code .  
-   1279          *
-   1280          * Note(s)     : Do not care if ruler is attached or not.Because host can not detect ruler if FW was crashed.
-   1281          *********************************************************************************************************
-   1282          */
-   1283          unsigned char Update_Ruler_FW( unsigned char ruler_slot_id )
-   1284          {
-   1285              unsigned char err;
-   1286              unsigned int  flash_addr; 
-   1287              FLASH_INFO   *pFlash_Info;
-   1288              unsigned char Buf[9];
-   1289              unsigned char i;
-   1290              
-   1291              err = NO_ERR;
-   1292              flash_addr  = FLASH_ADDR_FW_BIN;
-   1293              pFlash_Info = (FLASH_INFO *)FLASH_ADDR_FW_STATE ;
-   1294                  
-   1295              if( pFlash_Info->f_w_state != FW_DOWNLAD_STATE_FINISHED ) {
-   1296                  APP_TRACE_INFO(("ERROR: FW bin file missed!\r\n"));        
-   1297                  return FW_BIN_STATE_ERR;
-   1298              }
-   1299              
-   1300              APP_TRACE_INFO(("Start updating ruler[%d] firmware to \"%s\" version ...\r\n",ruler_slot_id,pFlash_Info->bin_name)); 
-   1301              memset(Buf,'d',sizeof(Buf)); //send 'd' to start download  
-   1302              Ruler_Power_Switch(0);   //power off ruler  
-   1303              OSTimeDly(200);   
-   1304              for( i = 0; i < 4; i++ ) {
-   1305                  Global_Ruler_State[i] = RULER_STATE_DETACHED ;
-   1306              }
-   1307              UART_Init(RULER_UART,  NULL,  115200 );   //Init Ruler to inquire mode
-   1308              Port_Detect_Enable(0); //disable ruler detect
-   1309              
-   1310              OSSemPend( UART_MUX_Sem_lock, 0, &err ); 
-   1311              if( Global_Ruler_Index != ruler_slot_id ) {
-   1312                  Check_UART_Mixer_Ready();
-   1313                  //OS_ENTER_CRITICAL(); 
-   1314                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
-   1315                  //OS_EXIT_CRITICAL();  
-   1316                  UART1_Mixer( ruler_slot_id );
-   1317              }
-   1318              
-   1319              Ruler_Power_Switch(1);   //power on ruler
-   1320              OSTimeDly(200);
-   1321              err = USART_SendBuf( RULER_UART, Buf,  sizeof(Buf));
-   1322              if( OS_ERR_NONE == err ) {     
-   1323                  OSTimeDly(800);
-   1324                  err = USART_Read_Timeout( RULER_UART, Buf, 3, 5000 );
-   1325                  if( OS_ERR_NONE == err && ( Buf[0] == 'c' || Buf[0] == 'C' )) {
-   1326                      Global_Ruler_State[ruler_slot_id] = RULER_STATE_RUN ;
-   1327                      err = Xmodem_Transmit( (unsigned char *)flash_addr, pFlash_Info->bin_size );
-   1328                      Global_Ruler_State[ruler_slot_id] = RULER_STATE_DETACHED ;            
-   1329                  }         
-   1330              }
-   1331              if( OS_ERR_NONE != err ) {
-   1332                  APP_TRACE_INFO(("\r\nFailed to init ruler bootloader. Err Code = [0x%X]\r\n", err));        
-   1333              } else {
-   1334                  APP_TRACE_INFO(("\r\nUpdate ruler[%d] firmware successfully!\r\n", ruler_slot_id));   
+   1209              unsigned char err;   
+   1210              //save state to flash
+   1211              pFlash_Info->s_w_counter++ ;
+   1212              err = FLASHD_Write_Safe( FLASH_ADDR_FW_STATE, pFlash_Info, AT91C_IFLASH_PAGE_SIZE); 
+   1213              if(err != NO_ERR ) {                     
+   1214                  APP_TRACE_INFO(("ERROR: Write flash state failed!\r\n"));  
+   1215              }
+   1216              
+   1217              return err;
+   1218              
+   1219          }
+   1220          
+   1221          
+   1222          /*
+   1223          *********************************************************************************************************
+   1224          *                                       Save_Ruler_FW()
+   1225          *
+   1226          * Description : Save ruler FW bin file to flash
+   1227          *               
+   1228          * Argument(s) :  cmd  :  1~ 3.
+   1229          *               *pBin : pointer to bin file data packge to be wriiten to flash
+   1230          *               *pStr : pointer to file name string
+   1231          *                size : bin package file size 
+   1232          *
+   1233          * Return(s)   : NO_ERR :   execute successfully
+   1234          *               others :   =error code .  
+   1235          *
+   1236          * Note(s)     : None.
+   1237          *********************************************************************************************************
+   1238          */
+   1239          unsigned char Save_Ruler_FW( unsigned int cmd, unsigned char *pBin, unsigned char *pStr, unsigned int size )
+   1240          {  
+   1241              unsigned char err; 
+   1242              static unsigned int flash_addr = FLASH_ADDR_FW_BIN;
+   1243           
+   1244              FLASH_INFO    flash_info;
+   1245              
+   1246              err = NO_ERR;
+   1247              Read_Flash_State(&flash_info);
+   1248               
+   1249              switch( cmd ) {
+   1250                  case FW_DOWNLAD_CMD_START :
+   1251                      APP_TRACE_INFO(("Start loading ruler bin file to AB01 flash ... \r\n"));
+   1252                      flash_addr = FLASH_ADDR_FW_BIN;                
+   1253                      flash_info.f_w_state = FW_DOWNLAD_STATE_UNFINISHED ;
+   1254                      flash_info.bin_size  = 0;
+   1255                  break;   
+   1256                  case FW_DOWNLAD_CMD_DOING :
+   1257                      APP_TRACE_INFO(("> ")); 
+   1258                      if( flash_info.f_w_state != FW_DOWNLAD_STATE_UNFINISHED ) {
+   1259                          APP_TRACE_INFO(("ERROR: flash state not match!\r\n"));
+   1260                          err  =  FW_BIN_STATE_0_ERR;                
+   1261                      } 
+   1262                  break;
+   1263                  case FW_DOWNLAD_CMD_DONE :
+   1264                      APP_TRACE_INFO((">\r\n")); 
+   1265                      if( flash_info.f_w_state != FW_DOWNLAD_STATE_UNFINISHED ) {
+   1266                          APP_TRACE_INFO(("ERROR: flash state not match!\r\n"));
+   1267                          err  =  FW_BIN_STATE_1_ERR;
+   1268                          break;
+   1269                      }
+   1270                      flash_info.f_w_state = FW_DOWNLAD_STATE_FINISHED ;
+   1271                      flash_info.f_w_counter++;            
+   1272                   break;
+   1273                   
+   1274                   default:
+   1275                      APP_TRACE_INFO(("ERROR:  Save ruler FW bad cmd!\r\n"));
+   1276                      err = FW_BIN_SAVE_CMD_ERR;    
+   1277                   break;
+   1278                  
+   1279              }
+   1280              if( err != NO_ERR ) {
+   1281                  return err;
+   1282              }    
+   1283              Buzzer_OnOff(1);               
+   1284              LED_Toggle(LED_DS2);    
+   1285              err = FLASHD_Write_Safe( flash_addr, pBin, size ); 
+   1286              Buzzer_OnOff(0); 
+   1287              if(err != NO_ERR ) {                     
+   1288                  APP_TRACE_INFO(("ERROR: Write MCU flash failed!\r\n"));
+   1289                  return err;
+   1290              }
+   1291              flash_addr += size;
+   1292              flash_info.bin_size   = flash_addr - FLASH_ADDR_FW_BIN ;
+   1293              strcpy(flash_info.bin_name, (char const*)pStr);  
+   1294              if( cmd != FW_DOWNLAD_CMD_DOING ) {        
+   1295                  err = Write_Flash_State( &flash_info ); 
+   1296                  if( err == NO_ERR && cmd == FW_DOWNLAD_CMD_DONE ) { 
+   1297                        APP_TRACE_INFO(("Bin file[%d Btyes] saved successfully!\r\n",flash_info.bin_size));     
+   1298                  }   
+   1299              } 
+   1300              return err;  
+   1301              
+   1302          }
+   1303          
+   1304          
+   1305          
+   1306          /*
+   1307          *********************************************************************************************************
+   1308          *                                       Update_Ruler_FW()
+   1309          *
+   1310          * Description :  Write firmware to specified ruler's MCU flash
+   1311          *               
+   1312          * Argument(s) :  ruler_slot_id :  0~ 3.     
+   1313          *
+   1314          * Return(s)   : NO_ERR :   execute successfully
+   1315          *               others :   =error code .  
+   1316          *
+   1317          * Note(s)     : Do not care if ruler is attached or not.Because host can not detect ruler if FW was crashed.
+   1318          *********************************************************************************************************
+   1319          */
+   1320          unsigned char Update_Ruler_FW( unsigned char ruler_slot_id )
+   1321          {
+   1322              unsigned char err;
+   1323              unsigned int  flash_addr; 
+   1324              FLASH_INFO   *pFlash_Info;
+   1325              unsigned char Buf[9];
+   1326              unsigned char i;
+   1327              
+   1328              err = NO_ERR;
+   1329              flash_addr  = FLASH_ADDR_FW_BIN;
+   1330              pFlash_Info = (FLASH_INFO *)FLASH_ADDR_FW_STATE ;
+   1331                  
+   1332              if( pFlash_Info->f_w_state != FW_DOWNLAD_STATE_FINISHED ) {
+   1333                  APP_TRACE_INFO(("ERROR: FW bin file missed!\r\n"));        
+   1334                  return FW_BIN_STATE_ERR;
    1335              }
-   1336              Port_Detect_Enable(1); //enable ruler detect
-   1337              UART_Init(RULER_UART,  ISR_Ruler_UART,  115200 );  //Init Ruler back to interuption mode
-   1338              Ruler_Power_Switch(0);   //power off ruler  
-   1339              OSTimeDly(500);    
-   1340              Ruler_Power_Switch(1);   //power on ruler
-   1341              OSSemPost( UART_MUX_Sem_lock ); 
-   1342              return err ;    
-   1343              
-   1344          }
-   1345          //unsigned char Update_Ruler_FW( unsigned char ruler_slot_id )
-   1346          //{
-   1347          //    unsigned char err;
-   1348          //    unsigned int  flash_addr; 
-   1349          //    FLASH_INFO   *pFlash_Info;
-   1350          //    
-   1351          //    err = NO_ERR;
-   1352          //    flash_addr  = FLASH_ADDR_FW_BIN;
-   1353          //    pFlash_Info = (FLASH_INFO *)FLASH_ADDR_FW_STATE ;
-   1354          //        
-   1355          //    if( pFlash_Info->f_w_state != FW_DOWNLAD_STATE_FINISHED ) {
-   1356          //        APP_TRACE_INFO(("ERROR: FW bin file missed!\r\n"));        
-   1357          //        return FW_BIN_STATE_ERR;
-   1358          //    }
-   1359          //    
-   1360          //    APP_TRACE_INFO(("Start updating MCU FW to [%s] on ruler[%d]...\r\n",pFlash_Info->bin_name,ruler_slot_id)); 
-   1361          //    
-   1362          //    UART_Init(RULER_UART,  NULL,  115200 );    //Init Ruler as no ISR  
-   1363          //    
-   1364          //    UART1_Mixer( ruler_slot_id );
-   1365          //    Check_UART_Mixer_Ready();
-   1366          //    if( USART_Start_Ruler_Bootloader() ) {  
-   1367          //        APP_TRACE_INFO(("Failed to init ruler bootloader!\r\n"));     
-   1368          //    }
-   1369          //    
-   1370          //    err = Xmodem_Transmit( (unsigned char *)flash_addr, pFlash_Info->bin_size);      
-   1371          //         
-   1372          //    UART_Init(RULER_UART,  ISR_Ruler_UART,  115200 );    //Init Ruler back to ISR 
-   1373          //    
-   1374          //    return err ;    
-   1375          //    
-   1376          //}
-   1377          
-   1378          
-   1379          /*
-   1380          *********************************************************************************************************
-   1381          *                                       Toggle_Mic()
-   1382          *
-   1383          * Description : Toggle specified mic's active state by sending command to related ruler and updating 
-   1384          *               FPGA mic signal switch array. 
-   1385          *               One mic One time.
-   1386          * Argument(s) : pdata : pointer to TOGGLE_MIC structure data
-   1387          * Return(s)   : NO_ERR :   execute successfully
-   1388          *               others :   =error code .  
-   1389          *
-   1390          * Note(s)     : None.
-   1391          *********************************************************************************************************
-   1392          */
-   1393          unsigned char Toggle_Mic(  TOGGLE_MIC *pdata )
-   1394          {  
-   1395              unsigned char  err ;
-   1396              unsigned char  id;
-   1397              unsigned int   mic_mask;  
-   1398              unsigned int   fpga_mask;
-   1399              
-   1400          #if OS_CRITICAL_METHOD == 3u
-   1401              OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
-   1402          #endif 
-   1403              fpga_mask = 0;
-   1404              //check ruler connection state 
-   1405              if( Global_Ruler_State[pdata->ruler_id] < RULER_STATE_CONFIGURED ) {      
-   1406                  return RULER_STATE_ERR ;         
-   1407              }  
-   1408              APP_TRACE_INFO(("Toggle Ruler[%d]-Mic[%d] : %d  : ", pdata->ruler_id, pdata->mic_id, pdata->on_off )); 
-   1409              OS_ENTER_CRITICAL(); 
-   1410              mic_mask = Global_Mic_Mask[pdata->ruler_id];
-   1411              OS_EXIT_CRITICAL();  
-   1412              mic_mask &= ~( 1<<(pdata->mic_id));
-   1413              mic_mask |=  (pdata->on_off&0x01)<<( pdata->mic_id);
-   1414              err = Update_Mic_Mask( pdata->ruler_id, mic_mask );
-   1415              APP_TRACE_INFO((" %s [0x%X]\r\n", err == OS_ERR_NONE ? "OK" : "FAIL" , err )); 
-   1416              if( OS_ERR_NONE != err ) {        
-   1417                  return err;    
-   1418              }
-   1419              OS_ENTER_CRITICAL(); 
-   1420              Global_Mic_Mask[pdata->ruler_id] = mic_mask; 
-   1421              //APP_TRACE_INFO(("Update Ruler[%d] Mic_Mask:  %d\r\n",pdata->ruler_id,Global_Mic_Mask[pdata->ruler_id]));   
-   1422              if( mic_mask == 0 ) {      
-   1423                  Global_Ruler_State[pdata->ruler_id] = RULER_STATE_CONFIGURED;         
-   1424              } else {
-   1425                  Global_Ruler_State[pdata->ruler_id] = RULER_STATE_SELECTED;  
-   1426              }
-   1427              OS_EXIT_CRITICAL();
-   1428              if( RULER_TYPE_MASK( Global_Ruler_Type[pdata->ruler_id] ) == RULER_TYPE_RULER ) { //ruler
-   1429                  for( id = 0; id < 4; id++ ) {
-   1430                      fpga_mask += (Global_Mic_Mask[id]&0xFF) << (id<<3);
-   1431                  }
-   1432              } else { //handset
-   1433                 fpga_mask = 0x3F << ((pdata->ruler_id)<<3);
-   1434              }
-   1435              Init_FPGA(fpga_mask);
-   1436              return err;  
-   1437          }
-   1438          
-   1439          
-   1440          /*
-   1441          *********************************************************************************************************
-   1442          *                                       Set_Volume()
-   1443          *
-   1444          * Description : Set DMIC PGA gain, LOUT and SPKOUT attenuation gain at the same time
-   1445          *             
-   1446          * Argument(s) : pdata : pointer to SET_VOLUME structure data
-   1447          * Return(s)   : NO_ERR :   execute successfully
-   1448          *               others :   =error code .  
-   1449          *
-   1450          * Note(s)     : None.
-   1451          *********************************************************************************************************
-   1452          */
-   1453          unsigned char Set_Volume(  SET_VOLUME *pdata )
-   1454          {  
-   1455              unsigned char  err ;
-   1456              
-   1457              APP_TRACE_INFO(( "Set Volume :: " ));
-   1458              if( pdata->mic == SET_VOLUME_MUTE ) {
-   1459                  APP_TRACE_INFO(( "Mute MIC :  " ));
-   1460              } else {
-   1461                  APP_TRACE_INFO(( "Mic_Gain = %d dB :  ", pdata->mic )); 
-   1462              }
-   1463              
-   1464              if( pdata->lout == SET_VOLUME_MUTE ) {
-   1465                  APP_TRACE_INFO(( "Mute LOUT :  " ));
-   1466              } else {
-   1467                  APP_TRACE_INFO(( "LOUT_Gain = -%d.%d dB :  ", pdata->lout/10, pdata->lout%10 )); 
-   1468              }
-   1469              
-   1470              if( pdata->spk == SET_VOLUME_MUTE ) {
-   1471                  APP_TRACE_INFO(( "Mute SPK :  " ));
-   1472              } else {
-   1473                  APP_TRACE_INFO(( "SPK_Gain = -%d.%d dB :  ", pdata->spk/10, pdata->spk%10 )); 
-   1474              }
-   1475              
-   1476              //APP_TRACE_INFO(("Set Volume : Mic_Gain[%d]dB, LOUT_Gain[-%d.%d]dB, SPKOUT_Gain[-%d.%d]dB : ", 
-   1477              //                     pdata->mic, pdata->lout/10, pdata->lout%10, pdata->spk/10, pdata->spk%10 )); 
-   1478              //APP_TRACE_INFO(("\r\n%6.6f, %6.6f\r\n",2.31,0.005));
-   1479              err = DMIC_PGA_Control( pdata->mic ); 
-   1480              //APP_TRACE_INFO((" %s [0x%X]\r\n", err == OS_ERR_NONE ? "OK" : "FAIL" , err )); 
-   1481              if( OS_ERR_NONE != err ) {  
-   1482                  APP_TRACE_INFO(( "FAIL [0x%X]\r\n", err )); 
-   1483                  return err;    
-   1484              }
-   1485              err = CODEC_Set_Volume( pdata->spk, pdata->lout );
-   1486              if( OS_ERR_NONE != err ) {    
-   1487                  APP_TRACE_INFO(( "FAIL [0x%X]\r\n", err )); 
-   1488                  return err;    
-   1489              }
-   1490              APP_TRACE_INFO(( "OK\r\n" )); 
-   1491              return err;  
-   1492          }
-   1493          
-   1494          
-   1495          
-   1496          /*
-   1497          *********************************************************************************************************
-   1498          *                                       Reset_Mic_Mask()
-   1499          *
-   1500          * Description : Reset all mics to deactived state on the specified rulers and update FPGA mic signal switch array.
-   1501          * Argument(s) : pInt : pointer to a int data, the 4 bytes of wihch control 4 ruler's all mic need be 
-   1502          *               reset to deactive state or not.
-   1503          *                      1 - deactive all mics on this ruler
-   1504          *                      0 - do nothing. ignore the reset operation
-   1505          * Return(s)   : NO_ERR :   execute successfully
-   1506          *               others :   =error code .  
-   1507          *
-   1508          * Note(s)     : None.
-   1509          *********************************************************************************************************
-   1510          */
-   1511          unsigned char Reset_Mic_Mask(  unsigned int *pInt )
-   1512          {  
-   1513              unsigned char  err ;
-   1514              unsigned char  id;
-   1515              unsigned char  *pChar;  
-   1516              unsigned int   fpga_mask;
-   1517              
-   1518              fpga_mask = 0;    
-   1519              pChar     = (unsigned char *)pInt;
-   1520              err       = 0;
-   1521          
-   1522              for( id = 0; id < 4; id++ ) {        
-   1523                  if( *(pChar+id) == 0 ) { 
-   1524                      continue;
-   1525                  }
-   1526                  if( Global_Ruler_State[id] < RULER_STATE_CONFIGURED ) { //why not RULER_STATE_SELECTED  ? Because UI need reset mic in any case
-   1527                      continue;
-   1528                  }
-   1529                  Global_Ruler_State[id] = RULER_STATE_CONFIGURED ;
-   1530                  err = Update_Mic_Mask( id, 0 );
-   1531                  if( OS_ERR_NONE != err ) {        
-   1532                      return err;    
-   1533                  } 
-   1534                  Global_Mic_Mask[id] = 0;  
-   1535                  if( RULER_TYPE_MASK( Global_Ruler_Type[id] ) == RULER_TYPE_RULER ) {//ruler 
-   1536                      fpga_mask += (Global_Mic_Mask[id]&0xFF) << (id<<3);
-   1537                      
-   1538                  } else {
-   1539                      fpga_mask += 0x3F << (id<<3); //handset choose the lowest slot H01
-   1540                  }        
-   1541              }
-   1542              
-   1543              Init_FPGA(fpga_mask);    
-   1544              return err;  
-   1545          }
-   1546          
-   1547          
-   1548          /*
-   1549          *********************************************************************************************************
-   1550          *                                       Ruler_Port_LED_Service()
-   1551          *
-   1552          * Description : Control the ruler port identify LED state:  
-   1553          *               turn on LED after ruler configured, blink LED during recording
-   1554          * Argument(s) : None.
-   1555          * Return(s)   : None.
-   1556          * Note(s)     : None.
-   1557          *********************************************************************************************************
-   1558          */
-   1559          void Ruler_Port_LED_Service( void )
-   1560          {    
-   1561              static unsigned int counter; 
-   1562              static unsigned int counter_buz;    
-   1563              unsigned char ruler_id;
-   1564              unsigned char ruler_state;    
-   1565              unsigned char LED_Freq;
-   1566              unsigned char post_err_flag;
-   1567          
-   1568              LED_Freq      = 0x3F; 
-   1569              post_err_flag = 0;
-   1570              
-   1571              for( ruler_id = 0 ; ruler_id < 4 ; ruler_id++ ) {
-   1572                
-   1573                  ruler_state = Global_Ruler_State[ruler_id];  
-   1574                  if( Global_Bridge_POST != NO_ERR ) { //if POST err, start all LED 
-   1575                      ruler_state = RULER_STATE_RUN ;
-   1576                      post_err_flag = 1;
-   1577                  }
-   1578                  switch( ruler_state ) {
-   1579                    
-   1580                      case RULER_STATE_DETACHED :
-   1581                      case RULER_STATE_ATTACHED :
-   1582                          LED_Clear( LED_P0 + ruler_id );
-   1583                      break;            
-   1584                      case RULER_STATE_CONFIGURED :
-   1585                      case RULER_STATE_SELECTED :  
-   1586                          LED_Set( LED_P0 + ruler_id );
-   1587                      break;            
-   1588                      case RULER_STATE_RUN :
-   1589                          if( (counter & LED_Freq) == 0 ) {
-   1590                              LED_Toggle( LED_P0 + ruler_id );   
-   1591                              if( post_err_flag== 1 && ruler_id == 0 && (counter_buz++ < 6 ) ) {
-   1592                                  //Buzzer_Toggle(); //buzzer off id POST err 
-   1593                                  Buzzer_OnOff( counter_buz&0x01 );   //fix long buz issue in some case                  
-   1594                              }
-   1595                          }
-   1596                      
-   1597                      default:              
-   1598                      break;
-   1599                  }
-   1600            
-   1601              }    
-   1602              counter++;    
-   1603          }
+   1336              
+   1337              APP_TRACE_INFO(("Start updating ruler[%d] firmware to \"%s\" version ...\r\n",ruler_slot_id,pFlash_Info->bin_name)); 
+   1338              memset(Buf,'d',sizeof(Buf)); //send 'd' to start download  
+   1339              Ruler_Power_Switch(0);   //power off ruler  
+   1340              OSTimeDly(200);   
+   1341              for( i = 0; i < 4; i++ ) {
+   1342                  Global_Ruler_State[i] = RULER_STATE_DETACHED ;
+   1343              }
+   1344              UART_Init(RULER_UART,  NULL,  115200 );   //Init Ruler to inquire mode
+   1345              Port_Detect_Enable(0); //disable ruler detect
+   1346              
+   1347              OSSemPend( UART_MUX_Sem_lock, 0, &err ); 
+   1348              if( Global_Ruler_Index != ruler_slot_id ) {
+   1349                  Check_UART_Mixer_Ready();
+   1350                  //OS_ENTER_CRITICAL(); 
+   1351                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
+   1352                  //OS_EXIT_CRITICAL();  
+   1353                  UART1_Mixer( ruler_slot_id );
+   1354              }
+   1355              
+   1356              Ruler_Power_Switch(1);   //power on ruler
+   1357              OSTimeDly(200);
+   1358              err = USART_SendBuf( RULER_UART, Buf,  sizeof(Buf));
+   1359              if( OS_ERR_NONE == err ) {     
+   1360                  OSTimeDly(800);
+   1361                  err = USART_Read_Timeout( RULER_UART, Buf, 3, 5000 );
+   1362                  if( OS_ERR_NONE == err && ( Buf[0] == 'c' || Buf[0] == 'C' )) {
+   1363                      Global_Ruler_State[ruler_slot_id] = RULER_STATE_RUN ;
+   1364                      err = Xmodem_Transmit( (unsigned char *)flash_addr, pFlash_Info->bin_size );
+   1365                      Global_Ruler_State[ruler_slot_id] = RULER_STATE_DETACHED ;            
+   1366                  }         
+   1367              }
+   1368              if( OS_ERR_NONE != err ) {
+   1369                  APP_TRACE_INFO(("\r\nFailed to init ruler bootloader. Err Code = [0x%X]\r\n", err));        
+   1370              } else {
+   1371                  APP_TRACE_INFO(("\r\nUpdate ruler[%d] firmware successfully!\r\n", ruler_slot_id));   
+   1372              }
+   1373              Port_Detect_Enable(1); //enable ruler detect
+   1374              UART_Init(RULER_UART,  ISR_Ruler_UART,  115200 );  //Init Ruler back to interuption mode
+   1375              Ruler_Power_Switch(0);   //power off ruler  
+   1376              OSTimeDly(500);    
+   1377              Ruler_Power_Switch(1);   //power on ruler
+   1378              OSSemPost( UART_MUX_Sem_lock ); 
+   1379              return err ;    
+   1380              
+   1381          }
+   1382          //unsigned char Update_Ruler_FW( unsigned char ruler_slot_id )
+   1383          //{
+   1384          //    unsigned char err;
+   1385          //    unsigned int  flash_addr; 
+   1386          //    FLASH_INFO   *pFlash_Info;
+   1387          //    
+   1388          //    err = NO_ERR;
+   1389          //    flash_addr  = FLASH_ADDR_FW_BIN;
+   1390          //    pFlash_Info = (FLASH_INFO *)FLASH_ADDR_FW_STATE ;
+   1391          //        
+   1392          //    if( pFlash_Info->f_w_state != FW_DOWNLAD_STATE_FINISHED ) {
+   1393          //        APP_TRACE_INFO(("ERROR: FW bin file missed!\r\n"));        
+   1394          //        return FW_BIN_STATE_ERR;
+   1395          //    }
+   1396          //    
+   1397          //    APP_TRACE_INFO(("Start updating MCU FW to [%s] on ruler[%d]...\r\n",pFlash_Info->bin_name,ruler_slot_id)); 
+   1398          //    
+   1399          //    UART_Init(RULER_UART,  NULL,  115200 );    //Init Ruler as no ISR  
+   1400          //    
+   1401          //    UART1_Mixer( ruler_slot_id );
+   1402          //    Check_UART_Mixer_Ready();
+   1403          //    if( USART_Start_Ruler_Bootloader() ) {  
+   1404          //        APP_TRACE_INFO(("Failed to init ruler bootloader!\r\n"));     
+   1405          //    }
+   1406          //    
+   1407          //    err = Xmodem_Transmit( (unsigned char *)flash_addr, pFlash_Info->bin_size);      
+   1408          //         
+   1409          //    UART_Init(RULER_UART,  ISR_Ruler_UART,  115200 );    //Init Ruler back to ISR 
+   1410          //    
+   1411          //    return err ;    
+   1412          //    
+   1413          //}
+   1414          
+   1415          
+   1416          /*
+   1417          *********************************************************************************************************
+   1418          *                                       Toggle_Mic()
+   1419          *
+   1420          * Description : Toggle specified mic's active state by sending command to related ruler and updating 
+   1421          *               FPGA mic signal switch array. 
+   1422          *               One mic One time.
+   1423          * Argument(s) : pdata : pointer to TOGGLE_MIC structure data
+   1424          * Return(s)   : NO_ERR :   execute successfully
+   1425          *               others :   =error code .  
+   1426          *
+   1427          * Note(s)     : None.
+   1428          *********************************************************************************************************
+   1429          */
+   1430          unsigned char Toggle_Mic(  TOGGLE_MIC *pdata )
+   1431          {  
+   1432              unsigned char  err ;
+   1433              unsigned char  id;
+   1434              unsigned int   mic_mask;  
+   1435              unsigned int   fpga_mask;
+   1436              
+   1437          #if OS_CRITICAL_METHOD == 3u
+   1438              OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
+   1439          #endif 
+   1440              fpga_mask = 0;
+   1441              //check ruler connection state 
+   1442              if( Global_Ruler_State[pdata->ruler_id] < RULER_STATE_CONFIGURED ) {      
+   1443                  return RULER_STATE_ERR ;         
+   1444              }  
+   1445              APP_TRACE_INFO(("Toggle Ruler[%d]-Mic[%d] : %d  : ", pdata->ruler_id, pdata->mic_id, pdata->on_off )); 
+   1446              OS_ENTER_CRITICAL(); 
+   1447              mic_mask = Global_Mic_Mask[pdata->ruler_id];
+   1448              OS_EXIT_CRITICAL();  
+   1449              mic_mask &= ~( 1<<(pdata->mic_id));
+   1450              mic_mask |=  (pdata->on_off&0x01)<<( pdata->mic_id);
+   1451              err = Update_Mic_Mask( pdata->ruler_id, mic_mask );
+   1452              APP_TRACE_INFO((" %s [0x%X]\r\n", err == OS_ERR_NONE ? "OK" : "FAIL" , err )); 
+   1453              if( OS_ERR_NONE != err ) {        
+   1454                  return err;    
+   1455              }
+   1456              OS_ENTER_CRITICAL(); 
+   1457              Global_Mic_Mask[pdata->ruler_id] = mic_mask; 
+   1458              //APP_TRACE_INFO(("Update Ruler[%d] Mic_Mask:  %d\r\n",pdata->ruler_id,Global_Mic_Mask[pdata->ruler_id]));   
+   1459              if( mic_mask == 0 ) {      
+   1460                  Global_Ruler_State[pdata->ruler_id] = RULER_STATE_CONFIGURED;         
+   1461              } else {
+   1462                  Global_Ruler_State[pdata->ruler_id] = RULER_STATE_SELECTED;  
+   1463              }
+   1464              OS_EXIT_CRITICAL();
+   1465              if( RULER_TYPE_MASK( Global_Ruler_Type[pdata->ruler_id] ) == RULER_TYPE_RULER ) { //ruler
+   1466                  for( id = 0; id < 4; id++ ) {
+   1467                      fpga_mask += (Global_Mic_Mask[id]&0xFF) << (id<<3);
+   1468                  }
+   1469              } else { //handset
+   1470                 fpga_mask = 0x3F << ((pdata->ruler_id)<<3);
+   1471              }
+   1472              Init_FPGA(fpga_mask);
+   1473              return err;  
+   1474          }
+   1475          
+   1476          
+   1477          /*
+   1478          *********************************************************************************************************
+   1479          *                                       Set_Volume()
+   1480          *
+   1481          * Description : Set DMIC PGA gain, LOUT and SPKOUT attenuation gain at the same time
+   1482          *             
+   1483          * Argument(s) : pdata : pointer to SET_VOLUME structure data
+   1484          * Return(s)   : NO_ERR :   execute successfully
+   1485          *               others :   =error code .  
+   1486          *
+   1487          * Note(s)     : None.
+   1488          *********************************************************************************************************
+   1489          */
+   1490          unsigned char Set_Volume(  SET_VOLUME *pdata )
+   1491          {  
+   1492              unsigned char  err ;
+   1493              
+   1494              APP_TRACE_INFO(( "Set Volume :: " ));
+   1495              if( pdata->mic == SET_VOLUME_MUTE ) {
+   1496                  APP_TRACE_INFO(( "Mute MIC :  " ));
+   1497              } else {
+   1498                  APP_TRACE_INFO(( "Mic_Gain = %d dB :  ", pdata->mic )); 
+   1499              }
+   1500              
+   1501              if( pdata->lout == SET_VOLUME_MUTE ) {
+   1502                  APP_TRACE_INFO(( "Mute LOUT :  " ));
+   1503              } else {
+   1504                  APP_TRACE_INFO(( "LOUT_Gain = -%d.%d dB :  ", pdata->lout/10, pdata->lout%10 )); 
+   1505              }
+   1506              
+   1507              if( pdata->spk == SET_VOLUME_MUTE ) {
+   1508                  APP_TRACE_INFO(( "Mute SPK :  " ));
+   1509              } else {
+   1510                  APP_TRACE_INFO(( "SPK_Gain = -%d.%d dB :  ", pdata->spk/10, pdata->spk%10 )); 
+   1511              }
+   1512              
+   1513              //APP_TRACE_INFO(("Set Volume : Mic_Gain[%d]dB, LOUT_Gain[-%d.%d]dB, SPKOUT_Gain[-%d.%d]dB : ", 
+   1514              //                     pdata->mic, pdata->lout/10, pdata->lout%10, pdata->spk/10, pdata->spk%10 )); 
+   1515              //APP_TRACE_INFO(("\r\n%6.6f, %6.6f\r\n",2.31,0.005));
+   1516              err = DMIC_PGA_Control( pdata->mic ); 
+   1517              //APP_TRACE_INFO((" %s [0x%X]\r\n", err == OS_ERR_NONE ? "OK" : "FAIL" , err )); 
+   1518              if( OS_ERR_NONE != err ) {  
+   1519                  APP_TRACE_INFO(( "FAIL [0x%X]\r\n", err )); 
+   1520                  return err;    
+   1521              }
+   1522              err = CODEC_Set_Volume( pdata->spk, pdata->lout );
+   1523              if( OS_ERR_NONE != err ) {    
+   1524                  APP_TRACE_INFO(( "FAIL [0x%X]\r\n", err )); 
+   1525                  return err;    
+   1526              }
+   1527              APP_TRACE_INFO(( "OK\r\n" )); 
+   1528              return err;  
+   1529          }
+   1530          
+   1531          
+   1532          
+   1533          /*
+   1534          *********************************************************************************************************
+   1535          *                                       Reset_Mic_Mask()
+   1536          *
+   1537          * Description : Reset all mics to deactived state on the specified rulers and update FPGA mic signal switch array.
+   1538          * Argument(s) : pInt : pointer to a int data, the 4 bytes of wihch control 4 ruler's all mic need be 
+   1539          *               reset to deactive state or not.
+   1540          *                      1 - deactive all mics on this ruler
+   1541          *                      0 - do nothing. ignore the reset operation
+   1542          * Return(s)   : NO_ERR :   execute successfully
+   1543          *               others :   =error code .  
+   1544          *
+   1545          * Note(s)     : None.
+   1546          *********************************************************************************************************
+   1547          */
+   1548          unsigned char Reset_Mic_Mask(  unsigned int *pInt )
+   1549          {  
+   1550              unsigned char  err ;
+   1551              unsigned char  id;
+   1552              unsigned char  *pChar;  
+   1553              unsigned int   fpga_mask;
+   1554              
+   1555              fpga_mask = 0;    
+   1556              pChar     = (unsigned char *)pInt;
+   1557              err       = 0;
+   1558          
+   1559              for( id = 0; id < 4; id++ ) {        
+   1560                  if( *(pChar+id) == 0 ) { 
+   1561                      continue;
+   1562                  }
+   1563                  if( Global_Ruler_State[id] < RULER_STATE_CONFIGURED ) { //why not RULER_STATE_SELECTED  ? Because UI need reset mic in any case
+   1564                      continue;
+   1565                  }
+   1566                  Global_Ruler_State[id] = RULER_STATE_CONFIGURED ;
+   1567                  err = Update_Mic_Mask( id, 0 );
+   1568                  if( OS_ERR_NONE != err ) {        
+   1569                      return err;    
+   1570                  } 
+   1571                  Global_Mic_Mask[id] = 0;  
+   1572                  if( RULER_TYPE_MASK( Global_Ruler_Type[id] ) == RULER_TYPE_RULER ) {//ruler 
+   1573                      fpga_mask += (Global_Mic_Mask[id]&0xFF) << (id<<3);
+   1574                      
+   1575                  } else {
+   1576                      fpga_mask += 0x3F << (id<<3); //handset choose the lowest slot H01
+   1577                  }        
+   1578              }
+   1579              
+   1580              Init_FPGA(fpga_mask);    
+   1581              return err;  
+   1582          }
+   1583          
+   1584          
+   1585          /*
+   1586          *********************************************************************************************************
+   1587          *                                       Ruler_Port_LED_Service()
+   1588          *
+   1589          * Description : Control the ruler port identify LED state:  
+   1590          *               turn on LED after ruler configured, blink LED during recording
+   1591          * Argument(s) : None.
+   1592          * Return(s)   : None.
+   1593          * Note(s)     : None.
+   1594          *********************************************************************************************************
+   1595          */
+   1596          void Ruler_Port_LED_Service( void )
+   1597          {    
+   1598              static unsigned int counter; 
+   1599              static unsigned int counter_buz;    
+   1600              unsigned char ruler_id;
+   1601              unsigned char ruler_state;    
+   1602              unsigned char LED_Freq;
+   1603              unsigned char post_err_flag;
    1604          
-   1605          
-   1606          
-   1607          /*
-   1608          *********************************************************************************************************
-   1609          *                                       AB_POST()
-   1610          *
-   1611          * Description : Audio bridge Power-On-Self-Test use. 
-   1612          *
-   1613          * Argument(s) : None.
-   1614          * Return(s)   : None.
-   1615          * Note(s)     : None.
-   1616          *********************************************************************************************************
-   1617          */
-   1618          void AB_POST( void )
-   1619          {
-   1620              unsigned char  err;
-   1621              
-   1622              APP_TRACE_INFO(("\r\nStart Audio Bridge POST :\r\n"));    
-   1623              Enable_FPGA();
-   1624          
-   1625              APP_TRACE_INFO(("\r\n1. CODEC... \r\n"));
-   1626              err = Init_CODEC( SAMPLE_RATE_DEF );    
-   1627              if( err != NO_ERR ) {
-   1628                  Global_Bridge_POST = POST_ERR_CODEC;
-   1629                  APP_TRACE_INFO(("\r\n---Error : %d\r\n",err));
-   1630                  return ;
-   1631              } else {
-   1632                  APP_TRACE_INFO(("\r\n---OK\r\n"));
-   1633              }
-   1634              
-   1635              APP_TRACE_INFO(("\r\n2. FM36 DSP... \r\n"));
-   1636          #ifdef BOARD_TYPE_AB03     
-   1637              err = Init_FM36_AB03( SAMPLE_RATE_DEF, 0, 1, 0 ); //Lin from SP1.Slot0
-   1638              //err = Init_FM36( SAMPLE_RATE_DEF );
-   1639          #else 
-   1640              err = Init_FM36( SAMPLE_RATE_DEF );
-   1641          #endif
-   1642              if( err != NO_ERR ) {
-   1643                  Global_Bridge_POST = POST_ERR_FM36;
-   1644                  APP_TRACE_INFO(("\r\n---Error : %d\r\n",err));
-   1645                  return ;
-   1646              } else {
-   1647                  APP_TRACE_INFO(("\r\n---OK\r\n"));
-   1648              }  
-   1649              
-   1650              APP_TRACE_INFO(("\r\n3. AUDIO MCU... \r\n"));
-   1651              err = Get_Audio_Version();
-   1652              if( err != NO_ERR ) {
-   1653                  Global_Bridge_POST = POST_ERR_AUDIO;
-   1654                  APP_TRACE_INFO(("\r\n---Error : %d\r\n",err));
-   1655                  return ;
-   1656              } else {
-   1657                  APP_TRACE_INFO(("\r\n---OK\r\n"));
-   1658              }    
-   1659             
-   1660              
-   1661              
-   1662          //    APP_TRACE_INFO(("\r\n4. external CODEC... \r\n"));
-   1663          //    err = Init_CODEC_AIC3204( SAMPLE_RATE_DEF );    
-   1664          //    if( err != NO_ERR ) {
-   1665          //        Global_Bridge_POST = POST_ERR_CODEC;
-   1666          //        APP_TRACE_INFO(("\r\n---Error : %d\r\n",err));
-   1667          //        return ;
-   1668          //    } else {
-   1669          //        APP_TRACE_INFO(("\r\n---OK\r\n"));
-   1670          //    }
+   1605              LED_Freq      = 0x3F; 
+   1606              post_err_flag = 0;
+   1607              
+   1608              for( ruler_id = 0 ; ruler_id < 4 ; ruler_id++ ) {
+   1609                
+   1610                  ruler_state = Global_Ruler_State[ruler_id];  
+   1611                  if( Global_Bridge_POST != NO_ERR ) { //if POST err, start all LED 
+   1612                      ruler_state = RULER_STATE_RUN ;
+   1613                      post_err_flag = 1;
+   1614                  }
+   1615                  switch( ruler_state ) {
+   1616                    
+   1617                      case RULER_STATE_DETACHED :
+   1618                      case RULER_STATE_ATTACHED :
+   1619                          LED_Clear( LED_P0 + ruler_id );
+   1620                      break;            
+   1621                      case RULER_STATE_CONFIGURED :
+   1622                      case RULER_STATE_SELECTED :  
+   1623                          LED_Set( LED_P0 + ruler_id );
+   1624                      break;            
+   1625                      case RULER_STATE_RUN :
+   1626                          if( (counter & LED_Freq) == 0 ) {
+   1627                              LED_Toggle( LED_P0 + ruler_id );   
+   1628                              if( post_err_flag== 1 && ruler_id == 0 && (counter_buz++ < 6 ) ) {
+   1629                                  //Buzzer_Toggle(); //buzzer off id POST err 
+   1630                                  Buzzer_OnOff( counter_buz&0x01 );   //fix long buz issue in some case                  
+   1631                              }
+   1632                          }
+   1633                      
+   1634                      default:              
+   1635                      break;
+   1636                  }
+   1637            
+   1638              }    
+   1639              counter++;    
+   1640          }
+   1641          
+   1642          
+   1643          
+   1644          /*
+   1645          *********************************************************************************************************
+   1646          *                                       AB_POST()
+   1647          *
+   1648          * Description : Audio bridge Power-On-Self-Test use. 
+   1649          *
+   1650          * Argument(s) : None.
+   1651          * Return(s)   : None.
+   1652          * Note(s)     : None.
+   1653          *********************************************************************************************************
+   1654          */
+   1655          void AB_POST( void )
+   1656          {
+   1657              unsigned char  err;
+   1658              
+   1659              APP_TRACE_INFO(("\r\nStart Audio Bridge POST :\r\n"));    
+   1660              Enable_FPGA();
+   1661          
+   1662              APP_TRACE_INFO(("\r\n1. CODEC... \r\n"));
+   1663              err = Init_CODEC( SAMPLE_RATE_DEF );    
+   1664              if( err != NO_ERR ) {
+   1665                  Global_Bridge_POST = POST_ERR_CODEC;
+   1666                  APP_TRACE_INFO(("\r\n---Error : %d\r\n",err));
+   1667                  return ;
+   1668              } else {
+   1669                  APP_TRACE_INFO(("\r\n---OK\r\n"));
+   1670              }
    1671              
-   1672              //Disable_FPGA(); 
-   1673              //Ruler_Power_Switch(1); 
-   1674              
-   1675              err = Init_CODEC( 0 );
-   1676              if( err != NO_ERR ) {
-   1677                  Global_Bridge_POST = POST_ERR_CODEC ;
-   1678                  APP_TRACE_INFO(("\r\nPower Down CODEC ERROR: %d\r\n",err)); 
-   1679              }
-   1680              
-   1681          }
-   1682          
-   1683          
-   1684          
-   1685          /*
-   1686          *********************************************************************************************************
-   1687          *                                       Ruler_POST()
-   1688          *
-   1689          * Description : Get back specified ruler Power-On-Self-Test status. 
-   1690          *
-   1691          * Argument(s) : ruler_id :  0~ 3
-   1692          * Return(s)   : NO_ERR :   execute successfully
-   1693          *               others :   =error code . 
-   1694          * Note(s)     : None.
-   1695          *********************************************************************************************************
-   1696          */
-   1697          unsigned char Ruler_POST( unsigned char ruler_id )
-   1698          {
-   1699              unsigned char  err;
-   1700              unsigned short result;   
-   1701              
-   1702              APP_TRACE_INFO(("\r\nRuler[%d] POST status check... \r\n",ruler_id)); 
-   1703          
-   1704              err = Read_Ruler_Status( ruler_id, &result);
-   1705              if( err == RULER_STATE_ERR ) { //no ruler attached
-   1706                  return err;;
-   1707              }      
-   1708              if( err != NO_ERR ) {
-   1709                 return err;
-   1710              }
-   1711              if( result != 0 ) {
-   1712                  if( result != 0x8000 ) {        
-   1713                      APP_TRACE_INFO(("\r\n---Error Ruler[%d]: %d-0x%X\r\n",ruler_id,err,result));
-   1714                      return 1; 
-   1715                  } else {
-   1716                      APP_TRACE_INFO(("\r\n---WARNING Ruler[%d]: Mic calibration data NOT Initialized!\r\n",ruler_id));  
-   1717                  }
-   1718              } 
-   1719              APP_TRACE_INFO(("\r\n---OK\r\n"));  
-   1720                   
-   1721              return err;
-   1722          }
-   1723          
-   1724          
-   1725          /*
-   1726          *********************************************************************************************************
-   1727          *                                       simple_test_use()
-   1728          *
-   1729          * Description : debug use.
-   1730          *
-   1731          * Argument(s) : None.
-   1732          * Return(s)   : None.
-   1733          * Note(s)     : None.
-   1734          *********************************************************************************************************
-   1735          */
-   1736          void simple_test_use( void )
-   1737          {      
-   1738              APP_TRACE_INFO(("\r\nHi,man. Simple play/rec test triggered...\r\n"));   
-   1739              
-   1740          #if 0  
-   1741              
-   1742           //R01      
-   1743              TOGGLE_MIC toggle_mic[6] = {    
-   1744                                              {0, 6, 1 }, {0, 7, 1 }, {0, 8, 1 },
-   1745                                              {0, 12, 1 }, {0, 13, 1 }, {0, 14, 1 }  
-   1746                                          }; 
-   1747            
-   1748              for (unsigned char i = 0; i< 6 ; i++ ) {
-   1749                  Toggle_Mic(&toggle_mic[i]); 
-   1750              } 
-   1751              
-   1752          #else
-   1753              
-   1754          //H01
-   1755              Update_Mic_Mask( 0, 0x3f); 
-   1756              Init_FPGA(0x3F);
-   1757              Global_Ruler_State[0] = RULER_STATE_RUN; 
-   1758                  
-   1759              AUDIO_CFG audio_config_play = {SAMPLE_RATE_DEF, AUDIO_TYPE_PLAY, 6 };
-   1760              AUDIO_CFG audio_config_rec  = {SAMPLE_RATE_DEF, AUDIO_TYPE_REC,  6 };
-   1761              Setup_Audio( &audio_config_play );                   
-   1762              Setup_Audio( &audio_config_rec );                 
-   1763              //Start_Audio( AUDIO_START_PALYREC ); 
-   1764              
-   1765          #endif
-   1766              
-   1767          }
-   1768          
-   1769          
-   1770          unsigned char Ruler_Setup_Sync( unsigned char ruler_slot_id )
-   1771          {
-   1772              unsigned char err ;
-   1773              unsigned char buf[] = { RULER_CMD_SETUP_SYNC, Ruler_Setup_Sync_Data, ruler_slot_id };
-   1774          
-   1775          #if OS_CRITICAL_METHOD == 3u
-   1776              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
-   1777          #endif 
+   1672              APP_TRACE_INFO(("\r\n2. FM36 DSP... \r\n"));
+   1673          #ifdef BOARD_TYPE_AB03     
+   1674              err = Init_FM36_AB03( SAMPLE_RATE_DEF, 0, 1, 0 ); //Lin from SP1.Slot0
+   1675              //err = Init_FM36( SAMPLE_RATE_DEF );
+   1676          #else 
+   1677              err = Init_FM36( SAMPLE_RATE_DEF );
+   1678          #endif
+   1679              if( err != NO_ERR ) {
+   1680                  Global_Bridge_POST = POST_ERR_FM36;
+   1681                  APP_TRACE_INFO(("\r\n---Error : %d\r\n",err));
+   1682                  return ;
+   1683              } else {
+   1684                  APP_TRACE_INFO(("\r\n---OK\r\n"));
+   1685              }  
+   1686              
+   1687              APP_TRACE_INFO(("\r\n3. AUDIO MCU... \r\n"));
+   1688              err = Get_Audio_Version();
+   1689              if( err != NO_ERR ) {
+   1690                  Global_Bridge_POST = POST_ERR_AUDIO;
+   1691                  APP_TRACE_INFO(("\r\n---Error : %d\r\n",err));
+   1692                  return ;
+   1693              } else {
+   1694                  APP_TRACE_INFO(("\r\n---OK\r\n"));
+   1695              }    
+   1696             
+   1697              
+   1698              
+   1699          //    APP_TRACE_INFO(("\r\n4. external CODEC... \r\n"));
+   1700          //    err = Init_CODEC_AIC3204( SAMPLE_RATE_DEF );    
+   1701          //    if( err != NO_ERR ) {
+   1702          //        Global_Bridge_POST = POST_ERR_CODEC;
+   1703          //        APP_TRACE_INFO(("\r\n---Error : %d\r\n",err));
+   1704          //        return ;
+   1705          //    } else {
+   1706          //        APP_TRACE_INFO(("\r\n---OK\r\n"));
+   1707          //    }
+   1708              
+   1709              //Disable_FPGA(); 
+   1710              //Ruler_Power_Switch(1); 
+   1711              
+   1712              err = Init_CODEC( 0 );
+   1713              if( err != NO_ERR ) {
+   1714                  Global_Bridge_POST = POST_ERR_CODEC ;
+   1715                  APP_TRACE_INFO(("\r\nPower Down CODEC ERROR: %d\r\n",err)); 
+   1716              }
+   1717              
+   1718          }
+   1719          
+   1720          
+   1721          
+   1722          /*
+   1723          *********************************************************************************************************
+   1724          *                                       Ruler_POST()
+   1725          *
+   1726          * Description : Get back specified ruler Power-On-Self-Test status. 
+   1727          *
+   1728          * Argument(s) : ruler_id :  0~ 3
+   1729          * Return(s)   : NO_ERR :   execute successfully
+   1730          *               others :   =error code . 
+   1731          * Note(s)     : None.
+   1732          *********************************************************************************************************
+   1733          */
+   1734          unsigned char Ruler_POST( unsigned char ruler_id )
+   1735          {
+   1736              unsigned char  err;
+   1737              unsigned short result;   
+   1738              
+   1739              APP_TRACE_INFO(("\r\nRuler[%d] POST status check... \r\n",ruler_id)); 
+   1740          
+   1741              err = Read_Ruler_Status( ruler_id, &result);
+   1742              if( err == RULER_STATE_ERR ) { //no ruler attached
+   1743                  return err;;
+   1744              }      
+   1745              if( err != NO_ERR ) {
+   1746                 return err;
+   1747              }
+   1748              if( result != 0 ) {
+   1749                  if( result != 0x8000 ) {        
+   1750                      APP_TRACE_INFO(("\r\n---Error Ruler[%d]: %d-0x%X\r\n",ruler_id,err,result));
+   1751                      return 1; 
+   1752                  } else {
+   1753                      APP_TRACE_INFO(("\r\n---WARNING Ruler[%d]: Mic calibration data NOT Initialized!\r\n",ruler_id));  
+   1754                  }
+   1755              } 
+   1756              APP_TRACE_INFO(("\r\n---OK\r\n"));  
+   1757                   
+   1758              return err;
+   1759          }
+   1760          
+   1761          
+   1762          /*
+   1763          *********************************************************************************************************
+   1764          *                                       simple_test_use()
+   1765          *
+   1766          * Description : debug use.
+   1767          *
+   1768          * Argument(s) : None.
+   1769          * Return(s)   : None.
+   1770          * Note(s)     : None.
+   1771          *********************************************************************************************************
+   1772          */
+   1773          void simple_test_use( void )
+   1774          {      
+   1775              APP_TRACE_INFO(("\r\nHi,man. Simple play/rec test triggered...\r\n"));   
+   1776              
+   1777          #if 0  
    1778              
-   1779              //check ruler connection state 
-   1780              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_ATTACHED ) {      
-   1781                  return RULER_STATE_ERR ;         
-   1782              } 
-   1783              
-   1784              OSSemPend( UART_MUX_Sem_lock, 0, &err );
-   1785              if( Global_Ruler_Index != ruler_slot_id ) {
-   1786                  Check_UART_Mixer_Ready();
-   1787                  //OS_ENTER_CRITICAL(); 
-   1788                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
-   1789                  //OS_EXIT_CRITICAL();  
-   1790                  UART1_Mixer( ruler_slot_id );
-   1791              }
-   1792              
-   1793              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
-   1794              if( OS_ERR_NONE == err ) {
-   1795                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
-   1796                  if( OS_ERR_TIMEOUT == err ) {
-   1797                      APP_TRACE_INFO(("Ruler_Setup_Sync[%d] timeout\r\n",ruler_slot_id));
-   1798                  } else {
-   1799                      err = Ruler_CMD_Result; //exe result from GACK
-   1800                      if(OS_ERR_NONE != err ){
-   1801                          APP_TRACE_INFO(("Ruler_Setup_Sync[%d] err = %d\r\n",ruler_slot_id,err));
-   1802                      }
-   1803                  }
-   1804                  
-   1805              } else {
-   1806                  APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));
-   1807              }    
-   1808              OSSemPost( UART_MUX_Sem_lock );    
-   1809              return err ;    
-   1810              
-   1811              
-   1812          }
-   1813          
+   1779           //R01      
+   1780              TOGGLE_MIC toggle_mic[6] = {    
+   1781                                              {0, 6, 1 }, {0, 7, 1 }, {0, 8, 1 },
+   1782                                              {0, 12, 1 }, {0, 13, 1 }, {0, 14, 1 }  
+   1783                                          }; 
+   1784            
+   1785              for (unsigned char i = 0; i< 6 ; i++ ) {
+   1786                  Toggle_Mic(&toggle_mic[i]); 
+   1787              } 
+   1788              
+   1789          #else
+   1790              
+   1791          //H01
+   1792              Update_Mic_Mask( 0, 0x3f); 
+   1793              Init_FPGA(0x3F);
+   1794              Global_Ruler_State[0] = RULER_STATE_RUN; 
+   1795                  
+   1796              AUDIO_CFG audio_config_play = {SAMPLE_RATE_DEF, AUDIO_TYPE_PLAY, 6 };
+   1797              AUDIO_CFG audio_config_rec  = {SAMPLE_RATE_DEF, AUDIO_TYPE_REC,  6 };
+   1798              Setup_Audio( &audio_config_play );                   
+   1799              Setup_Audio( &audio_config_rec );                 
+   1800              //Start_Audio( AUDIO_START_PALYREC ); 
+   1801              
+   1802          #endif
+   1803              
+   1804          }
+   1805          
+   1806          
+   1807          unsigned char Ruler_Setup_Sync( unsigned char ruler_slot_id )
+   1808          {
+   1809              unsigned char err ;
+   1810              unsigned char buf[] = { RULER_CMD_SETUP_SYNC, Ruler_Setup_Sync_Data, ruler_slot_id };
+   1811          
+   1812          #if OS_CRITICAL_METHOD == 3u
+   1813              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
+   1814          #endif 
+   1815              
+   1816              //check ruler connection state 
+   1817              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_ATTACHED ) {      
+   1818                  return RULER_STATE_ERR ;         
+   1819              } 
+   1820              
+   1821              OSSemPend( UART_MUX_Sem_lock, 0, &err );
+   1822              if( Global_Ruler_Index != ruler_slot_id ) {
+   1823                  Check_UART_Mixer_Ready();
+   1824                  //OS_ENTER_CRITICAL(); 
+   1825                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
+   1826                  //OS_EXIT_CRITICAL();  
+   1827                  UART1_Mixer( ruler_slot_id );
+   1828              }
+   1829              
+   1830              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
+   1831              if( OS_ERR_NONE == err ) {
+   1832                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
+   1833                  if( OS_ERR_TIMEOUT == err ) {
+   1834                      APP_TRACE_INFO(("Ruler_Setup_Sync[%d] timeout\r\n",ruler_slot_id));
+   1835                  } else {
+   1836                      err = Ruler_CMD_Result; //exe result from GACK
+   1837                      if(OS_ERR_NONE != err ){
+   1838                          APP_TRACE_INFO(("Ruler_Setup_Sync[%d] err = %d\r\n",ruler_slot_id,err));
+   1839                      }
+   1840                  }
+   1841                  
+   1842              } else {
+   1843                  APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));
+   1844              }    
+   1845              OSSemPost( UART_MUX_Sem_lock );    
+   1846              return err ;    
+   1847              
+   1848              
+   1849          }
+   1850          
 
    Maximum stack usage in bytes:
 
@@ -1875,6 +1912,7 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
         16   -> OSQGet
         16   -> OSTimeDly
         16   -> Queue_NData
+       0   Check_Watch_Attach_State
       24   FLASHD_Write_Safe
         24   -> BSP_Ser_Printf
         24   -> FLASHD_Write
@@ -1976,6 +2014,8 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
         32   -> BSP_Ser_Printf
         32   -> Check_Actived_Mic_Number
         32   -> Check_SR_Support
+        32   -> Check_Watch_Attach_State
+        32   -> DMIC_Ploarity_Control
         32   -> Init_CODEC
         32   -> Init_FM36_AB03
         32   -> UART2_Mixer
@@ -2099,6 +2139,7 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
       36  ?<Constant "Read_Ruler_Status[%d]...">_1
       32  ?<Constant "Read_Ruler_Type[%d] t...">
       16  ?<Constant "Reset_Audio\r\n">
+      32  ?<Constant "Revert DMIC polarity ...">
       28  ?<Constant "Ruler[%d] FW Version:...">
       40  ?<Constant "Ruler[%d] pcSendDateT...">
       36  ?<Constant "Ruler[%d]_Active_Cont...">
@@ -2132,6 +2173,7 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
       20  ?<Constant "\r\n1. CODEC... \r\n">
       20  ?<Constant "\r\n2. FM36 DSP... \r\n">
       24  ?<Constant "\r\n3. AUDIO MCU... \r\n">
+      36  ?<Constant "\r\nDMIC_Ploarity_Contr...">
       48  ?<Constant "\r\nERROR: Check_Active...">
       56  ?<Constant "\r\nFailed to init rule...">
       40  ?<Constant "\r\nGet_Audio_Version E...">
@@ -2172,43 +2214,36 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
        4  ??DataTable11
        4  ??DataTable11_1
        4  ??DataTable11_2
-       4  ??DataTable11_3
-       4  ??DataTable11_4
-       4  ??DataTable11_5
        4  ??DataTable12
        4  ??DataTable12_1
-       4  ??DataTable12_10
-       4  ??DataTable12_11
-       4  ??DataTable12_12
-       4  ??DataTable12_13
-       4  ??DataTable12_14
-       4  ??DataTable12_15
        4  ??DataTable12_2
        4  ??DataTable12_3
        4  ??DataTable12_4
-       4  ??DataTable12_5
-       4  ??DataTable12_6
-       4  ??DataTable12_7
-       4  ??DataTable12_8
-       4  ??DataTable12_9
        4  ??DataTable13
        4  ??DataTable13_1
+       4  ??DataTable13_10
+       4  ??DataTable13_11
+       4  ??DataTable13_12
+       4  ??DataTable13_13
+       4  ??DataTable13_14
        4  ??DataTable13_2
        4  ??DataTable13_3
        4  ??DataTable13_4
+       4  ??DataTable13_5
+       4  ??DataTable13_6
+       4  ??DataTable13_7
+       4  ??DataTable13_8
+       4  ??DataTable13_9
        4  ??DataTable14
        4  ??DataTable14_1
-       4  ??DataTable14_10
        4  ??DataTable14_2
        4  ??DataTable14_3
        4  ??DataTable14_4
        4  ??DataTable14_5
-       4  ??DataTable14_6
-       4  ??DataTable14_7
-       4  ??DataTable14_8
-       4  ??DataTable14_9
        4  ??DataTable15
        4  ??DataTable15_1
+       4  ??DataTable15_10
+       4  ??DataTable15_11
        4  ??DataTable15_2
        4  ??DataTable15_3
        4  ??DataTable15_4
@@ -2216,6 +2251,7 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
        4  ??DataTable15_6
        4  ??DataTable15_7
        4  ??DataTable15_8
+       4  ??DataTable15_9
        4  ??DataTable16
        4  ??DataTable16_1
        4  ??DataTable16_2
@@ -2224,16 +2260,19 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
        4  ??DataTable16_5
        4  ??DataTable16_6
        4  ??DataTable16_7
+       4  ??DataTable16_8
        4  ??DataTable17
        4  ??DataTable17_1
        4  ??DataTable17_2
-       4  ??DataTable19
+       4  ??DataTable17_3
+       4  ??DataTable17_4
+       4  ??DataTable17_5
+       4  ??DataTable17_6
+       4  ??DataTable18
+       4  ??DataTable18_1
+       4  ??DataTable18_2
+       4  ??DataTable18_3
        4  ??DataTable20
-       4  ??DataTable20_1
-       4  ??DataTable20_2
-       4  ??DataTable20_3
-       4  ??DataTable20_4
-       4  ??DataTable20_5
        4  ??DataTable21
        4  ??DataTable21_1
        4  ??DataTable21_2
@@ -2242,83 +2281,90 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
        4  ??DataTable22
        4  ??DataTable22_1
        4  ??DataTable22_2
-       4  ??DataTable24
-       4  ??DataTable24_1
-       4  ??DataTable24_2
-       4  ??DataTable24_3
+       4  ??DataTable22_3
+       4  ??DataTable22_4
+       4  ??DataTable23
+       4  ??DataTable23_1
+       4  ??DataTable23_2
        4  ??DataTable25
        4  ??DataTable25_1
        4  ??DataTable25_2
        4  ??DataTable25_3
-       4  ??DataTable25_4
        4  ??DataTable26
        4  ??DataTable26_1
        4  ??DataTable26_2
+       4  ??DataTable26_3
+       4  ??DataTable26_4
        4  ??DataTable27
        4  ??DataTable27_1
        4  ??DataTable27_2
-       4  ??DataTable27_3
-       4  ??DataTable27_4
-       4  ??DataTable27_5
-       4  ??DataTable29
-       4  ??DataTable29_1
-       4  ??DataTable29_2
+       4  ??DataTable28
+       4  ??DataTable28_1
+       4  ??DataTable28_2
+       4  ??DataTable28_3
+       4  ??DataTable28_4
+       4  ??DataTable28_5
+       4  ??DataTable28_6
        4  ??DataTable30
        4  ??DataTable30_1
-       4  ??DataTable30_10
-       4  ??DataTable30_11
-       4  ??DataTable30_12
-       4  ??DataTable30_13
-       4  ??DataTable30_14
-       4  ??DataTable30_15
-       4  ??DataTable30_16
-       4  ??DataTable30_17
-       4  ??DataTable30_18
-       4  ??DataTable30_19
        4  ??DataTable30_2
-       4  ??DataTable30_20
-       4  ??DataTable30_21
-       4  ??DataTable30_22
-       4  ??DataTable30_23
-       4  ??DataTable30_24
-       4  ??DataTable30_25
-       4  ??DataTable30_26
-       4  ??DataTable30_27
-       4  ??DataTable30_28
-       4  ??DataTable30_29
-       4  ??DataTable30_3
-       4  ??DataTable30_30
-       4  ??DataTable30_31
-       4  ??DataTable30_32
-       4  ??DataTable30_33
-       4  ??DataTable30_34
-       4  ??DataTable30_35
-       4  ??DataTable30_36
-       4  ??DataTable30_37
-       4  ??DataTable30_38
-       4  ??DataTable30_39
-       4  ??DataTable30_4
-       4  ??DataTable30_40
-       4  ??DataTable30_41
-       4  ??DataTable30_42
-       4  ??DataTable30_43
-       4  ??DataTable30_44
-       4  ??DataTable30_45
-       4  ??DataTable30_46
-       4  ??DataTable30_47
-       4  ??DataTable30_48
-       4  ??DataTable30_49
-       4  ??DataTable30_5
-       4  ??DataTable30_50
-       4  ??DataTable30_51
-       4  ??DataTable30_6
-       4  ??DataTable30_7
-       4  ??DataTable30_8
-       4  ??DataTable30_9
+       4  ??DataTable31
+       4  ??DataTable31_1
+       4  ??DataTable31_10
+       4  ??DataTable31_11
+       4  ??DataTable31_12
+       4  ??DataTable31_13
+       4  ??DataTable31_14
+       4  ??DataTable31_15
+       4  ??DataTable31_16
+       4  ??DataTable31_17
+       4  ??DataTable31_18
+       4  ??DataTable31_19
+       4  ??DataTable31_2
+       4  ??DataTable31_20
+       4  ??DataTable31_21
+       4  ??DataTable31_22
+       4  ??DataTable31_23
+       4  ??DataTable31_24
+       4  ??DataTable31_25
+       4  ??DataTable31_26
+       4  ??DataTable31_27
+       4  ??DataTable31_28
+       4  ??DataTable31_29
+       4  ??DataTable31_3
+       4  ??DataTable31_30
+       4  ??DataTable31_31
+       4  ??DataTable31_32
+       4  ??DataTable31_33
+       4  ??DataTable31_34
+       4  ??DataTable31_35
+       4  ??DataTable31_36
+       4  ??DataTable31_37
+       4  ??DataTable31_38
+       4  ??DataTable31_39
+       4  ??DataTable31_4
+       4  ??DataTable31_40
+       4  ??DataTable31_41
+       4  ??DataTable31_42
+       4  ??DataTable31_43
+       4  ??DataTable31_44
+       4  ??DataTable31_45
+       4  ??DataTable31_46
+       4  ??DataTable31_47
+       4  ??DataTable31_48
+       4  ??DataTable31_49
+       4  ??DataTable31_5
+       4  ??DataTable31_50
+       4  ??DataTable31_51
+       4  ??DataTable31_6
+       4  ??DataTable31_7
+       4  ??DataTable31_8
+       4  ??DataTable31_9
      316  AB_POST
       12  Audio_Version
      112  Check_Actived_Mic_Number
      156  Check_UART_Mixer_Ready
+      96  Check_Watch_Attach_State
       76  FLASHD_Write_Safe
      132  Get_Audio_Version
      368  Get_Ruler_Type
@@ -2345,7 +2391,7 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
        1  Ruler_Setup_Sync_Data
      476  Save_Ruler_FW
      344  Set_Volume
-     724  Setup_Audio
+     796  Setup_Audio
      380  Setup_Ruler
      316  Start_Audio
      308  Stop_Audio
@@ -2363,11 +2409,11 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
  
      52 bytes in section .bss
       4 bytes in section .data
-  3 138 bytes in section .rodata
- 10 692 bytes in section .text
+  3 206 bytes in section .rodata
+ 10 872 bytes in section .text
  
- 10 692 bytes of CODE  memory
-  3 138 bytes of CONST memory
+ 10 872 bytes of CODE  memory
+  3 206 bytes of CONST memory
      56 bytes of DATA  memory
 
 Errors: none
