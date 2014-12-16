@@ -1376,6 +1376,24 @@ unsigned char Update_Ruler_FW( unsigned char ruler_slot_id )
 //}
 
 
+
+unsigned int Revert_Bit_Order(unsigned int data,unsigned char bit_len )
+{
+    signed char i;
+    unsigned int Temp1 = 0;
+    unsigned int Temp2 = 0;
+    
+    for( i = bit_len - 1; i >= 0; i-- )  {
+        Temp1 = data & 0x01;
+        Temp1 <<= i;
+        Temp2 |= Temp1;
+        data >>= 1;
+    }
+    
+    return Temp2;
+    
+}
+
 /*
 *********************************************************************************************************
 *                                       Toggle_Mic()
@@ -1396,6 +1414,7 @@ unsigned char Toggle_Mic(  TOGGLE_MIC *pdata )
     unsigned char  id;
     unsigned int   mic_mask;  
     unsigned int   fpga_mask;
+    unsigned char  temp;
     
 #if OS_CRITICAL_METHOD == 3u
     OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
@@ -1426,8 +1445,13 @@ unsigned char Toggle_Mic(  TOGGLE_MIC *pdata )
     }
     OS_EXIT_CRITICAL();
     if( RULER_TYPE_MASK( Global_Ruler_Type[pdata->ruler_id] ) == RULER_TYPE_RULER ) { //ruler
-        for( id = 0; id < 4; id++ ) {
-            fpga_mask += (Global_Mic_Mask[id]&0xFF) << (id<<3);
+        for( id = 0; id < 4; id++ ) {            
+            if( Global_Ruler_Type[pdata->ruler_id] == RULER_TYPE_W01 ) {
+                temp = Revert_Bit_Order( Global_Mic_Mask[id]&0xFF, 8 );
+            } else {
+                temp = Global_Mic_Mask[id]&0xFF;
+            }
+            fpga_mask += temp << (id<<3);
         }
     } else { //handset
        fpga_mask = 0x3F << ((pdata->ruler_id)<<3);

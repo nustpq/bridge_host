@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        05/Sep/2014  09:57:06
+# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        16/Dec/2014  22:25:59
 # Copyright 1999-2014 IAR Systems AB.
 #
 #    Cpu mode     =  arm
@@ -1423,441 +1423,465 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
    1376          //}
    1377          
    1378          
-   1379          /*
-   1380          *********************************************************************************************************
-   1381          *                                       Toggle_Mic()
-   1382          *
-   1383          * Description : Toggle specified mic's active state by sending command to related ruler and updating 
-   1384          *               FPGA mic signal switch array. 
-   1385          *               One mic One time.
-   1386          * Argument(s) : pdata : pointer to TOGGLE_MIC structure data
-   1387          * Return(s)   : NO_ERR :   execute successfully
-   1388          *               others :   =error code .  
-   1389          *
-   1390          * Note(s)     : None.
-   1391          *********************************************************************************************************
-   1392          */
-   1393          unsigned char Toggle_Mic(  TOGGLE_MIC *pdata )
-   1394          {  
-   1395              unsigned char  err ;
-   1396              unsigned char  id;
-   1397              unsigned int   mic_mask;  
-   1398              unsigned int   fpga_mask;
-   1399              
-   1400          #if OS_CRITICAL_METHOD == 3u
-   1401              OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
-   1402          #endif 
-   1403              fpga_mask = 0;
-   1404              //check ruler connection state 
-   1405              if( Global_Ruler_State[pdata->ruler_id] < RULER_STATE_CONFIGURED ) {      
-   1406                  return RULER_STATE_ERR ;         
-   1407              }  
-   1408              APP_TRACE_INFO(("Toggle Ruler[%d]-Mic[%d] : %d  : ", pdata->ruler_id, pdata->mic_id, pdata->on_off )); 
-   1409              OS_ENTER_CRITICAL(); 
-   1410              mic_mask = Global_Mic_Mask[pdata->ruler_id];
-   1411              OS_EXIT_CRITICAL();  
-   1412              mic_mask &= ~( 1<<(pdata->mic_id));
-   1413              mic_mask |=  (pdata->on_off&0x01)<<( pdata->mic_id);
-   1414              err = Update_Mic_Mask( pdata->ruler_id, mic_mask );
-   1415              APP_TRACE_INFO((" %s [0x%X]\r\n", err == OS_ERR_NONE ? "OK" : "FAIL" , err )); 
-   1416              if( OS_ERR_NONE != err ) {        
-   1417                  return err;    
-   1418              }
-   1419              OS_ENTER_CRITICAL(); 
-   1420              Global_Mic_Mask[pdata->ruler_id] = mic_mask; 
-   1421              //APP_TRACE_INFO(("Update Ruler[%d] Mic_Mask:  %d\r\n",pdata->ruler_id,Global_Mic_Mask[pdata->ruler_id]));   
-   1422              if( mic_mask == 0 ) {      
-   1423                  Global_Ruler_State[pdata->ruler_id] = RULER_STATE_CONFIGURED;         
-   1424              } else {
-   1425                  Global_Ruler_State[pdata->ruler_id] = RULER_STATE_SELECTED;  
-   1426              }
-   1427              OS_EXIT_CRITICAL();
-   1428              if( RULER_TYPE_MASK( Global_Ruler_Type[pdata->ruler_id] ) == RULER_TYPE_RULER ) { //ruler
-   1429                  for( id = 0; id < 4; id++ ) {
-   1430                      fpga_mask += (Global_Mic_Mask[id]&0xFF) << (id<<3);
-   1431                  }
-   1432              } else { //handset
-   1433                 fpga_mask = 0x3F << ((pdata->ruler_id)<<3);
-   1434              }
-   1435              Init_FPGA(fpga_mask);
-   1436              return err;  
-   1437          }
-   1438          
-   1439          
-   1440          /*
-   1441          *********************************************************************************************************
-   1442          *                                       Set_Volume()
-   1443          *
-   1444          * Description : Set DMIC PGA gain, LOUT and SPKOUT attenuation gain at the same time
-   1445          *             
-   1446          * Argument(s) : pdata : pointer to SET_VOLUME structure data
-   1447          * Return(s)   : NO_ERR :   execute successfully
-   1448          *               others :   =error code .  
-   1449          *
-   1450          * Note(s)     : None.
-   1451          *********************************************************************************************************
-   1452          */
-   1453          unsigned char Set_Volume(  SET_VOLUME *pdata )
-   1454          {  
-   1455              unsigned char  err ;
-   1456              
-   1457              APP_TRACE_INFO(( "Set Volume :: " ));
-   1458              if( pdata->mic == SET_VOLUME_MUTE ) {
-   1459                  APP_TRACE_INFO(( "Mute MIC :  " ));
-   1460              } else {
-   1461                  APP_TRACE_INFO(( "Mic_Gain = %d dB :  ", pdata->mic )); 
-   1462              }
-   1463              
-   1464              if( pdata->lout == SET_VOLUME_MUTE ) {
-   1465                  APP_TRACE_INFO(( "Mute LOUT :  " ));
-   1466              } else {
-   1467                  APP_TRACE_INFO(( "LOUT_Gain = -%d.%d dB :  ", pdata->lout/10, pdata->lout%10 )); 
-   1468              }
-   1469              
-   1470              if( pdata->spk == SET_VOLUME_MUTE ) {
-   1471                  APP_TRACE_INFO(( "Mute SPK :  " ));
-   1472              } else {
-   1473                  APP_TRACE_INFO(( "SPK_Gain = -%d.%d dB :  ", pdata->spk/10, pdata->spk%10 )); 
-   1474              }
-   1475              
-   1476              //APP_TRACE_INFO(("Set Volume : Mic_Gain[%d]dB, LOUT_Gain[-%d.%d]dB, SPKOUT_Gain[-%d.%d]dB : ", 
-   1477              //                     pdata->mic, pdata->lout/10, pdata->lout%10, pdata->spk/10, pdata->spk%10 )); 
-   1478              //APP_TRACE_INFO(("\r\n%6.6f, %6.6f\r\n",2.31,0.005));
-   1479              err = DMIC_PGA_Control( pdata->mic ); 
-   1480              //APP_TRACE_INFO((" %s [0x%X]\r\n", err == OS_ERR_NONE ? "OK" : "FAIL" , err )); 
-   1481              if( OS_ERR_NONE != err ) {  
-   1482                  APP_TRACE_INFO(( "FAIL [0x%X]\r\n", err )); 
-   1483                  return err;    
-   1484              }
-   1485              err = CODEC_Set_Volume( pdata->spk, pdata->lout );
-   1486              if( OS_ERR_NONE != err ) {    
-   1487                  APP_TRACE_INFO(( "FAIL [0x%X]\r\n", err )); 
-   1488                  return err;    
-   1489              }
-   1490              APP_TRACE_INFO(( "OK\r\n" )); 
-   1491              return err;  
-   1492          }
-   1493          
-   1494          
-   1495          
-   1496          /*
-   1497          *********************************************************************************************************
-   1498          *                                       Reset_Mic_Mask()
-   1499          *
-   1500          * Description : Reset all mics to deactived state on the specified rulers and update FPGA mic signal switch array.
-   1501          * Argument(s) : pInt : pointer to a int data, the 4 bytes of wihch control 4 ruler's all mic need be 
-   1502          *               reset to deactive state or not.
-   1503          *                      1 - deactive all mics on this ruler
-   1504          *                      0 - do nothing. ignore the reset operation
-   1505          * Return(s)   : NO_ERR :   execute successfully
-   1506          *               others :   =error code .  
-   1507          *
-   1508          * Note(s)     : None.
-   1509          *********************************************************************************************************
-   1510          */
-   1511          unsigned char Reset_Mic_Mask(  unsigned int *pInt )
-   1512          {  
-   1513              unsigned char  err ;
-   1514              unsigned char  id;
-   1515              unsigned char  *pChar;  
-   1516              unsigned int   fpga_mask;
-   1517              
-   1518              fpga_mask = 0;    
-   1519              pChar     = (unsigned char *)pInt;
-   1520              err       = 0;
-   1521          
-   1522              for( id = 0; id < 4; id++ ) {        
-   1523                  if( *(pChar+id) == 0 ) { 
-   1524                      continue;
-   1525                  }
-   1526                  if( Global_Ruler_State[id] < RULER_STATE_CONFIGURED ) { //why not RULER_STATE_SELECTED  ? Because UI need reset mic in any case
-   1527                      continue;
-   1528                  }
-   1529                  Global_Ruler_State[id] = RULER_STATE_CONFIGURED ;
-   1530                  err = Update_Mic_Mask( id, 0 );
-   1531                  if( OS_ERR_NONE != err ) {        
-   1532                      return err;    
-   1533                  } 
-   1534                  Global_Mic_Mask[id] = 0;  
-   1535                  if( RULER_TYPE_MASK( Global_Ruler_Type[id] ) == RULER_TYPE_RULER ) {//ruler 
-   1536                      fpga_mask += (Global_Mic_Mask[id]&0xFF) << (id<<3);
-   1537                      
-   1538                  } else {
-   1539                      fpga_mask += 0x3F << (id<<3); //handset choose the lowest slot H01
-   1540                  }        
-   1541              }
-   1542              
-   1543              Init_FPGA(fpga_mask);    
-   1544              return err;  
-   1545          }
-   1546          
-   1547          
-   1548          /*
-   1549          *********************************************************************************************************
-   1550          *                                       Ruler_Port_LED_Service()
-   1551          *
-   1552          * Description : Control the ruler port identify LED state:  
-   1553          *               turn on LED after ruler configured, blink LED during recording
-   1554          * Argument(s) : None.
-   1555          * Return(s)   : None.
-   1556          * Note(s)     : None.
-   1557          *********************************************************************************************************
-   1558          */
-   1559          void Ruler_Port_LED_Service( void )
-   1560          {    
-   1561              static unsigned int counter; 
-   1562              static unsigned int counter_buz;    
-   1563              unsigned char ruler_id;
-   1564              unsigned char ruler_state;    
-   1565              unsigned char LED_Freq;
-   1566              unsigned char post_err_flag;
-   1567          
-   1568              LED_Freq      = 0x3F; 
-   1569              post_err_flag = 0;
-   1570              
-   1571              for( ruler_id = 0 ; ruler_id < 4 ; ruler_id++ ) {
-   1572                
-   1573                  ruler_state = Global_Ruler_State[ruler_id];  
-   1574                  if( Global_Bridge_POST != NO_ERR ) { //if POST err, start all LED 
-   1575                      ruler_state = RULER_STATE_RUN ;
-   1576                      post_err_flag = 1;
-   1577                  }
-   1578                  switch( ruler_state ) {
-   1579                    
-   1580                      case RULER_STATE_DETACHED :
-   1581                      case RULER_STATE_ATTACHED :
-   1582                          LED_Clear( LED_P0 + ruler_id );
-   1583                      break;            
-   1584                      case RULER_STATE_CONFIGURED :
-   1585                      case RULER_STATE_SELECTED :  
-   1586                          LED_Set( LED_P0 + ruler_id );
-   1587                      break;            
-   1588                      case RULER_STATE_RUN :
-   1589                          if( (counter & LED_Freq) == 0 ) {
-   1590                              LED_Toggle( LED_P0 + ruler_id );   
-   1591                              if( post_err_flag== 1 && ruler_id == 0 && (counter_buz++ < 6 ) ) {
-   1592                                  //Buzzer_Toggle(); //buzzer off id POST err 
-   1593                                  Buzzer_OnOff( counter_buz&0x01 );   //fix long buz issue in some case                  
-   1594                              }
-   1595                          }
-   1596                      
-   1597                      default:              
-   1598                      break;
-   1599                  }
-   1600            
-   1601              }    
-   1602              counter++;    
-   1603          }
-   1604          
-   1605          
-   1606          
-   1607          /*
-   1608          *********************************************************************************************************
-   1609          *                                       AB_POST()
-   1610          *
-   1611          * Description : Audio bridge Power-On-Self-Test use. 
-   1612          *
-   1613          * Argument(s) : None.
-   1614          * Return(s)   : None.
-   1615          * Note(s)     : None.
-   1616          *********************************************************************************************************
-   1617          */
-   1618          void AB_POST( void )
-   1619          {
-   1620              unsigned char  err;
-   1621              
-   1622              APP_TRACE_INFO(("\r\nStart Audio Bridge POST :\r\n"));    
-   1623              Enable_FPGA();
-   1624          
-   1625              APP_TRACE_INFO(("\r\n1. CODEC... \r\n"));
-   1626              err = Init_CODEC( SAMPLE_RATE_DEF );    
-   1627              if( err != NO_ERR ) {
-   1628                  Global_Bridge_POST = POST_ERR_CODEC;
-   1629                  APP_TRACE_INFO(("\r\n---Error : %d\r\n",err));
-   1630                  return ;
-   1631              } else {
-   1632                  APP_TRACE_INFO(("\r\n---OK\r\n"));
-   1633              }
-   1634              
-   1635              APP_TRACE_INFO(("\r\n2. FM36 DSP... \r\n"));
-   1636          #ifdef BOARD_TYPE_AB03     
-   1637              err = Init_FM36_AB03( SAMPLE_RATE_DEF, 0, 1, 0 ); //Lin from SP1.Slot0
-   1638              //err = Init_FM36( SAMPLE_RATE_DEF );
-   1639          #else 
-   1640              err = Init_FM36( SAMPLE_RATE_DEF );
-   1641          #endif
-   1642              if( err != NO_ERR ) {
-   1643                  Global_Bridge_POST = POST_ERR_FM36;
-   1644                  APP_TRACE_INFO(("\r\n---Error : %d\r\n",err));
-   1645                  return ;
-   1646              } else {
-   1647                  APP_TRACE_INFO(("\r\n---OK\r\n"));
-   1648              }  
-   1649              
-   1650              APP_TRACE_INFO(("\r\n3. AUDIO MCU... \r\n"));
-   1651              err = Get_Audio_Version();
-   1652              if( err != NO_ERR ) {
-   1653                  Global_Bridge_POST = POST_ERR_AUDIO;
-   1654                  APP_TRACE_INFO(("\r\n---Error : %d\r\n",err));
-   1655                  return ;
-   1656              } else {
-   1657                  APP_TRACE_INFO(("\r\n---OK\r\n"));
-   1658              }    
-   1659             
-   1660              
-   1661              
-   1662          //    APP_TRACE_INFO(("\r\n4. external CODEC... \r\n"));
-   1663          //    err = Init_CODEC_AIC3204( SAMPLE_RATE_DEF );    
-   1664          //    if( err != NO_ERR ) {
-   1665          //        Global_Bridge_POST = POST_ERR_CODEC;
-   1666          //        APP_TRACE_INFO(("\r\n---Error : %d\r\n",err));
-   1667          //        return ;
-   1668          //    } else {
-   1669          //        APP_TRACE_INFO(("\r\n---OK\r\n"));
-   1670          //    }
-   1671              
-   1672              //Disable_FPGA(); 
-   1673              //Ruler_Power_Switch(1); 
-   1674              
-   1675              err = Init_CODEC( 0 );
+   1379          
+   1380          unsigned int Revert_Bit_Order(unsigned int data,unsigned char bit_len )
+   1381          {
+   1382              signed char i;
+   1383              unsigned int Temp1 = 0;
+   1384              unsigned int Temp2 = 0;
+   1385              
+   1386              for( i = bit_len - 1; i >= 0; i-- )  {
+   1387                  Temp1 = data & 0x01;
+   1388                  Temp1 <<= i;
+   1389                  Temp2 |= Temp1;
+   1390                  data >>= 1;
+   1391              }
+   1392              
+   1393              return Temp2;
+   1394              
+   1395          }
+   1396          
+   1397          /*
+   1398          *********************************************************************************************************
+   1399          *                                       Toggle_Mic()
+   1400          *
+   1401          * Description : Toggle specified mic's active state by sending command to related ruler and updating 
+   1402          *               FPGA mic signal switch array. 
+   1403          *               One mic One time.
+   1404          * Argument(s) : pdata : pointer to TOGGLE_MIC structure data
+   1405          * Return(s)   : NO_ERR :   execute successfully
+   1406          *               others :   =error code .  
+   1407          *
+   1408          * Note(s)     : None.
+   1409          *********************************************************************************************************
+   1410          */
+   1411          unsigned char Toggle_Mic(  TOGGLE_MIC *pdata )
+   1412          {  
+   1413              unsigned char  err ;
+   1414              unsigned char  id;
+   1415              unsigned int   mic_mask;  
+   1416              unsigned int   fpga_mask;
+   1417              unsigned char  temp;
+   1418              
+   1419          #if OS_CRITICAL_METHOD == 3u
+   1420              OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
+   1421          #endif 
+   1422              fpga_mask = 0;
+   1423              //check ruler connection state 
+   1424              if( Global_Ruler_State[pdata->ruler_id] < RULER_STATE_CONFIGURED ) {      
+   1425                  return RULER_STATE_ERR ;         
+   1426              }  
+   1427              APP_TRACE_INFO(("Toggle Ruler[%d]-Mic[%d] : %d  : ", pdata->ruler_id, pdata->mic_id, pdata->on_off )); 
+   1428              OS_ENTER_CRITICAL(); 
+   1429              mic_mask = Global_Mic_Mask[pdata->ruler_id];
+   1430              OS_EXIT_CRITICAL();  
+   1431              mic_mask &= ~( 1<<(pdata->mic_id));
+   1432              mic_mask |=  (pdata->on_off&0x01)<<( pdata->mic_id);
+   1433              err = Update_Mic_Mask( pdata->ruler_id, mic_mask );
+   1434              APP_TRACE_INFO((" %s [0x%X]\r\n", err == OS_ERR_NONE ? "OK" : "FAIL" , err )); 
+   1435              if( OS_ERR_NONE != err ) {        
+   1436                  return err;    
+   1437              }
+   1438              OS_ENTER_CRITICAL(); 
+   1439              Global_Mic_Mask[pdata->ruler_id] = mic_mask; 
+   1440              //APP_TRACE_INFO(("Update Ruler[%d] Mic_Mask:  %d\r\n",pdata->ruler_id,Global_Mic_Mask[pdata->ruler_id]));   
+   1441              if( mic_mask == 0 ) {      
+   1442                  Global_Ruler_State[pdata->ruler_id] = RULER_STATE_CONFIGURED;         
+   1443              } else {
+   1444                  Global_Ruler_State[pdata->ruler_id] = RULER_STATE_SELECTED;  
+   1445              }
+   1446              OS_EXIT_CRITICAL();
+   1447              if( RULER_TYPE_MASK( Global_Ruler_Type[pdata->ruler_id] ) == RULER_TYPE_RULER ) { //ruler
+   1448                  for( id = 0; id < 4; id++ ) {            
+   1449                      if( Global_Ruler_Type[pdata->ruler_id] == RULER_TYPE_W01 ) {
+   1450                          temp = Revert_Bit_Order( Global_Mic_Mask[id]&0xFF, 8 );
+   1451                      } else {
+   1452                          temp = Global_Mic_Mask[id]&0xFF;
+   1453                      }
+   1454                      fpga_mask += temp << (id<<3);
+   1455                  }
+   1456              } else { //handset
+   1457                 fpga_mask = 0x3F << ((pdata->ruler_id)<<3);
+   1458              }
+   1459              Init_FPGA(fpga_mask);
+   1460              return err;  
+   1461          }
+   1462          
+   1463          
+   1464          /*
+   1465          *********************************************************************************************************
+   1466          *                                       Set_Volume()
+   1467          *
+   1468          * Description : Set DMIC PGA gain, LOUT and SPKOUT attenuation gain at the same time
+   1469          *             
+   1470          * Argument(s) : pdata : pointer to SET_VOLUME structure data
+   1471          * Return(s)   : NO_ERR :   execute successfully
+   1472          *               others :   =error code .  
+   1473          *
+   1474          * Note(s)     : None.
+   1475          *********************************************************************************************************
+   1476          */
+   1477          unsigned char Set_Volume(  SET_VOLUME *pdata )
+   1478          {  
+   1479              unsigned char  err ;
+   1480              
+   1481              APP_TRACE_INFO(( "Set Volume :: " ));
+   1482              if( pdata->mic == SET_VOLUME_MUTE ) {
+   1483                  APP_TRACE_INFO(( "Mute MIC :  " ));
+   1484              } else {
+   1485                  APP_TRACE_INFO(( "Mic_Gain = %d dB :  ", pdata->mic )); 
+   1486              }
+   1487              
+   1488              if( pdata->lout == SET_VOLUME_MUTE ) {
+   1489                  APP_TRACE_INFO(( "Mute LOUT :  " ));
+   1490              } else {
+   1491                  APP_TRACE_INFO(( "LOUT_Gain = -%d.%d dB :  ", pdata->lout/10, pdata->lout%10 )); 
+   1492              }
+   1493              
+   1494              if( pdata->spk == SET_VOLUME_MUTE ) {
+   1495                  APP_TRACE_INFO(( "Mute SPK :  " ));
+   1496              } else {
+   1497                  APP_TRACE_INFO(( "SPK_Gain = -%d.%d dB :  ", pdata->spk/10, pdata->spk%10 )); 
+   1498              }
+   1499              
+   1500              //APP_TRACE_INFO(("Set Volume : Mic_Gain[%d]dB, LOUT_Gain[-%d.%d]dB, SPKOUT_Gain[-%d.%d]dB : ", 
+   1501              //                     pdata->mic, pdata->lout/10, pdata->lout%10, pdata->spk/10, pdata->spk%10 )); 
+   1502              //APP_TRACE_INFO(("\r\n%6.6f, %6.6f\r\n",2.31,0.005));
+   1503              err = DMIC_PGA_Control( pdata->mic ); 
+   1504              //APP_TRACE_INFO((" %s [0x%X]\r\n", err == OS_ERR_NONE ? "OK" : "FAIL" , err )); 
+   1505              if( OS_ERR_NONE != err ) {  
+   1506                  APP_TRACE_INFO(( "FAIL [0x%X]\r\n", err )); 
+   1507                  return err;    
+   1508              }
+   1509              err = CODEC_Set_Volume( pdata->spk, pdata->lout );
+   1510              if( OS_ERR_NONE != err ) {    
+   1511                  APP_TRACE_INFO(( "FAIL [0x%X]\r\n", err )); 
+   1512                  return err;    
+   1513              }
+   1514              APP_TRACE_INFO(( "OK\r\n" )); 
+   1515              return err;  
+   1516          }
+   1517          
+   1518          
+   1519          
+   1520          /*
+   1521          *********************************************************************************************************
+   1522          *                                       Reset_Mic_Mask()
+   1523          *
+   1524          * Description : Reset all mics to deactived state on the specified rulers and update FPGA mic signal switch array.
+   1525          * Argument(s) : pInt : pointer to a int data, the 4 bytes of wihch control 4 ruler's all mic need be 
+   1526          *               reset to deactive state or not.
+   1527          *                      1 - deactive all mics on this ruler
+   1528          *                      0 - do nothing. ignore the reset operation
+   1529          * Return(s)   : NO_ERR :   execute successfully
+   1530          *               others :   =error code .  
+   1531          *
+   1532          * Note(s)     : None.
+   1533          *********************************************************************************************************
+   1534          */
+   1535          unsigned char Reset_Mic_Mask(  unsigned int *pInt )
+   1536          {  
+   1537              unsigned char  err ;
+   1538              unsigned char  id;
+   1539              unsigned char  *pChar;  
+   1540              unsigned int   fpga_mask;
+   1541              
+   1542              fpga_mask = 0;    
+   1543              pChar     = (unsigned char *)pInt;
+   1544              err       = 0;
+   1545          
+   1546              for( id = 0; id < 4; id++ ) {        
+   1547                  if( *(pChar+id) == 0 ) { 
+   1548                      continue;
+   1549                  }
+   1550                  if( Global_Ruler_State[id] < RULER_STATE_CONFIGURED ) { //why not RULER_STATE_SELECTED  ? Because UI need reset mic in any case
+   1551                      continue;
+   1552                  }
+   1553                  Global_Ruler_State[id] = RULER_STATE_CONFIGURED ;
+   1554                  err = Update_Mic_Mask( id, 0 );
+   1555                  if( OS_ERR_NONE != err ) {        
+   1556                      return err;    
+   1557                  } 
+   1558                  Global_Mic_Mask[id] = 0;  
+   1559                  if( RULER_TYPE_MASK( Global_Ruler_Type[id] ) == RULER_TYPE_RULER ) {//ruler 
+   1560                      fpga_mask += (Global_Mic_Mask[id]&0xFF) << (id<<3);
+   1561                      
+   1562                  } else {
+   1563                      fpga_mask += 0x3F << (id<<3); //handset choose the lowest slot H01
+   1564                  }        
+   1565              }
+   1566              
+   1567              Init_FPGA(fpga_mask);    
+   1568              return err;  
+   1569          }
+   1570          
+   1571          
+   1572          /*
+   1573          *********************************************************************************************************
+   1574          *                                       Ruler_Port_LED_Service()
+   1575          *
+   1576          * Description : Control the ruler port identify LED state:  
+   1577          *               turn on LED after ruler configured, blink LED during recording
+   1578          * Argument(s) : None.
+   1579          * Return(s)   : None.
+   1580          * Note(s)     : None.
+   1581          *********************************************************************************************************
+   1582          */
+   1583          void Ruler_Port_LED_Service( void )
+   1584          {    
+   1585              static unsigned int counter; 
+   1586              static unsigned int counter_buz;    
+   1587              unsigned char ruler_id;
+   1588              unsigned char ruler_state;    
+   1589              unsigned char LED_Freq;
+   1590              unsigned char post_err_flag;
+   1591          
+   1592              LED_Freq      = 0x3F; 
+   1593              post_err_flag = 0;
+   1594              
+   1595              for( ruler_id = 0 ; ruler_id < 4 ; ruler_id++ ) {
+   1596                
+   1597                  ruler_state = Global_Ruler_State[ruler_id];  
+   1598                  if( Global_Bridge_POST != NO_ERR ) { //if POST err, start all LED 
+   1599                      ruler_state = RULER_STATE_RUN ;
+   1600                      post_err_flag = 1;
+   1601                  }
+   1602                  switch( ruler_state ) {
+   1603                    
+   1604                      case RULER_STATE_DETACHED :
+   1605                      case RULER_STATE_ATTACHED :
+   1606                          LED_Clear( LED_P0 + ruler_id );
+   1607                      break;            
+   1608                      case RULER_STATE_CONFIGURED :
+   1609                      case RULER_STATE_SELECTED :  
+   1610                          LED_Set( LED_P0 + ruler_id );
+   1611                      break;            
+   1612                      case RULER_STATE_RUN :
+   1613                          if( (counter & LED_Freq) == 0 ) {
+   1614                              LED_Toggle( LED_P0 + ruler_id );   
+   1615                              if( post_err_flag== 1 && ruler_id == 0 && (counter_buz++ < 6 ) ) {
+   1616                                  //Buzzer_Toggle(); //buzzer off id POST err 
+   1617                                  Buzzer_OnOff( counter_buz&0x01 );   //fix long buz issue in some case                  
+   1618                              }
+   1619                          }
+   1620                      
+   1621                      default:              
+   1622                      break;
+   1623                  }
+   1624            
+   1625              }    
+   1626              counter++;    
+   1627          }
+   1628          
+   1629          
+   1630          
+   1631          /*
+   1632          *********************************************************************************************************
+   1633          *                                       AB_POST()
+   1634          *
+   1635          * Description : Audio bridge Power-On-Self-Test use. 
+   1636          *
+   1637          * Argument(s) : None.
+   1638          * Return(s)   : None.
+   1639          * Note(s)     : None.
+   1640          *********************************************************************************************************
+   1641          */
+   1642          void AB_POST( void )
+   1643          {
+   1644              unsigned char  err;
+   1645              
+   1646              APP_TRACE_INFO(("\r\nStart Audio Bridge POST :\r\n"));    
+   1647              Enable_FPGA();
+   1648          
+   1649              APP_TRACE_INFO(("\r\n1. CODEC... \r\n"));
+   1650              err = Init_CODEC( SAMPLE_RATE_DEF );    
+   1651              if( err != NO_ERR ) {
+   1652                  Global_Bridge_POST = POST_ERR_CODEC;
+   1653                  APP_TRACE_INFO(("\r\n---Error : %d\r\n",err));
+   1654                  return ;
+   1655              } else {
+   1656                  APP_TRACE_INFO(("\r\n---OK\r\n"));
+   1657              }
+   1658              
+   1659              APP_TRACE_INFO(("\r\n2. FM36 DSP... \r\n"));
+   1660          #ifdef BOARD_TYPE_AB03     
+   1661              err = Init_FM36_AB03( SAMPLE_RATE_DEF, 0, 1, 0 ); //Lin from SP1.Slot0
+   1662              //err = Init_FM36( SAMPLE_RATE_DEF );
+   1663          #else 
+   1664              err = Init_FM36( SAMPLE_RATE_DEF );
+   1665          #endif
+   1666              if( err != NO_ERR ) {
+   1667                  Global_Bridge_POST = POST_ERR_FM36;
+   1668                  APP_TRACE_INFO(("\r\n---Error : %d\r\n",err));
+   1669                  return ;
+   1670              } else {
+   1671                  APP_TRACE_INFO(("\r\n---OK\r\n"));
+   1672              }  
+   1673              
+   1674              APP_TRACE_INFO(("\r\n3. AUDIO MCU... \r\n"));
+   1675              err = Get_Audio_Version();
    1676              if( err != NO_ERR ) {
-   1677                  Global_Bridge_POST = POST_ERR_CODEC ;
-   1678                  APP_TRACE_INFO(("\r\nPower Down CODEC ERROR: %d\r\n",err)); 
-   1679              }
-   1680              
-   1681          }
-   1682          
-   1683          
-   1684          
-   1685          /*
-   1686          *********************************************************************************************************
-   1687          *                                       Ruler_POST()
-   1688          *
-   1689          * Description : Get back specified ruler Power-On-Self-Test status. 
-   1690          *
-   1691          * Argument(s) : ruler_id :  0~ 3
-   1692          * Return(s)   : NO_ERR :   execute successfully
-   1693          *               others :   =error code . 
-   1694          * Note(s)     : None.
-   1695          *********************************************************************************************************
-   1696          */
-   1697          unsigned char Ruler_POST( unsigned char ruler_id )
-   1698          {
-   1699              unsigned char  err;
-   1700              unsigned short result;   
-   1701              
-   1702              APP_TRACE_INFO(("\r\nRuler[%d] POST status check... \r\n",ruler_id)); 
-   1703          
-   1704              err = Read_Ruler_Status( ruler_id, &result);
-   1705              if( err == RULER_STATE_ERR ) { //no ruler attached
-   1706                  return err;;
-   1707              }      
-   1708              if( err != NO_ERR ) {
-   1709                 return err;
-   1710              }
-   1711              if( result != 0 ) {
-   1712                  if( result != 0x8000 ) {        
-   1713                      APP_TRACE_INFO(("\r\n---Error Ruler[%d]: %d-0x%X\r\n",ruler_id,err,result));
-   1714                      return 1; 
-   1715                  } else {
-   1716                      APP_TRACE_INFO(("\r\n---WARNING Ruler[%d]: Mic calibration data NOT Initialized!\r\n",ruler_id));  
-   1717                  }
-   1718              } 
-   1719              APP_TRACE_INFO(("\r\n---OK\r\n"));  
-   1720                   
-   1721              return err;
-   1722          }
-   1723          
-   1724          
-   1725          /*
-   1726          *********************************************************************************************************
-   1727          *                                       simple_test_use()
-   1728          *
-   1729          * Description : debug use.
-   1730          *
-   1731          * Argument(s) : None.
-   1732          * Return(s)   : None.
-   1733          * Note(s)     : None.
-   1734          *********************************************************************************************************
-   1735          */
-   1736          void simple_test_use( void )
-   1737          {      
-   1738              APP_TRACE_INFO(("\r\nHi,man. Simple play/rec test triggered...\r\n"));   
-   1739              
-   1740          #if 0  
-   1741              
-   1742           //R01      
-   1743              TOGGLE_MIC toggle_mic[6] = {    
-   1744                                              {0, 6, 1 }, {0, 7, 1 }, {0, 8, 1 },
-   1745                                              {0, 12, 1 }, {0, 13, 1 }, {0, 14, 1 }  
-   1746                                          }; 
-   1747            
-   1748              for (unsigned char i = 0; i< 6 ; i++ ) {
-   1749                  Toggle_Mic(&toggle_mic[i]); 
-   1750              } 
-   1751              
-   1752          #else
-   1753              
-   1754          //H01
-   1755              Update_Mic_Mask( 0, 0x3f); 
-   1756              Init_FPGA(0x3F);
-   1757              Global_Ruler_State[0] = RULER_STATE_RUN; 
-   1758                  
-   1759              AUDIO_CFG audio_config_play = {SAMPLE_RATE_DEF, AUDIO_TYPE_PLAY, 6 };
-   1760              AUDIO_CFG audio_config_rec  = {SAMPLE_RATE_DEF, AUDIO_TYPE_REC,  6 };
-   1761              Setup_Audio( &audio_config_play );                   
-   1762              Setup_Audio( &audio_config_rec );                 
-   1763              //Start_Audio( AUDIO_START_PALYREC ); 
-   1764              
-   1765          #endif
-   1766              
-   1767          }
-   1768          
-   1769          
-   1770          unsigned char Ruler_Setup_Sync( unsigned char ruler_slot_id )
-   1771          {
-   1772              unsigned char err ;
-   1773              unsigned char buf[] = { RULER_CMD_SETUP_SYNC, Ruler_Setup_Sync_Data, ruler_slot_id };
-   1774          
-   1775          #if OS_CRITICAL_METHOD == 3u
-   1776              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
-   1777          #endif 
-   1778              
-   1779              //check ruler connection state 
-   1780              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_ATTACHED ) {      
-   1781                  return RULER_STATE_ERR ;         
-   1782              } 
-   1783              
-   1784              OSSemPend( UART_MUX_Sem_lock, 0, &err );
-   1785              if( Global_Ruler_Index != ruler_slot_id ) {
-   1786                  Check_UART_Mixer_Ready();
-   1787                  //OS_ENTER_CRITICAL(); 
-   1788                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
-   1789                  //OS_EXIT_CRITICAL();  
-   1790                  UART1_Mixer( ruler_slot_id );
-   1791              }
-   1792              
-   1793              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
-   1794              if( OS_ERR_NONE == err ) {
-   1795                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
-   1796                  if( OS_ERR_TIMEOUT == err ) {
-   1797                      APP_TRACE_INFO(("Ruler_Setup_Sync[%d] timeout\r\n",ruler_slot_id));
-   1798                  } else {
-   1799                      err = Ruler_CMD_Result; //exe result from GACK
-   1800                      if(OS_ERR_NONE != err ){
-   1801                          APP_TRACE_INFO(("Ruler_Setup_Sync[%d] err = %d\r\n",ruler_slot_id,err));
-   1802                      }
-   1803                  }
-   1804                  
-   1805              } else {
-   1806                  APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));
-   1807              }    
-   1808              OSSemPost( UART_MUX_Sem_lock );    
-   1809              return err ;    
-   1810              
-   1811              
-   1812          }
-   1813          
+   1677                  Global_Bridge_POST = POST_ERR_AUDIO;
+   1678                  APP_TRACE_INFO(("\r\n---Error : %d\r\n",err));
+   1679                  return ;
+   1680              } else {
+   1681                  APP_TRACE_INFO(("\r\n---OK\r\n"));
+   1682              }    
+   1683             
+   1684              
+   1685              
+   1686          //    APP_TRACE_INFO(("\r\n4. external CODEC... \r\n"));
+   1687          //    err = Init_CODEC_AIC3204( SAMPLE_RATE_DEF );    
+   1688          //    if( err != NO_ERR ) {
+   1689          //        Global_Bridge_POST = POST_ERR_CODEC;
+   1690          //        APP_TRACE_INFO(("\r\n---Error : %d\r\n",err));
+   1691          //        return ;
+   1692          //    } else {
+   1693          //        APP_TRACE_INFO(("\r\n---OK\r\n"));
+   1694          //    }
+   1695              
+   1696              //Disable_FPGA(); 
+   1697              //Ruler_Power_Switch(1); 
+   1698              
+   1699              err = Init_CODEC( 0 );
+   1700              if( err != NO_ERR ) {
+   1701                  Global_Bridge_POST = POST_ERR_CODEC ;
+   1702                  APP_TRACE_INFO(("\r\nPower Down CODEC ERROR: %d\r\n",err)); 
+   1703              }
+   1704              
+   1705          }
+   1706          
+   1707          
+   1708          
+   1709          /*
+   1710          *********************************************************************************************************
+   1711          *                                       Ruler_POST()
+   1712          *
+   1713          * Description : Get back specified ruler Power-On-Self-Test status. 
+   1714          *
+   1715          * Argument(s) : ruler_id :  0~ 3
+   1716          * Return(s)   : NO_ERR :   execute successfully
+   1717          *               others :   =error code . 
+   1718          * Note(s)     : None.
+   1719          *********************************************************************************************************
+   1720          */
+   1721          unsigned char Ruler_POST( unsigned char ruler_id )
+   1722          {
+   1723              unsigned char  err;
+   1724              unsigned short result;   
+   1725              
+   1726              APP_TRACE_INFO(("\r\nRuler[%d] POST status check... \r\n",ruler_id)); 
+   1727          
+   1728              err = Read_Ruler_Status( ruler_id, &result);
+   1729              if( err == RULER_STATE_ERR ) { //no ruler attached
+   1730                  return err;;
+   1731              }      
+   1732              if( err != NO_ERR ) {
+   1733                 return err;
+   1734              }
+   1735              if( result != 0 ) {
+   1736                  if( result != 0x8000 ) {        
+   1737                      APP_TRACE_INFO(("\r\n---Error Ruler[%d]: %d-0x%X\r\n",ruler_id,err,result));
+   1738                      return 1; 
+   1739                  } else {
+   1740                      APP_TRACE_INFO(("\r\n---WARNING Ruler[%d]: Mic calibration data NOT Initialized!\r\n",ruler_id));  
+   1741                  }
+   1742              } 
+   1743              APP_TRACE_INFO(("\r\n---OK\r\n"));  
+   1744                   
+   1745              return err;
+   1746          }
+   1747          
+   1748          
+   1749          /*
+   1750          *********************************************************************************************************
+   1751          *                                       simple_test_use()
+   1752          *
+   1753          * Description : debug use.
+   1754          *
+   1755          * Argument(s) : None.
+   1756          * Return(s)   : None.
+   1757          * Note(s)     : None.
+   1758          *********************************************************************************************************
+   1759          */
+   1760          void simple_test_use( void )
+   1761          {      
+   1762              APP_TRACE_INFO(("\r\nHi,man. Simple play/rec test triggered...\r\n"));   
+   1763              
+   1764          #if 0  
+   1765              
+   1766           //R01      
+   1767              TOGGLE_MIC toggle_mic[6] = {    
+   1768                                              {0, 6, 1 }, {0, 7, 1 }, {0, 8, 1 },
+   1769                                              {0, 12, 1 }, {0, 13, 1 }, {0, 14, 1 }  
+   1770                                          }; 
+   1771            
+   1772              for (unsigned char i = 0; i< 6 ; i++ ) {
+   1773                  Toggle_Mic(&toggle_mic[i]); 
+   1774              } 
+   1775              
+   1776          #else
+   1777              
+   1778          //H01
+   1779              Update_Mic_Mask( 0, 0x3f); 
+   1780              Init_FPGA(0x3F);
+   1781              Global_Ruler_State[0] = RULER_STATE_RUN; 
+   1782                  
+   1783              AUDIO_CFG audio_config_play = {SAMPLE_RATE_DEF, AUDIO_TYPE_PLAY, 6 };
+   1784              AUDIO_CFG audio_config_rec  = {SAMPLE_RATE_DEF, AUDIO_TYPE_REC,  6 };
+   1785              Setup_Audio( &audio_config_play );                   
+   1786              Setup_Audio( &audio_config_rec );                 
+   1787              //Start_Audio( AUDIO_START_PALYREC ); 
+   1788              
+   1789          #endif
+   1790              
+   1791          }
+   1792          
+   1793          
+   1794          unsigned char Ruler_Setup_Sync( unsigned char ruler_slot_id )
+   1795          {
+   1796              unsigned char err ;
+   1797              unsigned char buf[] = { RULER_CMD_SETUP_SYNC, Ruler_Setup_Sync_Data, ruler_slot_id };
+   1798          
+   1799          #if OS_CRITICAL_METHOD == 3u
+   1800              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
+   1801          #endif 
+   1802              
+   1803              //check ruler connection state 
+   1804              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_ATTACHED ) {      
+   1805                  return RULER_STATE_ERR ;         
+   1806              } 
+   1807              
+   1808              OSSemPend( UART_MUX_Sem_lock, 0, &err );
+   1809              if( Global_Ruler_Index != ruler_slot_id ) {
+   1810                  Check_UART_Mixer_Ready();
+   1811                  //OS_ENTER_CRITICAL(); 
+   1812                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
+   1813                  //OS_EXIT_CRITICAL();  
+   1814                  UART1_Mixer( ruler_slot_id );
+   1815              }
+   1816              
+   1817              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
+   1818              if( OS_ERR_NONE == err ) {
+   1819                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
+   1820                  if( OS_ERR_TIMEOUT == err ) {
+   1821                      APP_TRACE_INFO(("Ruler_Setup_Sync[%d] timeout\r\n",ruler_slot_id));
+   1822                  } else {
+   1823                      err = Ruler_CMD_Result; //exe result from GACK
+   1824                      if(OS_ERR_NONE != err ){
+   1825                          APP_TRACE_INFO(("Ruler_Setup_Sync[%d] err = %d\r\n",ruler_slot_id,err));
+   1826                      }
+   1827                  }
+   1828                  
+   1829              } else {
+   1830                  APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));
+   1831              }    
+   1832              OSSemPost( UART_MUX_Sem_lock );    
+   1833              return err ;    
+   1834              
+   1835              
+   1836          }
+   1837          
 
    Maximum stack usage in bytes:
 
@@ -1936,6 +1960,7 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
       24   Reset_Mic_Mask
         24   -> Init_FPGA
         24   -> Update_Mic_Mask
+       4   Revert_Bit_Order
       32   Ruler_Active_Control
         32   -> BSP_Ser_Printf
         32   -> Check_UART_Mixer_Ready
@@ -2008,6 +2033,7 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
         32   -> Init_FPGA
         32   -> OS_CPU_SR_Restore
         32   -> OS_CPU_SR_Save
+        32   -> Revert_Bit_Order
         32   -> Update_Mic_Mask
       40   Update_Mic_Mask
         40   -> BSP_Ser_Printf
@@ -2242,6 +2268,8 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
        4  ??DataTable22
        4  ??DataTable22_1
        4  ??DataTable22_2
+       4  ??DataTable23
+       4  ??DataTable23_1
        4  ??DataTable24
        4  ??DataTable24_1
        4  ??DataTable24_2
@@ -2254,15 +2282,16 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
        4  ??DataTable26
        4  ??DataTable26_1
        4  ??DataTable26_2
+       4  ??DataTable26_3
        4  ??DataTable27
        4  ??DataTable27_1
        4  ??DataTable27_2
-       4  ??DataTable27_3
-       4  ??DataTable27_4
-       4  ??DataTable27_5
+       4  ??DataTable28
+       4  ??DataTable28_1
        4  ??DataTable29
        4  ??DataTable29_1
        4  ??DataTable29_2
+       4  ??DataTable29_3
        4  ??DataTable30
        4  ??DataTable30_1
        4  ??DataTable30_10
@@ -2309,8 +2338,6 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
        4  ??DataTable30_48
        4  ??DataTable30_49
        4  ??DataTable30_5
-       4  ??DataTable30_50
-       4  ??DataTable30_51
        4  ??DataTable30_6
        4  ??DataTable30_7
        4  ??DataTable30_8
@@ -2337,6 +2364,7 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
      364  Read_Ruler_Status
      168  Reset_Audio
      304  Reset_Mic_Mask
+      80  Revert_Bit_Order
      444  Ruler_Active_Control
        1  Ruler_CMD_Result
      200  Ruler_POST
@@ -2349,7 +2377,7 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
      380  Setup_Ruler
      316  Start_Audio
      308  Stop_Audio
-     440  Toggle_Mic
+     508  Toggle_Mic
      380  Update_Mic_Mask
      564  Update_Ruler_FW
       80  Write_Flash_State
@@ -2364,9 +2392,9 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
      52 bytes in section .bss
       4 bytes in section .data
   3 138 bytes in section .rodata
- 10 692 bytes in section .text
+ 10 844 bytes in section .text
  
- 10 692 bytes of CODE  memory
+ 10 844 bytes of CODE  memory
   3 138 bytes of CONST memory
      56 bytes of DATA  memory
 

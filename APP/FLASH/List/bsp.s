@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       05/Sep/2014  09:57:02
+// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       16/Dec/2014  22:25:25
 // Copyright 1999-2014 IAR Systems AB.
 //
 //    Cpu mode     =  arm
@@ -372,14 +372,14 @@
         DC8 0, 0, 0
 
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
-`?<Constant "Sep  5 2014">`:
+`?<Constant "Dec 16 2014">`:
         DATA
-        DC8 "Sep  5 2014"
+        DC8 "Dec 16 2014"
 
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
-`?<Constant "09:57:02">`:
+`?<Constant "22:25:24">`:
         DATA
-        DC8 "09:57:02"
+        DC8 "22:25:24"
         DC8 0, 0, 0
 
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
@@ -600,7 +600,7 @@
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
 fw_version:
         DATA
-        DC8 "[FW:H:V0.4.5]"
+        DC8 "[FW:H:V0.4.7]"
         DC8 0, 0
 
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
@@ -2767,13 +2767,13 @@ Head_Info:
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
 ??DataTable12_41:
-        DC32     `?<Constant "09:57:02">`
+        DC32     `?<Constant "22:25:24">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
 ??DataTable12_42:
-        DC32     `?<Constant "Sep  5 2014">`
+        DC32     `?<Constant "Dec 16 2014">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
