@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       15/Dec/2014  17:50:05
+// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       19/Dec/2014  15:00:44
 // Copyright 1999-2014 IAR Systems AB.
 //
 //    Cpu mode     =  arm
@@ -59,6 +59,7 @@
         EXTERN Get_Ruler_Version
         EXTERN Global_Mic_Mask
         EXTERN Global_Ruler_State
+        EXTERN Global_Ruler_Type
         EXTERN Head_Info
         EXTERN ISR_PC_UART
         EXTERN Init_Global_Var
@@ -71,6 +72,7 @@
         EXTERN Ruler_Power_Switch
         EXTERN Setup_Ruler
         EXTERN Task_ReCreate_Shell
+        EXTERN Time_Stamp
         EXTERN UART_Init
 
         PUBLIC App_TaskUserIF
@@ -100,12 +102,13 @@ App_TaskUserIF:
         BL       Ruler_Power_Switch
         BL       Init_Global_Var
         BL       AB_POST
-        LDR      R0,??DataTable1
+        BL       Time_Stamp
+        LDR      R0,??DataTable1_1
         BL       BSP_Ser_Printf
 ??App_TaskUserIF_0:
         ADD      R2,SP,#+4
         MOV      R1,#+0
-        LDR      R0,??DataTable1_1
+        LDR      R0,??DataTable1_2
         LDR      R0,[R0, #+0]
         BL       OSMboxPend
         MOVS     R5,R0
@@ -113,7 +116,7 @@ App_TaskUserIF:
         BEQ      ??App_TaskUserIF_0
         LDR      R0,[R5, #+0]
         MOVS     R6,R0
-        LDR      R0,??DataTable1_2
+        ADR      R0,??DataTable1  ;; 0x0D, 0x0A, 0x00, 0x00
         BL       BSP_Ser_Printf
         ANDS     R0,R6,#0xFF000000
         CMP      R0,#-1610612736
@@ -127,12 +130,11 @@ App_TaskUserIF:
         BL       Head_Info
         B        ??App_TaskUserIF_4
 ??App_TaskUserIF_2:
-        LDR      R0,??DataTable1_3
-        BL       BSP_Ser_Printf
+        BL       Time_Stamp
         MOV      R0,#+1
         ANDS     R2,R0,R6, LSR #+1
         ANDS     R1,R6,#0x1
-        LDR      R0,??DataTable1_4
+        LDR      R0,??DataTable1_3
         BL       BSP_Ser_Printf
         MOV      R0,#+1
         TST      R0,R6, LSR #+9
@@ -141,12 +143,12 @@ App_TaskUserIF:
         BL       OSTaskDel
         ADD      R2,SP,#+4
         MOV      R1,#+1
-        LDR      R0,??DataTable1_5
+        LDR      R0,??DataTable1_4
         LDR      R0,[R0, #+0]
         BL       OSSemSet
         ADD      R2,SP,#+4
         MOV      R1,#+1
-        LDR      R0,??DataTable1_6
+        LDR      R0,??DataTable1_5
         LDR      R0,[R0, #+0]
         BL       OSSemSet
         BL       Task_ReCreate_Shell
@@ -154,7 +156,7 @@ App_TaskUserIF:
         TST      R0,R6, LSR #+1
         BNE      ??App_TaskUserIF_6
         MOV      R0,#+1
-        LDR      R1,??DataTable1_7
+        LDR      R1,??DataTable1_6
         STRB     R0,[R1, #+0]
         MOV      R0,#+65536
         ORR      R0,R0,#0xC200
@@ -162,11 +164,11 @@ App_TaskUserIF:
         B        ??App_TaskUserIF_5
 ??App_TaskUserIF_6:
         MOV      R0,#+0
-        LDR      R1,??DataTable1_7
+        LDR      R1,??DataTable1_6
         STRB     R0,[R1, #+0]
         MOV      R2,#+65536
         ORR      R2,R2,#0xC200
-        LDR      R1,??DataTable1_8
+        LDR      R1,??DataTable1_7
         MOV      R0,#+0
         BL       UART_Init
 ??App_TaskUserIF_5:
@@ -187,17 +189,19 @@ App_TaskUserIF:
         LDRB     R0,[SP, #+4]
         CMP      R0,#+0
         BEQ      ??App_TaskUserIF_7
+        BL       Time_Stamp
         LDRB     R1,[SP, #+4]
-        LDR      R0,??DataTable1_9
+        LDR      R0,??DataTable1_8
         BL       BSP_Ser_Printf
 ??App_TaskUserIF_7:
         B        ??App_TaskUserIF_4
 ??App_TaskUserIF_3:
-        LDR      R0,??DataTable1_10
+        LDR      R0,??DataTable1_9
         LDRB     R0,[R0, #+0]
         CMP      R0,#+0
         BEQ      ??App_TaskUserIF_4
 ??App_TaskUserIF_10:
+        BL       Time_Stamp
         MOV      R0,#+1
         ANDS     R0,R0,R6, LSR #+3
         STR      R0,[SP, #+0]
@@ -206,7 +210,7 @@ App_TaskUserIF:
         MOV      R0,#+1
         ANDS     R2,R0,R6, LSR #+1
         ANDS     R1,R6,#0x1
-        LDR      R0,??DataTable1_11
+        LDR      R0,??DataTable1_10
         BL       BSP_Ser_Printf
         MOV      R0,#+0
         MOVS     R7,R0
@@ -223,14 +227,15 @@ App_TaskUserIF:
         MOV      R1,#+1
         TST      R1,R6, LSR R0
         BNE      ??App_TaskUserIF_14
+        BL       Time_Stamp
         MOVS     R1,R7
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable1_12
+        LDR      R0,??DataTable1_11
         BL       BSP_Ser_Printf
         MOV      R0,#+1
         MOVS     R1,R7
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R2,??DataTable1_13
+        LDR      R2,??DataTable1_12
         STRB     R0,[R1, +R2]
         MOVS     R0,R7
         ANDS     R0,R0,#0xFF      ;; Zero extend
@@ -275,18 +280,24 @@ App_TaskUserIF:
         MOV      R0,#+2
         MOVS     R1,R7
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R2,??DataTable1_13
+        LDR      R2,??DataTable1_12
         STRB     R0,[R1, +R2]
         B        ??App_TaskUserIF_13
 ??App_TaskUserIF_14:
+        BL       Time_Stamp
         MOVS     R1,R7
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable1_14
+        LDR      R0,??DataTable1_13
         BL       BSP_Ser_Printf
         MOV      R0,#+0
         MOVS     R1,R7
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R2,??DataTable1_13
+        LDR      R2,??DataTable1_12
+        STRB     R0,[R1, +R2]
+        MOV      R0,#+0
+        MOVS     R1,R7
+        ANDS     R1,R1,#0xFF      ;; Zero extend
+        LDR      R2,??DataTable1_14
         STRB     R0,[R1, +R2]
         MOV      R0,#+0
         MOVS     R1,R7
@@ -323,12 +334,12 @@ Port_Detect_Enable:
         CMP      R1,#+0
         BNE      ??Port_Detect_Enable_0
         MOV      R1,#+0
-        LDR      R2,??DataTable1_10
+        LDR      R2,??DataTable1_9
         STRB     R1,[R2, #+0]
         B        ??Port_Detect_Enable_1
 ??Port_Detect_Enable_0:
         MOV      R1,#+1
-        LDR      R2,??DataTable1_10
+        LDR      R2,??DataTable1_9
         STRB     R1,[R2, #+0]
 ??Port_Detect_Enable_1:
         BX       LR               ;; return
@@ -337,19 +348,19 @@ Port_Detect_Enable:
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
 ??DataTable1:
-        DC32     `?<Constant "\\r\\nWARNING: NOT AB01, ...">`
+        DC8      0x0D, 0x0A, 0x00, 0x00
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
 ??DataTable1_1:
-        DC32     App_UserIF_Mbox
+        DC32     `?<Constant "WARNING: NOT AB01, NO...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
 ??DataTable1_2:
-        DC32     `?<Constant "\\r\\n\\r\\n">`
+        DC32     App_UserIF_Mbox
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
@@ -361,67 +372,67 @@ Port_Detect_Enable:
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
 ??DataTable1_4:
-        DC32     `?<Constant " %4d, %4d\\r\\n">`
-
-        SECTION `.text`:CODE:NOROOT(2)
-        SECTION_TYPE SHT_PROGBITS, 0
-        DATA
-??DataTable1_5:
         DC32     Bsp_Ser_Tx_Sem_lock
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable1_6:
+??DataTable1_5:
         DC32     Bsp_Ser_Rx_Sem_lock
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable1_7:
+??DataTable1_6:
         DC32     Debug_COM_Sel
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable1_8:
+??DataTable1_7:
         DC32     ISR_PC_UART
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable1_9:
+??DataTable1_8:
         DC32     `?<Constant "ERR: Set CODEC_LOUT_S...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable1_10:
+??DataTable1_9:
         DC32     port_enable
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable1_11:
+??DataTable1_10:
         DC32     `?<Constant "Ruler port status cha...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable1_12:
+??DataTable1_11:
         DC32     `?<Constant "Ruler[%d] Attached.\\r\\n">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable1_13:
+??DataTable1_12:
         DC32     Global_Ruler_State
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable1_14:
+??DataTable1_13:
         DC32     `?<Constant "Ruler[%d] Detached.\\r\\n">`
+
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable1_14:
+        DC32     Global_Ruler_Type
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
@@ -441,27 +452,20 @@ Port_Detect_Enable:
         SECTION_TYPE SHT_PROGBITS, 0
 
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
-`?<Constant "\\r\\nWARNING: NOT AB01, ...">`:
+`?<Constant "WARNING: NOT AB01, NO...">`:
         DATA
-        DC8 "\015\012WARNING: NOT AB01, NO MCU CRT UART SWITCH\015\012"
-        DC8 0, 0
+        DC8 "WARNING: NOT AB01, NO MCU CRT UART SWITCH\015\012"
 
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
-`?<Constant "\\r\\n\\r\\n">`:
         DATA
-        DC8 "\015\012\015\012"
-        DC8 0, 0, 0
+        DC8 "\015\012"
+        DC8 0
 
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
 `?<Constant "Switch status updated...">`:
         DATA
-        DC8 "Switch status updated: \015\012 SW1, SW0 \015\012"
+        DC8 "Switch status updated:  SW[1..0] = [%d, %d]\015\012"
         DC8 0, 0
-
-        SECTION `.rodata`:CONST:REORDER:NOROOT(2)
-`?<Constant " %4d, %4d\\r\\n">`:
-        DATA
-        DC8 " %4d, %4d\015\012"
 
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
 `?<Constant "ERR: Set CODEC_LOUT_S...">`:
@@ -478,9 +482,9 @@ Port_Detect_Enable:
         DC8 64H, 3AH, 20H, 20H, 50H, 6FH, 72H, 74H
         DC8 5BH, 33H, 2EH, 2EH, 30H, 5DH, 20H, 3DH
         DC8 20H, 5BH, 25H, 31H, 64H, 25H, 31H, 64H
-        DC8 25H, 31H, 64H, 25H, 31H, 64H, 5DH, 0DH
-        DC8 0AH, 0
-        DC8 0, 0
+        DC8 25H, 31H, 64H, 25H, 31H, 64H, 5DH, 20H
+        DC8 0
+        DC8 0, 0, 0
 
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
 `?<Constant "Ruler[%d] Attached.\\r\\n">`:
@@ -498,11 +502,11 @@ Port_Detect_Enable:
 // 
 //   4 bytes in section .bss
 //   1 byte  in section .data
-// 264 bytes in section .rodata
-// 928 bytes in section .text
+// 252 bytes in section .rodata
+// 964 bytes in section .text
 // 
-// 928 bytes of CODE  memory
-// 264 bytes of CONST memory
+// 964 bytes of CODE  memory
+// 252 bytes of CONST memory
 //   5 bytes of DATA  memory
 //
 //Errors: none

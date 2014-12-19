@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        15/Dec/2014  17:50:04
+# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        19/Dec/2014  13:30:47
 # Copyright 1999-2014 IAR Systems AB.
 #
 #    Cpu mode     =  arm
@@ -183,9 +183,9 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\task_noah_ruler.c
     133                              PcCmdRxID_Ruler[Global_Ruler_Index] = 0xC0 ; // ? why 0x40: make sure there can be many same setup frame
     134                              PcCmdTxID_Ruler[Global_Ruler_Index] = 0x00 ; //  
     135                              
-    136                              OSSemPost( ACK_Sem_RulerUART ); 
+    136                              OSSemPost( ACK_Sem_RulerUART );                 
     137                              OSSemPost( Done_Sem_RulerUART ); //end the resend pending--                     
-    138                              OSTimeDly(5); //wait for the TX buffer is empty 
+    138                              OSTimeDly(1); //wait for the TX buffer is empty 
     139                              
     140                              //Reset all UART CMD related buffer and release mem 
     141                              do{  //reset mem used by  EVENT_MsgQ_RulerUART2Noah                    
@@ -214,7 +214,7 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\task_noah_ruler.c
     164                                  OSSemPost( ACK_Sem_RulerUART );                        
     165                                  test_counter2++;
     166                              } else {
-    167                                  APP_TRACE_INFO(("\r\nACK: got %X, expect %X\r\n",rxID,PcCmdTxID_Ruler[Global_Ruler_Index] )); 
+    167                                  APP_TRACE_INFO_T(("\r\nACK: Got %X, Expect %X\r\n",rxID,PcCmdTxID_Ruler[Global_Ruler_Index] )); 
     168                              }
     169                              APP_TRACE_DBG(("ACK")); 
     170                              test_counter3++;       
@@ -264,6 +264,7 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\task_noah_ruler.c
         56   -> OSSemSet
         56   -> OSTimeDly
         56   -> Queue_Flush
+        56   -> Time_Stamp
         56   -> pcSendDateToBuf
 
 
@@ -271,9 +272,9 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\task_noah_ruler.c
 
    Bytes  Function/Label
    -----  --------------
-      28  ?<Constant "\r\nACK: got %X, expect...">
+      28  ?<Constant "\r\nACK: Got %X, Expect...">
        4  ACK_Sem_RulerUART
-     972  App_TaskNoah_Ruler
+     976  App_TaskNoah_Ruler
        4  Done_Sem_RulerUART
        4  UART_MUX_Sem_lock
        4  test_counter1
@@ -285,9 +286,9 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\task_noah_ruler.c
  
   32 bytes in section .bss
   28 bytes in section .rodata
- 972 bytes in section .text
+ 976 bytes in section .text
  
- 972 bytes of CODE  memory
+ 976 bytes of CODE  memory
   28 bytes of CONST memory
   32 bytes of DATA  memory
 

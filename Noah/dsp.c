@@ -528,12 +528,12 @@ unsigned char DMIC_PGA_Control( unsigned short gain )
     
 }
 
-unsigned char DMIC_Ploarity_Control( unsigned char mic_revert_en ) 
+unsigned char DMIC_Ploarity_Control( bool mic_revert_en ) 
 {
     unsigned char  err  ;
     unsigned short data = 0 ; 
     
-    if( mic_revert_en != 0 ) {
+    if( mic_revert_en ) {
         data = 1;
     } 
     
@@ -850,7 +850,7 @@ unsigned char Init_FM36_AB03( unsigned short sr, unsigned char mic_num, unsigned
         err = FM36_RD_CM_ERR;
         return FM36_RD_CM_ERR ;
     }
-    APP_TRACE_INFO(("ROM ID = 0x%X\r\n", temp));
+    APP_TRACE_INFO_T(("ROM ID = 0x%X", temp));
     
     if( temp != FM36_ROM_ID_2 ) { 
         return FM36_CHECK_ROMID_ERR; //dsp type error
@@ -926,14 +926,14 @@ unsigned char Init_FM36_AB03( unsigned short sr, unsigned char mic_num, unsigned
         err = FM36_RD_DM_ERR;
         return err ;
     }
-    APP_TRACE_DBG(("0x2306 = 0x%X\r\n", temp2));
+    APP_TRACE_INFO_T(("#0x2306 = 0x%X", temp2));
     OSTimeDly(100);
     err = DM_LegacyRead( FM36_I2C_ADDR, 0x22FB,(unsigned char *)&temp ) ;
     if( OS_ERR_NONE != err ) {
         err = FM36_RD_DM_ERR;
         return err ;
     }
-    APP_TRACE_INFO(("0x22FB = 0x%X\r\n", temp));
+    APP_TRACE_INFO_T(("#0x22FB = 0x%X", temp));
     if( temp != 0x5A5A ) {   
         return FM36_CHECK_FLAG_ERR;
     }
@@ -942,7 +942,7 @@ unsigned char Init_FM36_AB03( unsigned short sr, unsigned char mic_num, unsigned
         err = FM36_RD_DM_ERR;
         return err ;
     }
-    APP_TRACE_DBG(("0x2306 = 0x%X\r\n", temp));
+    APP_TRACE_INFO_T(("0x2306 = 0x%X", temp));
     if( temp == temp2 ) {
         APP_TRACE_INFO(("FM36 frame counter stopped !"));
         return FM36_CHECK_COUNTER_ERR;

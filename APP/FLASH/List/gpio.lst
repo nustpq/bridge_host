@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        15/Dec/2014  17:50:00
+# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        19/Dec/2014  14:24:28
 # Copyright 1999-2014 IAR Systems AB.
 #
 #    Cpu mode     =  arm
@@ -389,24 +389,27 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Driver\gpio.c
     342          {
     343             
     344              unsigned int i ;
-    345              APP_TRACE_DBG(("Init FPGA...[0x%0X] \r\n",channels));
-    346              PIO_Set(&pinsGpios[20]); //cs 
-    347              PIO_Set(&pinsGpios[21]); //data 
-    348              PIO_Set(&pinsGpios[22]); //clock
-    349              for ( i = 0; i < 32; i++ ) {        
-    350                 PIO_Clear(&pinsGpios[20]); //cs, delay compensation
-    351                 PIO_Clear(&pinsGpios[22]); //clock       
-    352                 if( (channels<<i) & 0x80000000 ) {
-    353                     PIO_Set(&pinsGpios[21]); //data 
-    354                 } else {
-    355                     PIO_Clear(&pinsGpios[21]); //data 
-    356                 }
-    357                 PIO_Set(&pinsGpios[22]); //clock
-    358              }    
-    359              PIO_Set(&pinsGpios[20]); //cs 
-    360              
-    361          }
-    362          
+    345              
+    346              APP_TRACE_DBG(("\r\nInit FPGA...[0x%0X] \r\n",channels));
+    347              
+    348              PIO_Set(&pinsGpios[20]); //cs 
+    349              PIO_Set(&pinsGpios[21]); //data 
+    350              PIO_Set(&pinsGpios[22]); //clock
+    351              
+    352              for ( i = 0; i < 32; i++ ) {        
+    353                 PIO_Clear(&pinsGpios[20]); //cs, delay compensation
+    354                 PIO_Clear(&pinsGpios[22]); //clock       
+    355                 if( (channels<<i) & 0x80000000 ) {
+    356                     PIO_Set(&pinsGpios[21]); //data 
+    357                 } else {
+    358                     PIO_Clear(&pinsGpios[21]); //data 
+    359                 }
+    360                 PIO_Set(&pinsGpios[22]); //clock
+    361              }    
+    362              PIO_Set(&pinsGpios[20]); //cs 
+    363              
+    364          }
+    365          
 
    Maximum stack usage in bytes:
 

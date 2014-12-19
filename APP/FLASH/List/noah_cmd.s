@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       15/Dec/2014  17:50:02
+// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       19/Dec/2014  15:13:53
 // Copyright 1999-2014 IAR Systems AB.
 //
 //    Cpu mode     =  arm
@@ -73,6 +73,7 @@
         EXTERN Setup_Audio
         EXTERN Start_Audio
         EXTERN Stop_Audio
+        EXTERN Time_Stamp
         EXTERN Toggle_Mic
         EXTERN Update_Ruler_FW
         EXTERN Write_Mic_Cali_Data
@@ -1832,6 +1833,9 @@ AB_Status_Change_Report:
         ANDS     R0,R0,#0xFF      ;; Zero extend
         B        ??AB_Status_Change_Report_6
 ??AB_Status_Change_Report_9:
+        BL       Time_Stamp
+        LDR      R0,??DataTable8_12
+        BL       BSP_Ser_Printf
         MOV      R0,#+0
         STR      R0,[SP, #+8]
         MOV      R0,#+0
@@ -1924,6 +1928,12 @@ AB_Status_Change_Report:
 ??DataTable8_11:
         DC32     Global_Idle_Ready
 
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable8_12:
+        DC32     `?<Constant "AB_Status_Change_Report!">`
+
         SECTION `.iar_vfe_header`:DATA:NOALLOC:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
@@ -1941,14 +1951,20 @@ AB_Status_Change_Report:
         DC8 "EMB data length exceed the Max %d B\015\012"
         DC8 0, 0
 
+        SECTION `.rodata`:CONST:REORDER:NOROOT(2)
+`?<Constant "AB_Status_Change_Report!">`:
+        DATA
+        DC8 "AB_Status_Change_Report!"
+        DC8 0, 0, 0
+
         END
 // 
 //     4 bytes in section .bss
-//    40 bytes in section .rodata
-// 6 236 bytes in section .text
+//    68 bytes in section .rodata
+// 6 252 bytes in section .text
 // 
-// 6 236 bytes of CODE  memory
-//    40 bytes of CONST memory
+// 6 252 bytes of CODE  memory
+//    68 bytes of CONST memory
 //     4 bytes of DATA  memory
 //
 //Errors: none

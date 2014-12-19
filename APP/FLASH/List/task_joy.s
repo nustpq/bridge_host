@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       15/Dec/2014  17:50:03
+// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       19/Dec/2014  13:30:46
 // Copyright 1999-2014 IAR Systems AB.
 //
 //    Cpu mode     =  arm
@@ -57,6 +57,7 @@
         EXTERN OSMboxPost
         EXTERN OSTimeDly
         EXTERN Pin_Reset_Audio_MCU
+        EXTERN Time_Stamp
 
         PUBLIC App_TaskJoy
 
@@ -100,8 +101,10 @@ App_TaskJoy:
 ??App_TaskJoy_4:
         CMP      R9,#+100
         BCC      ??App_TaskJoy_6
+        BL       Time_Stamp
         LDR      R0,??App_TaskJoy_1+0x4
         BL       BSP_Ser_Printf
+        BL       Time_Stamp
         LDR      R0,??App_TaskJoy_1+0x8
         BL       BSP_Ser_Printf
         MOV      R0,#+3
@@ -251,9 +254,9 @@ App_TaskJoy:
         END
 // 
 //  80 bytes in section .rodata
-// 568 bytes in section .text
+// 576 bytes in section .text
 // 
-// 568 bytes of CODE  memory
+// 576 bytes of CODE  memory
 //  80 bytes of CONST memory
 //
 //Errors: none

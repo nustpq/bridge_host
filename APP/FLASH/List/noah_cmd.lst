@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        15/Dec/2014  17:50:02
+# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        19/Dec/2014  15:13:53
 # Copyright 1999-2014 IAR Systems AB.
 #
 #    Cpu mode     =  arm
@@ -962,22 +962,27 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\noah_cmd.c
     913                  return err;
     914              }
     915              
-    916              err = pcSendDateToBuf( EVENT_MsgQ_Noah2PCUART, FRAM_TYPE_DATA, pEBuf->data, pEBuf->length, 0, NULL, 0 ) ;   
-    917              
-    918              return err;
-    919            
-    920          }
-    921          
-    922              
-    923          
+    916              APP_TRACE_INFO_T(("AB_Status_Change_Report!")); 
+    917          
+    918              err = pcSendDateToBuf( EVENT_MsgQ_Noah2PCUART, FRAM_TYPE_DATA, pEBuf->data, pEBuf->length, 0, NULL, 0 ) ;   
+    919             
+    920              
+    921              return err;
+    922            
+    923          }
     924          
+    925              
+    926          
+    927          
 
    Maximum stack usage in bytes:
 
    .cstack Function
    ------- --------
       32   AB_Status_Change_Report
+        32   -> BSP_Ser_Printf
         32   -> EMB_Data_Build
+        32   -> Time_Stamp
         32   -> pcSendDateToBuf
        4   CheckSum
       64   EMB_Data_Build
@@ -1041,6 +1046,7 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\noah_cmd.c
 
    Bytes  Function/Label
    -----  --------------
+      28  ?<Constant "AB_Status_Change_Report!">
       40  ?<Constant "EMB data length excee...">
        4  ??DataTable6
        4  ??DataTable6_1
@@ -1049,6 +1055,7 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\noah_cmd.c
        4  ??DataTable8_1
        4  ??DataTable8_10
        4  ??DataTable8_11
+       4  ??DataTable8_12
        4  ??DataTable8_2
        4  ??DataTable8_3
        4  ??DataTable8_4
@@ -1057,7 +1064,7 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\noah_cmd.c
        4  ??DataTable8_7
        4  ??DataTable8_8
        4  ??DataTable8_9
-     396  AB_Status_Change_Report
+     408  AB_Status_Change_Report
      108  CheckSum
      404  EMB_Data_Build
      460  EMB_Data_Check
@@ -1073,11 +1080,11 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\noah_cmd.c
 
  
      4 bytes in section .bss
-    40 bytes in section .rodata
- 6 236 bytes in section .text
+    68 bytes in section .rodata
+ 6 252 bytes in section .text
  
- 6 236 bytes of CODE  memory
-    40 bytes of CONST memory
+ 6 252 bytes of CODE  memory
+    68 bytes of CONST memory
      4 bytes of DATA  memory
 
 Errors: none

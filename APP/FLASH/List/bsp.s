@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       15/Dec/2014  17:49:59
+// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       19/Dec/2014  13:31:07
 // Copyright 1999-2014 IAR Systems AB.
 //
 //    Cpu mode     =  arm
@@ -131,6 +131,7 @@
         PUBLIC Head_Info
         PUBLIC LowLevelInitPLL
         PUBLIC OS_CPU_ExceptHndlr
+        PUBLIC Time_Stamp
         PUBLIC fw_version
         PUBLIC get_os_state
         PUBLIC hw_model
@@ -315,6 +316,12 @@
         DC8 0
 
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
+`?<Constant "\\r\\n[%d:%02d:%02d.%03d] ">`:
+        DATA
+        DC8 "\015\012[%d:%02d:%02d.%03d] "
+        DC8 0
+
+        SECTION `.rodata`:CONST:REORDER:NOROOT(2)
 `?<Constant "\\r\\n\\r\\n">`:
         DATA
         DC8 "\015\012\015\012"
@@ -372,14 +379,14 @@
         DC8 0, 0, 0
 
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
-`?<Constant "Dec 15 2014">`:
+`?<Constant "Dec 19 2014">`:
         DATA
-        DC8 "Dec 15 2014"
+        DC8 "Dec 19 2014"
 
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
-`?<Constant "17:49:58">`:
+`?<Constant "13:31:07">`:
         DATA
-        DC8 "17:49:58"
+        DC8 "13:31:07"
         DC8 0, 0, 0
 
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
@@ -600,7 +607,7 @@
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
 fw_version:
         DATA
-        DC8 "[FW:H:V0.4.6]"
+        DC8 "[FW:H:V0.4.8]"
         DC8 0, 0
 
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
@@ -1663,10 +1670,10 @@ BSP_Sys_ISR_Handler:
         LDR      R0,[R0, #+0]
         TST      R0,#0x1
         BEQ      ??BSP_Sys_ISR_Handler_1
-        LDR      R0,??DataTable12_2
+        LDR      R0,??DataTable13_2
         LDRB     R0,[R0, #+0]
         ADDS     R0,R0,#+1
-        LDR      R1,??DataTable12_2
+        LDR      R1,??DataTable13_2
         STRB     R0,[R1, #+0]
 ??BSP_Sys_ISR_Handler_1:
         MOV      R0,#+1
@@ -1681,7 +1688,7 @@ BSP_Ser_Init:
         MOVS     R4,R0
         BL       BSP_CPU_ClkFreq
         MOVS     R5,R0
-        LDR      R0,??DataTable12_3
+        LDR      R0,??DataTable13_3
         LDRB     R0,[R0, #+0]
         CMP      R0,#+0
         BNE      ??BSP_Ser_Init_0
@@ -1747,14 +1754,14 @@ BSP_Ser_Init:
         ORR      R1,R1,#0x3FC0000
         STR      R0,[R1, #+0]
         MVN      R0,#+0
-        LDR      R1,??DataTable12_4  ;; 0xfffc000c
+        LDR      R1,??DataTable13_4  ;; 0xfffc000c
         STR      R0,[R1, #+0]
         MOV      R0,#+80
         MOV      R1,#-67108864
         ORR      R1,R1,#0x3FC0000
         STR      R0,[R1, #+0]
         MOV      R0,#+2240
-        LDR      R1,??DataTable12_5  ;; 0xfffc0004
+        LDR      R1,??DataTable13_5  ;; 0xfffc0004
         STR      R0,[R1, #+0]
         MOVS     R0,R5
         MOVS     R1,R4
@@ -1762,11 +1769,11 @@ BSP_Ser_Init:
         LSRS     R0,R0,#+4
         LSL      R0,R0,#+16
         LSRS     R0,R0,#+16
-        LDR      R1,??DataTable12_6  ;; 0xfffc0020
+        LDR      R1,??DataTable13_6  ;; 0xfffc0020
         STR      R0,[R1, #+0]
         MOV      R0,#+2
         ORR      R0,R0,#0x200
-        LDR      R1,??DataTable12_7  ;; 0xfffc0120
+        LDR      R1,??DataTable13_7  ;; 0xfffc0120
         STR      R0,[R1, #+0]
         MOV      R0,#+64
         MVN      R1,#+239
@@ -1784,10 +1791,10 @@ BSP_Ser_WrByte:
         MOVS     R4,R0
         MOVS     R2,SP
         MOV      R1,#+0
-        LDR      R0,??DataTable12_8
+        LDR      R0,??DataTable13_8
         LDR      R0,[R0, #+0]
         BL       OSSemPend
-        LDR      R0,??DataTable12_3
+        LDR      R0,??DataTable13_3
         LDRB     R0,[R0, #+0]
         CMP      R0,#+0
         BNE      ??BSP_Ser_WrByte_0
@@ -1804,21 +1811,21 @@ BSP_Ser_WrByte:
         STR      R0,[R1, #+0]
         B        ??BSP_Ser_WrByte_2
 ??BSP_Ser_WrByte_0:
-        LDR      R0,??DataTable12_3
+        LDR      R0,??DataTable13_3
         LDRB     R0,[R0, #+0]
         CMP      R0,#+1
         BNE      ??BSP_Ser_WrByte_2
 ??BSP_Ser_WrByte_3:
-        LDR      R0,??DataTable12_9  ;; 0xfffc0014
+        LDR      R0,??DataTable13_9  ;; 0xfffc0014
         LDR      R0,[R0, #+0]
         TST      R0,#0x2
         BEQ      ??BSP_Ser_WrByte_3
         MOVS     R0,R4
         ANDS     R0,R0,#0xFF      ;; Zero extend
-        LDR      R1,??DataTable12_10  ;; 0xfffc001c
+        LDR      R1,??DataTable13_10  ;; 0xfffc001c
         STR      R0,[R1, #+0]
 ??BSP_Ser_WrByte_2:
-        LDR      R0,??DataTable12_8
+        LDR      R0,??DataTable13_8
         LDR      R0,[R0, #+0]
         BL       OSSemPost
         POP      {R0,R1,R4,LR}
@@ -1860,10 +1867,10 @@ BSP_Ser_RdByte:
         SUB      SP,SP,#+8
         MOVS     R2,SP
         MOV      R1,#+0
-        LDR      R0,??DataTable12_11
+        LDR      R0,??DataTable13_11
         LDR      R0,[R0, #+0]
         BL       OSSemPend
-        LDR      R0,??DataTable12_3
+        LDR      R0,??DataTable13_3
         LDRB     R0,[R0, #+0]
         CMP      R0,#+0
         BNE      ??BSP_Ser_RdByte_0
@@ -1883,12 +1890,12 @@ BSP_Ser_RdByte:
         MOVS     R4,R0
         B        ??BSP_Ser_RdByte_3
 ??BSP_Ser_RdByte_0:
-        LDR      R0,??DataTable12_3
+        LDR      R0,??DataTable13_3
         LDRB     R0,[R0, #+0]
         CMP      R0,#+1
         BNE      ??BSP_Ser_RdByte_3
 ??BSP_Ser_RdByte_4:
-        LDR      R0,??DataTable12_9  ;; 0xfffc0014
+        LDR      R0,??DataTable13_9  ;; 0xfffc0014
         LDR      R0,[R0, #+0]
         TST      R0,#0x1
         BNE      ??BSP_Ser_RdByte_5
@@ -1896,11 +1903,11 @@ BSP_Ser_RdByte:
         BL       OSTimeDly
         B        ??BSP_Ser_RdByte_4
 ??BSP_Ser_RdByte_5:
-        LDR      R0,??DataTable12_12  ;; 0xfffc0018
+        LDR      R0,??DataTable13_12  ;; 0xfffc0018
         LDR      R0,[R0, #+0]
         MOVS     R4,R0
 ??BSP_Ser_RdByte_3:
-        LDR      R0,??DataTable12_11
+        LDR      R0,??DataTable13_11
         LDR      R0,[R0, #+0]
         BL       OSSemPost
         MOVS     R0,R4
@@ -2004,9 +2011,9 @@ BSP_Ser_Printf:
         MOVS     R5,R0
         MOVS     R2,R5
         MOVS     R1,R4
-        LDR      R0,??DataTable12_13
+        LDR      R0,??DataTable13_13
         BL       vsprintf
-        LDR      R0,??DataTable12_13
+        LDR      R0,??DataTable13_13
         BL       BSP_Ser_WrStr
         POP      {R4,R5,LR}
         ADD      SP,SP,#+12       ;; stack cleaning
@@ -2093,7 +2100,7 @@ Beep:
 ??Beep_0:
         CMP      R5,R4
         BCS      ??Beep_1
-        LDR      R0,??DataTable12_14
+        LDR      R0,??DataTable13_14
         BL       PIO_Clear
         MOV      R0,#+0
         BL       LED_Clear
@@ -2101,7 +2108,7 @@ Beep:
         BL       LED_Set
         MOV      R0,#+250
         BL       OSTimeDly
-        LDR      R0,??DataTable12_14
+        LDR      R0,??DataTable13_14
         BL       PIO_Set
         MOV      R0,#+1
         BL       LED_Clear
@@ -2148,7 +2155,7 @@ get_os_state:
         BNE      ??get_os_state_2
         ANDS     R0,R0,#0xFF      ;; Zero extend
         ADD      R2,R0,R0, LSL #+1
-        LDR      R0,??DataTable12_15
+        LDR      R0,??DataTable13_15
         ADDS     R0,R0,R2, LSL #+1
         B        ??get_os_state_3
 ??get_os_state_2:
@@ -2157,7 +2164,7 @@ get_os_state:
 ??get_os_state_1:
         ANDS     R0,R0,#0xFF      ;; Zero extend
         ADD      R2,R0,R0, LSL #+1
-        LDR      R0,??DataTable12_15
+        LDR      R0,??DataTable13_15
         ADDS     R0,R0,R2, LSL #+1
 ??get_os_state_3:
         BX       LR               ;; return
@@ -2179,17 +2186,17 @@ get_os_state:
 Get_Task_Info:
         PUSH     {R3-R5,LR}
         MOV      R5,#+1
-        LDR      R0,??DataTable12_16
+        LDR      R0,??DataTable13_16
         LDRB     R0,[R0, #+0]
         CMP      R0,#+1
         BNE      ??Get_Task_Info_0
-        LDR      R0,??DataTable12_17
+        LDR      R0,??DataTable13_17
         BL       BSP_Ser_Printf
-        LDR      R0,??DataTable12_18
+        LDR      R0,??DataTable13_18
         BL       BSP_Ser_Printf
-        LDR      R0,??DataTable12_19
+        LDR      R0,??DataTable13_19
         BL       BSP_Ser_Printf
-        LDR      R0,??DataTable12_20
+        LDR      R0,??DataTable13_20
         LDR      R0,[R0, #+0]
         MOVS     R4,R0
 ??Get_Task_Info_1:
@@ -2198,66 +2205,66 @@ Get_Task_Info:
         BEQ      ??Get_Task_Info_2
         MOVS     R1,R5
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable12_21
+        LDR      R0,??DataTable13_21
         BL       BSP_Ser_Printf
         ADDS     R5,R5,#+1
         LDR      R1,[R4, #+80]
-        LDR      R0,??DataTable12_22
+        LDR      R0,??DataTable13_22
         BL       BSP_Ser_Printf
         LDRB     R1,[R4, #+54]
-        LDR      R0,??DataTable12_23
+        LDR      R0,??DataTable13_23
         BL       BSP_Ser_Printf
         LDR      R1,[R4, #+60]
-        LDR      R0,??DataTable12_24
+        LDR      R0,??DataTable13_24
         BL       BSP_Ser_Printf
         LDRB     R0,[R4, #+52]
         BL       get_os_state
         MOVS     R1,R0
-        LDR      R0,??DataTable12_25
+        LDR      R0,??DataTable13_25
         BL       BSP_Ser_Printf
         LDR      R1,[R4, #+48]
-        LDR      R0,??DataTable12_26
+        LDR      R0,??DataTable13_26
         BL       BSP_Ser_Printf
         LDR      R0,[R4, #+28]
         CMP      R0,#+0
         BNE      ??Get_Task_Info_3
-        ADR      R1,??DataTable11  ;; " "
+        ADR      R1,??DataTable12  ;; " "
         B        ??Get_Task_Info_4
 ??Get_Task_Info_3:
         LDR      R0,[R4, #+28]
         LDR      R1,[R0, #+20]
 ??Get_Task_Info_4:
-        LDR      R0,??DataTable12_27
+        LDR      R0,??DataTable13_27
         BL       BSP_Ser_Printf
         LDR      R1,[R4, #+0]
-        LDR      R0,??DataTable12_28
+        LDR      R0,??DataTable13_28
         BL       BSP_Ser_Printf
         LDR      R0,[R4, #+72]
         LDR      R1,[R4, #+0]
         SUBS     R0,R0,R1
         ASRS     R0,R0,#+2
         LSLS     R1,R0,#+2
-        LDR      R0,??DataTable12_29
+        LDR      R0,??DataTable13_29
         BL       BSP_Ser_Printf
         LDR      R1,[R4, #+76]
-        LDR      R0,??DataTable12_26
+        LDR      R0,??DataTable13_26
         BL       BSP_Ser_Printf
         LDR      R0,[R4, #+12]
         LSLS     R1,R0,#+2
-        LDR      R0,??DataTable12_26
+        LDR      R0,??DataTable13_26
         BL       BSP_Ser_Printf
         LDR      R1,[R4, #+72]
-        LDR      R0,??DataTable12_28
+        LDR      R0,??DataTable13_28
         BL       BSP_Ser_Printf
         LDR      R1,[R4, #+8]
-        LDR      R0,??DataTable12_28
+        LDR      R0,??DataTable13_28
         BL       BSP_Ser_Printf
-        LDR      R0,??DataTable12_30
+        LDR      R0,??DataTable13_30
         BL       BSP_Ser_Printf
         LDR      R4,[R4, #+20]
         B        ??Get_Task_Info_1
 ??Get_Task_Info_2:
-        LDR      R0,??DataTable12_31
+        LDR      R0,??DataTable13_31
         BL       BSP_Ser_Printf
 ??Get_Task_Info_0:
         POP      {R0,R4,R5,LR}
@@ -2274,7 +2281,7 @@ Get_Task_Info:
 Get_Run_Time:
         PUSH     {R4-R8,LR}
         SUB      SP,SP,#+8
-        LDR      R0,??DataTable12_32
+        LDR      R0,??DataTable13_32
         LDR      R0,[R0, #+0]
         MOV      R1,#+1000
         BL       __aeabi_uidiv
@@ -2310,7 +2317,54 @@ Get_Run_Time:
         ANDS     R2,R2,#0xFF      ;; Zero extend
         MOVS     R1,R8
         ANDS     R1,R1,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable12_33
+        LDR      R0,??DataTable13_33
+        BL       BSP_Ser_Printf
+        POP      {R0,R1,R4-R8,LR}
+        BX       LR               ;; return
+
+        SECTION `.text`:CODE:NOROOT(2)
+        ARM
+Time_Stamp:
+        PUSH     {R4-R8,LR}
+        SUB      SP,SP,#+8
+        LDR      R0,??DataTable13_32
+        LDR      R0,[R0, #+0]
+        MOVS     R4,R0
+        MOVS     R0,R4
+        MOV      R1,#+1000
+        BL       __aeabi_uidivmod
+        MOVS     R8,R1
+        MOVS     R0,R4
+        MOV      R1,#+1000
+        BL       __aeabi_uidiv
+        MOVS     R4,R0
+        MOVS     R0,R4
+        MOV      R1,#+60
+        BL       __aeabi_uidivmod
+        MOVS     R5,R1
+        MOVS     R0,R4
+        MOV      R1,#+60
+        BL       __aeabi_uidiv
+        MOV      R1,#+60
+        BL       __aeabi_uidivmod
+        MOVS     R6,R1
+        MOVS     R0,R4
+        MOV      R1,#+3600
+        BL       __aeabi_uidiv
+        MOV      R1,#+24
+        BL       __aeabi_uidivmod
+        MOVS     R7,R1
+        MOVS     R0,R8
+        LSL      R0,R0,#+16
+        LSRS     R0,R0,#+16
+        STR      R0,[SP, #+0]
+        MOVS     R3,R5
+        ANDS     R3,R3,#0xFF      ;; Zero extend
+        MOVS     R2,R6
+        ANDS     R2,R2,#0xFF      ;; Zero extend
+        MOVS     R1,R7
+        ANDS     R1,R1,#0xFF      ;; Zero extend
+        LDR      R0,??DataTable13_34
         BL       BSP_Ser_Printf
         POP      {R0,R1,R4-R8,LR}
         BX       LR               ;; return
@@ -2318,7 +2372,7 @@ Get_Run_Time:
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable11:
+??DataTable12:
         DC8      " ",0x0,0x0
 
         SECTION `.text`:CODE:NOROOT(2)
@@ -2328,25 +2382,25 @@ Head_Info:
         SUB      SP,SP,#+52
         ADD      R0,SP,#+4
         BL       Read_Flash_State
-        LDR      R0,??DataTable12_34
+        LDR      R0,??DataTable13_35
         BL       BSP_Ser_Printf
-        LDR      R0,??DataTable12_35
+        LDR      R0,??DataTable13_36
         BL       BSP_Ser_Printf
-        LDR      R0,??DataTable12_36
+        LDR      R0,??DataTable13_37
         BL       BSP_Ser_Printf
-        LDR      R0,??DataTable12_37
+        LDR      R0,??DataTable13_38
         BL       BSP_Ser_Printf
-        LDR      R2,??DataTable12_38
-        LDR      R1,??DataTable12_39
-        LDR      R0,??DataTable12_40
+        LDR      R2,??DataTable13_39
+        LDR      R1,??DataTable13_40
+        LDR      R0,??DataTable13_41
         BL       BSP_Ser_Printf
-        LDR      R2,??DataTable12_41
-        LDR      R1,??DataTable12_42
-        LDR      R0,??DataTable12_43
+        LDR      R2,??DataTable13_42
+        LDR      R1,??DataTable13_43
+        LDR      R0,??DataTable13_44
         BL       BSP_Ser_Printf
-        LDR      R0,??DataTable12_35
+        LDR      R0,??DataTable13_36
         BL       BSP_Ser_Printf
-        ADR      R0,??DataTable12  ;; 0x0D, 0x0A, 0x00, 0x00
+        ADR      R0,??DataTable13  ;; 0x0D, 0x0A, 0x00, 0x00
         BL       BSP_Ser_Printf
         BL       OSVersion
         MOVS     R4,R0
@@ -2366,7 +2420,7 @@ Head_Info:
         BL       __aeabi_idiv
         MOVS     R1,R0
         MOVS     R2,R4
-        LDR      R0,??DataTable12_44
+        LDR      R0,??DataTable13_45
         BL       BSP_Ser_Printf
         BL       BSP_CPU_ClkFreq
         MOV      R3,#+1000
@@ -2376,111 +2430,111 @@ Head_Info:
         BL       __aeabi_uidiv
         MOVS     R2,R0
         MOVS     R3,R4
-        LDR      R0,??DataTable12_45
+        LDR      R0,??DataTable13_46
         LDRB     R1,[R0, #+0]
-        LDR      R0,??DataTable12_46
+        LDR      R0,??DataTable13_47
         BL       BSP_Ser_Printf
-        LDR      R0,??DataTable12_47
+        LDR      R0,??DataTable13_48
         LDR      R2,[R0, #+0]
-        LDR      R0,??DataTable12_32
+        LDR      R0,??DataTable13_32
         LDR      R1,[R0, #+0]
-        LDR      R0,??DataTable12_48
+        LDR      R0,??DataTable13_49
         BL       BSP_Ser_Printf
         BL       Get_Run_Time
-        ADR      R0,??DataTable12  ;; 0x0D, 0x0A, 0x00, 0x00
+        ADR      R0,??DataTable13  ;; 0x0D, 0x0A, 0x00, 0x00
         BL       BSP_Ser_Printf
-        LDR      R0,??DataTable12_49
+        LDR      R0,??DataTable13_50
         BL       BSP_Ser_Printf
-        LDR      R0,??DataTable12_50
+        LDR      R0,??DataTable13_51
         LDR      R0,[R0, #+0]
         LDR      R2,[R0, #+12]
-        LDR      R0,??DataTable12_50
+        LDR      R0,??DataTable13_51
         LDR      R0,[R0, #+0]
         LDR      R0,[R0, #+12]
-        LDR      R1,??DataTable12_50
+        LDR      R1,??DataTable13_51
         LDR      R1,[R1, #+0]
         LDR      R1,[R1, #+16]
         SUBS     R1,R0,R1
-        LDR      R0,??DataTable12_51
+        LDR      R0,??DataTable13_52
         BL       BSP_Ser_Printf
-        LDR      R0,??DataTable12_52
+        LDR      R0,??DataTable13_53
         LDR      R1,[R0, #+0]
-        LDR      R0,??DataTable12_53
+        LDR      R0,??DataTable13_54
         BL       BSP_Ser_Printf
-        LDR      R0,??DataTable12_54
+        LDR      R0,??DataTable13_55
         LDR      R1,[R0, #+0]
-        LDR      R0,??DataTable12_55
+        LDR      R0,??DataTable13_56
         BL       BSP_Ser_Printf
-        LDR      R0,??DataTable12_56
+        LDR      R0,??DataTable13_57
         LDR      R0,[R0, #+0]
         LDRH     R1,[R0, #+8]
-        LDR      R0,??DataTable12_57
+        LDR      R0,??DataTable13_58
         BL       BSP_Ser_Printf
-        LDR      R0,??DataTable12_58
+        LDR      R0,??DataTable13_59
         LDR      R0,[R0, #+0]
         LDRH     R1,[R0, #+8]
-        LDR      R0,??DataTable12_59
+        LDR      R0,??DataTable13_60
         BL       BSP_Ser_Printf
-        LDR      R0,??DataTable12_60
+        LDR      R0,??DataTable13_61
         LDR      R0,[R0, #+0]
         LDRH     R1,[R0, #+8]
-        LDR      R0,??DataTable12_61
+        LDR      R0,??DataTable13_62
         BL       BSP_Ser_Printf
-        LDR      R0,??DataTable12_62
+        LDR      R0,??DataTable13_63
         LDR      R0,[R0, #+0]
         LDRH     R1,[R0, #+8]
-        LDR      R0,??DataTable12_63
+        LDR      R0,??DataTable13_64
         BL       BSP_Ser_Printf
-        LDR      R0,??DataTable12_64
+        LDR      R0,??DataTable13_65
         LDRB     R0,[R0, #+0]
-        LDR      R1,??DataTable12_64
+        LDR      R1,??DataTable13_65
         LDRB     R3,[R1, #+1]
-        LDR      R1,??DataTable12_64
+        LDR      R1,??DataTable13_65
         LDRB     R2,[R1, #+2]
         ANDS     R0,R0,#0xFF      ;; Zero extend
         STR      R0,[SP, #+0]
         ANDS     R3,R3,#0xFF      ;; Zero extend
         ANDS     R2,R2,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable12_64
+        LDR      R0,??DataTable13_65
         LDRB     R1,[R0, #+3]
-        LDR      R0,??DataTable12_65
+        LDR      R0,??DataTable13_66
         BL       BSP_Ser_Printf
-        LDR      R0,??DataTable12_66
+        LDR      R0,??DataTable13_67
         LDRB     R0,[R0, #+0]
-        LDR      R1,??DataTable12_66
+        LDR      R1,??DataTable13_67
         LDRB     R3,[R1, #+1]
-        LDR      R1,??DataTable12_66
+        LDR      R1,??DataTable13_67
         LDRB     R2,[R1, #+2]
         ANDS     R0,R0,#0xFF      ;; Zero extend
         STR      R0,[SP, #+0]
         ANDS     R3,R3,#0xFF      ;; Zero extend
         ANDS     R2,R2,#0xFF      ;; Zero extend
-        LDR      R0,??DataTable12_66
+        LDR      R0,??DataTable13_67
         LDRB     R1,[R0, #+3]
-        LDR      R0,??DataTable12_67
+        LDR      R0,??DataTable13_68
         BL       BSP_Ser_Printf
-        LDR      R0,??DataTable12_68
+        LDR      R0,??DataTable13_69
         LDR      R0,[R0, #+0]
-        LDR      R1,??DataTable12_68
+        LDR      R1,??DataTable13_69
         LDR      R3,[R1, #+4]
-        LDR      R1,??DataTable12_68
+        LDR      R1,??DataTable13_69
         LDR      R2,[R1, #+8]
         STR      R0,[SP, #+0]
-        LDR      R0,??DataTable12_68
+        LDR      R0,??DataTable13_69
         LDR      R1,[R0, #+12]
-        LDR      R0,??DataTable12_69
+        LDR      R0,??DataTable13_70
         BL       BSP_Ser_Printf
         LDR      R2,[SP, #+8]
         LDR      R1,[SP, #+12]
-        LDR      R0,??DataTable12_70
+        LDR      R0,??DataTable13_71
         BL       BSP_Ser_Printf
         LDR      R0,[SP, #+4]
         CMP      R0,#+85
         BNE      ??Head_Info_0
-        ADR      R0,??DataTable12_1  ;; 0x4F, 0x4B, 0x00, 0x00
+        ADR      R0,??DataTable13_1  ;; 0x4F, 0x4B, 0x00, 0x00
         B        ??Head_Info_1
 ??Head_Info_0:
-        LDR      R0,??DataTable12_71
+        LDR      R0,??DataTable13_72
 ??Head_Info_1:
         LDR      R1,[SP, #+4]
         CMP      R1,#+85
@@ -2488,29 +2542,29 @@ Head_Info:
         ADD      R1,SP,#+20
         B        ??Head_Info_3
 ??Head_Info_2:
-        LDR      R1,??DataTable12_72
+        LDR      R1,??DataTable13_73
 ??Head_Info_3:
         STR      R0,[SP, #+0]
         LDR      R3,[SP, #+4]
         LDR      R2,[SP, #+16]
-        LDR      R0,??DataTable12_73
+        LDR      R0,??DataTable13_74
         BL       BSP_Ser_Printf
-        LDR      R0,??DataTable12_74
+        LDR      R0,??DataTable13_75
         LDR      R0,[R0, #+0]
         STR      R0,[SP, #+0]
-        LDR      R0,??DataTable12_75
+        LDR      R0,??DataTable13_76
         LDR      R3,[R0, #+0]
-        LDR      R0,??DataTable12_76
+        LDR      R0,??DataTable13_77
         LDR      R2,[R0, #+0]
-        LDR      R0,??DataTable12_77
+        LDR      R0,??DataTable13_78
         LDR      R1,[R0, #+0]
-        LDR      R0,??DataTable12_78
+        LDR      R0,??DataTable13_79
         BL       BSP_Ser_Printf
-        LDR      R0,??DataTable12_79
+        LDR      R0,??DataTable13_80
         LDR      R1,[R0, #+0]
-        LDR      R0,??DataTable12_80
+        LDR      R0,??DataTable13_81
         BL       BSP_Ser_Printf
-        ADR      R0,??DataTable12  ;; 0x0D, 0x0A, 0x00, 0x00
+        ADR      R0,??DataTable13  ;; 0x0D, 0x0A, 0x00, 0x00
         BL       BSP_Ser_Printf
         BL       Get_Task_Info
         ADD      SP,SP,#+52       ;; stack cleaning
@@ -2520,487 +2574,493 @@ Head_Info:
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12:
+??DataTable13:
         DC8      0x0D, 0x0A, 0x00, 0x00
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_1:
+??DataTable13_1:
         DC8      0x4F, 0x4B, 0x00, 0x00
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_2:
+??DataTable13_2:
         DC32     Flag_Reset_Pin_Trigger
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_3:
+??DataTable13_3:
         DC32     Debug_COM_Sel
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_4:
+??DataTable13_4:
         DC32     0xfffc000c
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_5:
+??DataTable13_5:
         DC32     0xfffc0004
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_6:
+??DataTable13_6:
         DC32     0xfffc0020
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_7:
+??DataTable13_7:
         DC32     0xfffc0120
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_8:
+??DataTable13_8:
         DC32     Bsp_Ser_Tx_Sem_lock
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_9:
+??DataTable13_9:
         DC32     0xfffc0014
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_10:
+??DataTable13_10:
         DC32     0xfffc001c
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_11:
+??DataTable13_11:
         DC32     Bsp_Ser_Rx_Sem_lock
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_12:
+??DataTable13_12:
         DC32     0xfffc0018
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_13:
+??DataTable13_13:
         DC32     ??buffer
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_14:
+??DataTable13_14:
         DC32     PinBuzzer
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_15:
+??DataTable13_15:
         DC32     os_stat_desp
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_16:
+??DataTable13_16:
         DC32     OSRunning
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_17:
+??DataTable13_17:
         DC32     `?<Constant "---------------------...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_18:
+??DataTable13_18:
         DC32     `?<Constant "|--------------------...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_19:
+??DataTable13_19:
         DC32     `?<Constant "| ID  |    Name    | ...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_20:
+??DataTable13_20:
         DC32     OSTCBList
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_21:
+??DataTable13_21:
         DC32     `?<Constant "|%2d ">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_22:
+??DataTable13_22:
         DC32     `?<Constant "%13.13s">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_23:
+??DataTable13_23:
         DC32     `?<Constant "      %2d ">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_24:
+??DataTable13_24:
         DC32     `?<Constant "  %10d ">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_25:
+??DataTable13_25:
         DC32     `?<Constant "   %s  ">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_26:
+??DataTable13_26:
         DC32     `?<Constant " %5d ">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_27:
+??DataTable13_27:
         DC32     `?<Constant " %22.22s ">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_28:
+??DataTable13_28:
         DC32     `?<Constant " %08X ">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_29:
+??DataTable13_29:
         DC32     `?<Constant " %4d ">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_30:
+??DataTable13_30:
         DC32     `?<Constant " |\\r\\n">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_31:
+??DataTable13_31:
         DC32     `?<Constant "---------------------...">_1`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_32:
+??DataTable13_32:
         DC32     OSTime
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_33:
+??DataTable13_33:
         DC32     `?<Constant "OS Running Time  =  %...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_34:
+??DataTable13_34:
+        DC32     `?<Constant "\\r\\n[%d:%02d:%02d.%03d] ">`
+
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable13_35:
         DC32     `?<Constant "\\r\\n\\r\\n">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_35:
+??DataTable13_36:
         DC32     `?<Constant "---------------------...">_2`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_36:
+??DataTable13_37:
         DC32     `?<Constant "----                 ...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_37:
+??DataTable13_38:
         DC32     `?<Constant "----         iSAM Tes...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_38:
+??DataTable13_39:
         DC32     fw_version
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_39:
+??DataTable13_40:
         DC32     hw_model
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_40:
+??DataTable13_41:
         DC32     `?<Constant "----   %20s-%s       ...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_41:
-        DC32     `?<Constant "17:49:58">`
+??DataTable13_42:
+        DC32     `?<Constant "13:31:07">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_42:
-        DC32     `?<Constant "Dec 15 2014">`
+??DataTable13_43:
+        DC32     `?<Constant "Dec 19 2014">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_43:
+??DataTable13_44:
         DC32     `?<Constant "----   Compile date: ...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_44:
+??DataTable13_45:
         DC32     `?<Constant "Micrium uC/OS-II on t...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_45:
+??DataTable13_46:
         DC32     OSCPUUsage
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_46:
+??DataTable13_47:
         DC32     `?<Constant "CPU Usage = %d%%, CPU...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_47:
+??DataTable13_48:
         DC32     OSCtxSwCtr
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_48:
+??DataTable13_49:
         DC32     `?<Constant "#Ticks = %8d, #CtxSw ...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_49:
+??DataTable13_50:
         DC32     `?<Constant "---------------------...">_3`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_50:
+??DataTable13_51:
         DC32     pMEM_Part_MsgUART
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_51:
+??DataTable13_52:
         DC32     `?<Constant "MEM_Part_MsgUART :   ...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_52:
+??DataTable13_53:
         DC32     Tx_ReSend_Happens
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_53:
+??DataTable13_54:
         DC32     `?<Constant "Tx_ReSend_Happens:   ...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_54:
+??DataTable13_55:
         DC32     Tx_ReSend_Happens_Ruler
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_55:
+??DataTable13_56:
         DC32     `?<Constant "Tx_ReSend_Happens_Rul...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_56:
+??DataTable13_57:
         DC32     TWI_Sem_lock
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_57:
+??DataTable13_58:
         DC32     `?<Constant "TWI_Sem_lock:        ...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_58:
+??DataTable13_59:
         DC32     TWI_Sem_done
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_59:
+??DataTable13_60:
         DC32     `?<Constant "TWI_Sem_done:        ...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_60:
+??DataTable13_61:
         DC32     UART_MUX_Sem_lock
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_61:
+??DataTable13_62:
         DC32     `?<Constant "UART_MUX_Sem_lock:   ...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_62:
+??DataTable13_63:
         DC32     Done_Sem_RulerUART
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_63:
+??DataTable13_64:
         DC32     `?<Constant "Done_Sem_RulerUART:  ...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_64:
+??DataTable13_65:
         DC32     Global_Ruler_State
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_65:
+??DataTable13_66:
         DC32     `?<Constant "Global_Ruler_State[3....">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_66:
+??DataTable13_67:
         DC32     Global_Ruler_Type
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_67:
+??DataTable13_68:
         DC32     `?<Constant "Global_Ruler_Type[3.....">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_68:
+??DataTable13_69:
         DC32     Global_Mic_Mask
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_69:
+??DataTable13_70:
         DC32     `?<Constant "Global_Mic_Mask[3..0]...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_70:
+??DataTable13_71:
         DC32     `?<Constant "Flash Write Cycle:   ...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_71:
+??DataTable13_72:
         DC32     `?<Constant "Error">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_72:
+??DataTable13_73:
         DC32     `?<Constant " -- ">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_73:
+??DataTable13_74:
         DC32     `?<Constant "Ruler FW Bin File:   ...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_74:
+??DataTable13_75:
         DC32     test_counter4
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_75:
+??DataTable13_76:
         DC32     test_counter3
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_76:
+??DataTable13_77:
         DC32     test_counter2
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_77:
+??DataTable13_78:
         DC32     test_counter1
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_78:
+??DataTable13_79:
         DC32     `?<Constant "Test Counter:        ...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_79:
+??DataTable13_80:
         DC32     test_counter5
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
-??DataTable12_80:
+??DataTable13_81:
         DC32     `?<Constant "Test Counter:  UART_W...">`
 
         SECTION `.iar_vfe_header`:DATA:NOALLOC:NOROOT(2)
@@ -3018,11 +3078,11 @@ Head_Info:
 // 
 //    94 bytes in section .bss
 //    12 bytes in section .data
-// 2 260 bytes in section .rodata
-// 6 384 bytes in section .text
+// 2 284 bytes in section .rodata
+// 6 560 bytes in section .text
 // 
-// 6 384 bytes of CODE  memory
-// 2 260 bytes of CONST memory
+// 6 560 bytes of CODE  memory
+// 2 284 bytes of CONST memory
 //   106 bytes of DATA  memory
 //
 //Errors: none

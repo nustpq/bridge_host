@@ -32,6 +32,6 @@ extern unsigned char Init_FM36( unsigned short sr );
 
 extern unsigned char DMIC_PGA_Control( unsigned short gain );
 
-extern unsigned char DMIC_Ploarity_Control( unsigned char mic_revert_en ) ;
+extern unsigned char DMIC_Ploarity_Control( bool mic_revert_en ) ;
 
 #endif

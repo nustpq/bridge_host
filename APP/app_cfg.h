@@ -159,6 +159,7 @@
 #define  APP_CFG_TRACE                 BSP_Ser_Printf   ////Disable here is use uC Probe  
 #define  APP_TRACE_INFO(x)            ((APP_CFG_TRACE_LEVEL  >= TRACE_LEVEL_INFO)  ? (void)(APP_CFG_TRACE x) : (void)0)
 #define  APP_TRACE_DBG(x)             ((APP_CFG_TRACE_LEVEL  >= TRACE_LEVEL_DEBUG) ? (void)(APP_CFG_TRACE x) : (void)0)
+#define  APP_TRACE_INFO_T(x)          {(APP_CFG_TRACE_LEVEL  >= TRACE_LEVEL_INFO)  ? Time_Stamp() : (void)0;   APP_TRACE_INFO(x) ; }
 
 // for shell uart
 #define  UART_SHELL_SEND_STR(x)                (void)( BSP_Ser_Printf x )      

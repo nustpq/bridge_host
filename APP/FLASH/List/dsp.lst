@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        15/Dec/2014  17:49:59
+# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        19/Dec/2014  13:30:42
 # Copyright 1999-2014 IAR Systems AB.
 #
 #    Cpu mode     =  arm
@@ -575,12 +575,12 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\dsp.c
     528              
     529          }
     530          
-    531          unsigned char DMIC_Ploarity_Control( unsigned char mic_revert_en ) 
+    531          unsigned char DMIC_Ploarity_Control( bool mic_revert_en ) 
     532          {
     533              unsigned char  err  ;
     534              unsigned short data = 0 ; 
     535              
-    536              if( mic_revert_en != 0 ) {
+    536              if( mic_revert_en ) {
     537                  data = 1;
     538              } 
     539              
@@ -897,7 +897,7 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\dsp.c
     850                  err = FM36_RD_CM_ERR;
     851                  return FM36_RD_CM_ERR ;
     852              }
-    853              APP_TRACE_INFO(("ROM ID = 0x%X\r\n", temp));
+    853              APP_TRACE_INFO_T(("ROM ID = 0x%X", temp));
     854              
     855              if( temp != FM36_ROM_ID_2 ) { 
     856                  return FM36_CHECK_ROMID_ERR; //dsp type error
@@ -973,14 +973,14 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\dsp.c
     926                  err = FM36_RD_DM_ERR;
     927                  return err ;
     928              }
-    929              APP_TRACE_DBG(("0x2306 = 0x%X\r\n", temp2));
+    929              APP_TRACE_INFO_T(("#0x2306 = 0x%X", temp2));
     930              OSTimeDly(100);
     931              err = DM_LegacyRead( FM36_I2C_ADDR, 0x22FB,(unsigned char *)&temp ) ;
     932              if( OS_ERR_NONE != err ) {
     933                  err = FM36_RD_DM_ERR;
     934                  return err ;
     935              }
-    936              APP_TRACE_INFO(("0x22FB = 0x%X\r\n", temp));
+    936              APP_TRACE_INFO_T(("#0x22FB = 0x%X", temp));
     937              if( temp != 0x5A5A ) {   
     938                  return FM36_CHECK_FLAG_ERR;
     939              }
@@ -989,7 +989,7 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\dsp.c
     942                  err = FM36_RD_DM_ERR;
     943                  return err ;
     944              }
-    945              APP_TRACE_DBG(("0x2306 = 0x%X\r\n", temp));
+    945              APP_TRACE_INFO_T(("0x2306 = 0x%X", temp));
     946              if( temp == temp2 ) {
     947                  APP_TRACE_INFO(("FM36 frame counter stopped !"));
     948                  return FM36_CHECK_COUNTER_ERR;
@@ -1033,6 +1033,7 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\dsp.c
         40   -> PM_SingleWrite
         40   -> Pin_Reset_FM36
         40   -> Revert_patch_Endien
+        40   -> Time_Stamp
       16   ReInit_FM36
         16   -> DM_SingleWrite
        0   Revert_patch_Endien
@@ -1042,8 +1043,12 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\dsp.c
 
    Bytes  Function/Label
    -----  --------------
+      16  ?<Constant "#0x22FB = 0x%X">
+      16  ?<Constant "#0x2306 = 0x%X">
       16  ?<Constant "0x22FB = 0x%X\r\n">
+      16  ?<Constant "0x2306 = 0x%X">
       32  ?<Constant "FM36 frame counter st...">
+      16  ?<Constant "ROM ID = 0x%X">
       16  ?<Constant "ROM ID = 0x%X\r\n">
       24  ?<Constant "frame counter stopped !">
        4  ??DataTable2
@@ -1051,6 +1056,10 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\dsp.c
        4  ??DataTable2_10
        4  ??DataTable2_11
        4  ??DataTable2_12
+       4  ??DataTable2_13
+       4  ??DataTable2_14
+       4  ??DataTable2_15
+       4  ??DataTable2_16
        4  ??DataTable2_2
        4  ??DataTable2_3
        4  ??DataTable2_4
@@ -1064,7 +1073,7 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\dsp.c
      296  DMIC_PGA_Control
      100  DMIC_Ploarity_Control
     1312  Init_FM36
-    1132  Init_FM36_AB03
+    1172  Init_FM36_AB03
      288  ReInit_FM36
       28  Revert_patch_Endien
        1  flag_power_lose
@@ -1080,11 +1089,11 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\dsp.c
  
      8 bytes in section .bss
  1 049 bytes in section .data
-    88 bytes in section .rodata
- 3 616 bytes in section .text
+   152 bytes in section .rodata
+ 3 672 bytes in section .text
  
- 3 616 bytes of CODE  memory
-    88 bytes of CONST memory
+ 3 672 bytes of CODE  memory
+   152 bytes of CONST memory
  1 057 bytes of DATA  memory
 
 Errors: none

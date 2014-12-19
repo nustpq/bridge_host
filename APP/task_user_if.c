@@ -70,7 +70,7 @@ void  App_TaskUserIF (void *p_arg)
     AB_POST();
     
 #ifndef BOARD_TYPE_AB01  
-    APP_TRACE_INFO(( "\r\nWARNING: NOT AB01, NO MCU CRT UART SWITCH\r\n"));
+    APP_TRACE_INFO_T(("WARNING: NOT AB01, NO MCU CRT UART SWITCH\r\n"));
 #endif
    
     while ( DEF_TRUE ) {                                          /* Task body, always written as an infinite loop.           */   
@@ -78,7 +78,7 @@ void  App_TaskUserIF (void *p_arg)
         msg = (CPU_INT32U *)(OSMboxPend(App_UserIF_Mbox, 0, &err)); //pending, no timeout       
         if (msg != NULL) {          
             key_state = *msg ;
-            APP_TRACE_INFO(("\r\n\r\n"));             
+            APP_TRACE_INFO(("\r\n"));             
             switch( key_state & MSG_TYPE_MASK ) {                
                 case MSG_TYPE_RESET : //reset send msg                
                     //PDM_Pattern_Gen(0); //gen cp2240 pattern
@@ -86,8 +86,8 @@ void  App_TaskUserIF (void *p_arg)
                 break;
                     
                 case MSG_TYPE_SWITCH ://Switch                
-                    APP_TRACE_INFO(("Switch status updated: \r\n SW1, SW0 \r\n"));
-                    APP_TRACE_INFO((" %4d, %4d\r\n", (key_state>>0)&(0x01),(key_state>>1)&(0x01) )); 
+                    APP_TRACE_INFO_T(("Switch status updated:  SW[1..0] = [%d, %d]\r\n",\
+                                     (key_state>>0)&(0x01),(key_state>>1)&(0x01) )); 
                     /**********************************************************************/
                     //To do something to do with Switch selection...                    
                     // Switch 'SW0' used to control DEBUG port:
@@ -126,7 +126,7 @@ void  App_TaskUserIF (void *p_arg)
                               err = CODEC_LOUT_Small_Gain_En( false ) ; //normal signal, no attenuation                              
                           }
                           if( OS_ERR_NONE != err ) {
-                              APP_TRACE_INFO(("ERR: Set CODEC_LOUT_Small_Gain_En err! [%d]\r\n",err));
+                              APP_TRACE_INFO_T(("ERR: Set CODEC_LOUT_Small_Gain_En err! [%d]\r\n",err));
                           }
                       } 
                 break;
@@ -136,14 +136,14 @@ void  App_TaskUserIF (void *p_arg)
                         //APP_TRACE_INFO(("Ruler port disabled !\r\n"));
                         break; 
                     }
-                    APP_TRACE_INFO(("Ruler port status changed:  Port[3..0] = [%1d%1d%1d%1d]\r\n",\
+                    APP_TRACE_INFO_T(("Ruler port status changed:  Port[3..0] = [%1d%1d%1d%1d] ",\
                                     (key_state>>0)&(0x01),(key_state>>1)&(0x01),(key_state>>2)&(0x01),(key_state>>3)&(0x01) )); 
                     
                     for( ruler_id = 0 ; ruler_id < 4 ; ruler_id++ ) {   
                         if( (key_state>>( 8 + 3 - ruler_id)) & 0x01) {  //check if Ruler Port[0] switch status changed                            
                             if( ( (key_state>>(3 - ruler_id)) & 0x01 ) == 0 ) { // ruler attached, setup ruler                              
                                 //LED_Set( LED_P0 + ruler_id );
-                                APP_TRACE_INFO(("Ruler[%d] Attached.\r\n", ruler_id ));                            
+                                APP_TRACE_INFO_T(("Ruler[%d] Attached.\r\n", ruler_id ));                            
                                 Global_Ruler_State[ruler_id] = RULER_STATE_ATTACHED; 
                                 err = Init_Ruler( ruler_id ); 
                                 if( OS_ERR_NONE != err ) {
@@ -189,8 +189,9 @@ void  App_TaskUserIF (void *p_arg)
                                                                            
                             } else { // ruler detached
                                 //LED_Clear( LED_P0 + ruler_id );
-                                APP_TRACE_INFO(("Ruler[%d] Detached.\r\n", ruler_id )); 
+                                APP_TRACE_INFO_T(("Ruler[%d] Detached.\r\n", ruler_id )); 
                                 Global_Ruler_State[ruler_id] = RULER_STATE_DETACHED ;
+                                Global_Ruler_Type[ruler_id]  = 0 ;
                                 Global_Mic_Mask[ruler_id]    = 0 ; 
                             } 
                 

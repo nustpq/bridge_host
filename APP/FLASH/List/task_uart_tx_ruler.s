@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       15/Dec/2014  17:50:05
+// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       19/Dec/2014  13:30:48
 // Copyright 1999-2014 IAR Systems AB.
 //
 //    Cpu mode     =  arm
@@ -48,6 +48,7 @@
         #define SHT_PROGBITS 0x1
 
         EXTERN ACK_Sem_RulerUART
+        EXTERN BSP_Ser_Printf
         EXTERN CheckSum
         EXTERN Global_Ruler_Index
         EXTERN OSMemPut
@@ -55,6 +56,7 @@
         EXTERN OSSemPend
         EXTERN Queue_Write
         EXTERN Queue_WriteBuf
+        EXTERN Time_Stamp
         EXTERN UART_WriteStart
         EXTERN pMEM_Part_MsgUART
         EXTERN pUART_Send_Buf
@@ -258,24 +260,22 @@ App_TaskUART_Tx_Ruler:
         MOV      R0,#+1
         BL       UART_WriteStart
         LDRB     R0,[R7, #+0]
-        TST      R0,#0x3F
-        BEQ      ??App_TaskUART_Tx_Ruler_9
-??App_TaskUART_Tx_Ruler_10:
-        LDRB     R0,[R7, #+0]
-        ANDS     R0,R0,#0x3F
-        CMP      R0,#+1
-        BEQ      ??App_TaskUART_Tx_Ruler_9
-??App_TaskUART_Tx_Ruler_11:
-        LDRB     R0,[R7, #+0]
         ANDS     R0,R0,#0x3F
         CMP      R0,#+62
+        BNE      ??App_TaskUART_Tx_Ruler_9
+        ADD      R2,SP,#+12
+        MOV      R1,#+1000
+        LDR      R0,??App_TaskUART_Tx_Ruler_1+0x10
+        LDR      R0,[R0, #+0]
+        BL       OSSemPend
+        LDRB     R0,[SP, #+12]
+        CMP      R0,#+0
         BEQ      ??App_TaskUART_Tx_Ruler_9
-??App_TaskUART_Tx_Ruler_12:
-        LDRB     R0,[R7, #+0]
-        ANDS     R0,R0,#0x3F
-        CMP      R0,#+63
-        BEQ      ??App_TaskUART_Tx_Ruler_9
-??App_TaskUART_Tx_Ruler_13:
+        BL       Time_Stamp
+        LDR      R0,??App_TaskUART_Tx_Ruler_1+0x8
+        LDRB     R1,[R0, #+0]
+        LDR      R0,??App_TaskUART_Tx_Ruler_1+0x1C
+        BL       BSP_Ser_Printf
 ??App_TaskUART_Tx_Ruler_9:
         MOVS     R1,R6
         LDR      R0,??App_TaskUART_Tx_Ruler_1+0x14
@@ -291,6 +291,7 @@ App_TaskUART_Tx_Ruler:
         DC32     ACK_Sem_RulerUART
         DC32     pMEM_Part_MsgUART
         DC32     Tx_ReSend_Happens_Ruler
+        DC32     `?<Constant "ERROR\\243\\272Send EST to Ru...">`
 
         SECTION `.iar_vfe_header`:DATA:NOALLOC:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
@@ -303,13 +304,21 @@ App_TaskUART_Tx_Ruler:
         SECTION __DLIB_PERTHREAD_init:DATA:REORDER:NOROOT(0)
         SECTION_TYPE SHT_PROGBITS, 0
 
+        SECTION `.rodata`:CONST:REORDER:NOROOT(2)
+`?<Constant "ERROR\\243\\272Send EST to Ru...">`:
+        DATA
+        DC8 "ERROR\243\272Send EST to Ruler[%d] failed.\015\012"
+        DC8 0
+
         END
 // 
 //  96 bytes in section .bss
-// 720 bytes in section .text
+//  40 bytes in section .rodata
+// 732 bytes in section .text
 // 
-// 720 bytes of CODE memory
-//  96 bytes of DATA memory
+// 732 bytes of CODE  memory
+//  40 bytes of CONST memory
+//  96 bytes of DATA  memory
 //
 //Errors: none
 //Warnings: none

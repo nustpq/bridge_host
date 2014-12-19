@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        15/Dec/2014  17:50:03
+# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        19/Dec/2014  13:30:47
 # Copyright 1999-2014 IAR Systems AB.
 #
 #    Cpu mode     =  arm
@@ -129,8 +129,8 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\task_joy.c
      80                      } 
      81                      
      82                      if(i >= 100 ) {// trigger reset             
-     83                          APP_TRACE_INFO((">>User reset pin triggered... \r\n" ));
-     84                          APP_TRACE_INFO((">>That's all folks !\r\n\r\n>> Rebooting...\r\n"));                             
+     83                          APP_TRACE_INFO_T((">>User reset pin triggered... \r\n" ));
+     84                          APP_TRACE_INFO_T((">>That's all folks !\r\n\r\n>> Rebooting...\r\n"));                             
      85                          Beep(3); 
      86                          //PDM_Pattern_Gen(1); //Generate idle PDM data for CP2240 
      87                          Pin_Reset_Audio_MCU(); //reset audio
@@ -201,6 +201,7 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\task_joy.c
         32   -> OSMboxPost
         32   -> OSTimeDly
         32   -> Pin_Reset_Audio_MCU
+        32   -> Time_Stamp
 
 
    Section sizes:
@@ -209,13 +210,13 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\task_joy.c
    -----  --------------
       44  ?<Constant ">>That\'s all folks !\r...">
       36  ?<Constant ">>User reset pin trig...">
-     568  App_TaskJoy
+     576  App_TaskJoy
 
  
   80 bytes in section .rodata
- 568 bytes in section .text
+ 576 bytes in section .text
  
- 568 bytes of CODE  memory
+ 576 bytes of CODE  memory
   80 bytes of CONST memory
 
 Errors: none

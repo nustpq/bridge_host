@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       15/Dec/2014  17:49:59
+// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       19/Dec/2014  13:30:41
 // Copyright 1999-2014 IAR Systems AB.
 //
 //    Cpu mode     =  arm
@@ -809,13 +809,13 @@ CODEC_LOUT_Small_Gain_En:
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
 ??DataTable3_4:
-        DC32     `?<Constant "Lout Gain 24dB attenu...">`
+        DC32     `?<Constant " Lout Gain 24dB atten...">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
 ??DataTable3_5:
-        DC32     `?<Constant "Lout Gain 24dB attenu...">_1`
+        DC32     `?<Constant " Lout Gain 24dB atten...">_1`
 
         SECTION `.text`:CODE:NOROOT(2)
         ARM
@@ -915,25 +915,25 @@ CODEC_Set_Volume:
         DC8 0, 152, 1, 0, 4, 24, 5, 240, 6, 0, 7, 0, 8, 0, 9, 0, 14, 48, 0, 0
 
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
-`?<Constant "Lout Gain 24dB attenu...">`:
+`?<Constant " Lout Gain 24dB atten...">`:
         DATA
-        DC8 "Lout Gain 24dB attenuation: Enabled \015\012"
-        DC8 0
+        DC8 " Lout Gain 24dB attenuation: Enabled \015\012"
 
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
-`?<Constant "Lout Gain 24dB attenu...">_1`:
+`?<Constant " Lout Gain 24dB atten...">_1`:
         DATA
-        DC8 "Lout Gain 24dB attenuation: Disabled \015\012"
+        DC8 " Lout Gain 24dB attenuation: Disabled \015\012"
+        DC8 0, 0, 0
 
         END
 // 
 //     4 bytes in section .bss
 //     8 bytes in section .data
-//   132 bytes in section .rodata
+//   136 bytes in section .rodata
 // 2 580 bytes in section .text
 // 
 // 2 580 bytes of CODE  memory
-//   132 bytes of CONST memory
+//   136 bytes of CONST memory
 //    12 bytes of DATA  memory
 //
 //Errors: none

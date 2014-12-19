@@ -392,11 +392,11 @@ unsigned char CODEC_LOUT_Small_Gain_En( bool small_gain )
     unsigned char reg;
     if( small_gain ) {        
         reg = 64;    // 64*0.375=24dB attenuation on Lout     
-        APP_TRACE_INFO(("Lout Gain 24dB attenuation: Enabled \r\n"));  
+        APP_TRACE_INFO((" Lout Gain 24dB attenuation: Enabled \r\n"));  
         
     } else {        
         reg = 0;    // 0dB attenuation on Lout        
-        APP_TRACE_INFO(("Lout Gain 24dB attenuation: Disabled \r\n"));  
+        APP_TRACE_INFO((" Lout Gain 24dB attenuation: Disabled \r\n"));  
         
     }    
     err = I2CWrite_Codec( DAC2L_Volume, reg );

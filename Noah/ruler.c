@@ -98,6 +98,77 @@ static unsigned char Check_Actived_Mic_Number( void )
 }
 
 
+
+/*
+*********************************************************************************************************
+*                                           Watch_Mic_Revert()
+*
+* Description : Revert Mics in FPGA mask For MIC revert issue on W01 mockup
+* Argument(s) : unsigned int *p_mask: pointer to mask data
+* Return(s)   : None.
+*
+* Note(s)     : Toggle_Mic() use
+*********************************************************************************************************
+*/       
+void Watch_Mic_Revert( unsigned int *p_mask )
+{
+    unsigned char i;
+    unsigned char mask, temp; 
+
+    mask   = *(unsigned char *)p_mask;    
+    for( i = 0; i < 4 ; i++ ) { //4 pairs mic       
+        temp = (mask>>(i<<1)) & 3;
+        if( temp == 1 ) {
+            mask &= ~(3<<(i<<1));
+            mask |= 2<<(i<<1); 
+        } else if(temp == 2) {
+            mask &= ~(3<<(i<<1));
+            mask |= 1<<(i<<1); 
+        }
+    }
+    *p_mask = mask;
+   
+}
+
+
+/*
+*********************************************************************************************************
+*                                           Check_Watch_Mic_Mask_State()
+*
+* Description : Check if Mics on Watch ruler is used. For MIC revert issue on W01 mickup
+* Argument(s) : None.
+* Return(s)   : 0   : OK.
+*               err : not support.
+* Note(s)     : pass this info for revert mic in FM36 PDM input.
+*********************************************************************************************************
+*/
+unsigned char Check_Watch_Mic_Mask_State( unsigned int mask, unsigned char *p_revert_mic )
+{
+    unsigned char i;
+    unsigned char temp;
+    unsigned char flag1, flag2;    
+    flag1  = 0;
+    flag2  = 0;     
+    for( i = 0; i < 4 ; i++ ) { //4 pairs mic       
+        temp = (mask>>(i<<1)) & 3;
+        switch( temp ) {
+            case  1 :           
+            case  2 :
+                flag2++;              
+            break;
+            case  3 : //both mic seleced in one pair mic
+                flag1++;
+                *p_revert_mic = 1;
+            break;
+        }
+    }        
+    if( flag1 && flag2 ) {        
+        return W01_MIC_NOT_SUPPORT_ERR;
+    }        
+    return 0;    
+}
+
+
 /*
 *********************************************************************************************************
 *                                           Check_Watch_Attach_State()
@@ -105,28 +176,49 @@ static unsigned char Check_Actived_Mic_Number( void )
 * Description : Check if Mics on Watch ruler is used. For MIC revert issue on W01 mickup
 * Argument(s) : None.
 * Return(s)   : 0 : no watch attachd or Mics on watch not used.
-*               1 : Mics on watch used.
+*               1 : Mics on watch used, no need revert mic.
+*               2 : Mics on watch used, need revert mic.
 *
 * Note(s)     : pass this info for revert mic in FM36 PDM input.
 *********************************************************************************************************
 */
 unsigned char Check_Watch_Attach_State( void )
 {
+    unsigned char err;
     unsigned char ruler_id;
+    unsigned char revert_mic;
+    
+    revert_mic = 0;
     
     for( ruler_id = 0; ruler_id < 4; ruler_id++ ) {
         
         if( Global_Ruler_State[ruler_id] < RULER_STATE_SELECTED ) {
             continue;
         }
+        
         if( Global_Ruler_Type[ruler_id] == RULER_TYPE_W01 ) {
-             return 1;
-        }    
+            err = Check_Watch_Mic_Mask_State( Global_Mic_Mask[ruler_id], &revert_mic );
+            if( OS_ERR_NONE != err ) {
+                APP_TRACE_INFO_T(("ERROR: Toggled W01 Mic group NOT support!\r\n")); 
+                return err; 
+            }         
+            if( revert_mic ) {
+                return 2;
+            } else {
+                return 1;
+            }
+        }   
+        
         
     }
     
     return 0;    
 }
+
+
+
+         
+
 
 /*
 *********************************************************************************************************
@@ -152,7 +244,7 @@ void Check_UART_Mixer_Ready( void )
         counter++;        
     } 
     if( counter) {
-        APP_TRACE_INFO(("Check_UART_Mixer_Ready, stage 1 : wait %d ms\r\n",counter));  
+        APP_TRACE_INFO_T(("Check_UART_Mixer_Ready, stage 1 : wait %d ms",counter));  
     }
         
     counter = 0;
@@ -161,7 +253,7 @@ void Check_UART_Mixer_Ready( void )
         counter++;  
     } 
     if( counter) {
-        APP_TRACE_INFO(("Check_UART_Mixer_Ready, stage 2 : wait %d ms\r\n",counter));  
+        APP_TRACE_INFO_T(("Check_UART_Mixer_Ready, stage 2 : wait %d ms",counter));  
     }
     OSTimeDly(5);   
     
@@ -191,36 +283,36 @@ unsigned char Setup_Audio( AUDIO_CFG *pAudioCfg )
        (pAudioCfg->sr)&0xFF, ((pAudioCfg->sr)>>8)&0xFF
     };
     
-    //APP_TRACE_INFO(("Setup_Audio [%s]:[%d SR]:[%d CH]: %s\r\n",(pAudioCfg->type == 0) ? "REC " : "PLAY", pAudioCfg->sr, pAudioCfg->channels,((pAudioCfg->type == 0) && (pAudioCfg->lin_ch_mask == 0)) ? "LIN Disabled" : "LIN Enabled"));
+    //APP_TRACE_INFO_T(("Setup_Audio [%s]:[%d SR]:[%d CH]: %s",(pAudioCfg->type == 0) ? "REC " : "PLAY", pAudioCfg->sr, pAudioCfg->channels,((pAudioCfg->type == 0) && (pAudioCfg->lin_ch_mask == 0)) ? "LIN Disabled" : "LIN Enabled"));
     if( pAudioCfg->type == 0 ) {
-        APP_TRACE_INFO(("Setup_Audio [REC]:[%d SR]:[%d CH]: %s\r\n", pAudioCfg->sr, pAudioCfg->channels, pAudioCfg->lin_ch_mask == 0 ? "LIN Disabled" : "LIN Enabled" ));
+        APP_TRACE_INFO_T(("Setup_Audio [REC]:[%d SR]:[%d CH]: %s", pAudioCfg->sr, pAudioCfg->channels, pAudioCfg->lin_ch_mask == 0 ? "LIN Disabled" : "LIN Enabled" ));
     } else {
-        APP_TRACE_INFO(("Setup_Audio [PLAY]:[%d SR]:[%d CH]\r\n", pAudioCfg->sr, pAudioCfg->channels ));
+        APP_TRACE_INFO_T(("Setup_Audio [PLAY]:[%d SR]:[%d CH]", pAudioCfg->sr, pAudioCfg->channels ));
     }
     
     err = Check_SR_Support( pAudioCfg->sr );
     if( err != NO_ERR ) { 
-        APP_TRACE_INFO(("\r\nSetup_Audio ERROR: Sample rate NOT support!\r\n")); 
+        APP_TRACE_INFO_T(("Setup_Audio ERROR: Sample rate NOT support!")); 
         return err;
     }    
     mic_num = Check_Actived_Mic_Number();
     if( mic_num > 6 ) {
-        APP_TRACE_INFO(("\r\nERROR: Check_Actived_Mic_Number = %d > 6\r\n",mic_num));
+        APP_TRACE_INFO_T(("ERROR: Check_Actived_Mic_Number = %d > 6",mic_num));
         return AUD_CFG_MIC_NUM_MAX_ERR;//if report err, need UI support!  
     } 
     //check rec mic num    
     if( (pAudioCfg->type == 0) && ( mic_num != pAudioCfg->channels) ) {
-        APP_TRACE_INFO(("WARN:(Setup_Audio Rec)pAudioCfg->channels(%d) !=  Active MICs Num(%d)\r\n",pAudioCfg->channels,mic_num));
+        APP_TRACE_INFO_T(("WARN:(Setup_Audio Rec)pAudioCfg->channels(%d) !=  Active MICs Num(%d)",pAudioCfg->channels,mic_num));
         buf[4] = mic_num;
         return AUD_CFG_MIC_NUM_DISMATCH_ERR;
     }
     //check channel num    
     if( (pAudioCfg->type == 1) && (pAudioCfg->channels == 0) ) {
-        APP_TRACE_INFO(("WARN:(Setup_Audio Play)pAudioCfg->channels =  0\r\n" ));        
+        APP_TRACE_INFO_T(("WARN:(Setup_Audio Play)pAudioCfg->channels =  0" ));        
         //return AUD_CFG_PLAY_CH_ZERO_ERR;  UI not support
     }  
     if( (pAudioCfg->type == 0) && (pAudioCfg->channels == 0) && (pAudioCfg->lin_ch_mask == 0) ) {
-        APP_TRACE_INFO(("WARN:(Setup_Audio Rec)pAudioCfg->channels + ch_lin =  0\r\n" ));        
+        APP_TRACE_INFO_T(("WARN:(Setup_Audio Rec)pAudioCfg->channels + ch_lin =  0" ));        
         //return AUD_CFG_PLAY_CH_ZERO_ERR; UI not support
     }
     //check sample rate
@@ -230,28 +322,28 @@ unsigned char Setup_Audio( AUDIO_CFG *pAudioCfg )
  #ifdef BOARD_TYPE_AB03    
     //check play ch num
     if(  (pAudioCfg->type == 1) && ( pAudioCfg->channels > 4 ) ) { //for AB03
-        APP_TRACE_INFO(("ERROR:(Setup_Audio Play)pAudioCfg->channels(=%d) > 4 NOT allowed for AB03\r\n",pAudioCfg->channels));
+        APP_TRACE_INFO_T(("ERROR:(Setup_Audio Play)pAudioCfg->channels(=%d) > 4 NOT allowed for AB03",pAudioCfg->channels));
         return AUD_CFG_PLAY_CH_ERR ;
     }
 #endif
     if ( (pAudioCfg->type == 0) && (pAudioCfg->lin_ch_mask != 0) ) {         
          buf[4] += 2; //add 2 channel  
-         APP_TRACE_INFO(("Lin 2 channels added...%d\r\n",buf[4])); 
+         APP_TRACE_INFO_T(("Lin 2 channels added...%d",buf[4])); 
     }
     UART2_Mixer(3); 
     USART_SendBuf( AUDIO_UART, buf, sizeof(buf)) ; 
     err = USART_Read_Timeout( AUDIO_UART, &data, 1, TIMEOUT_AUDIO_COM);
     if( err != NO_ERR ) { 
-        APP_TRACE_INFO(("\r\nSetup_Audio ERROR: timeout\r\n")); 
+        APP_TRACE_INFO_T(("Setup_Audio ERROR: timeout")); 
         return err;
     }
     if( data != NO_ERR ) {
-        APP_TRACE_INFO(("\r\nSetup_Audio ERROR: %d\r\n ",data)); 
+        APP_TRACE_INFO_T(("Setup_Audio ERROR: %d\r\n ",data)); 
         return data; 
     }
     err = Init_CODEC( pAudioCfg->sr );
     if( err != NO_ERR ) {
-        APP_TRACE_INFO(("\r\nSetup_Audio Init_CODEC ERROR: %d\r\n",err)); 
+        APP_TRACE_INFO_T(("Setup_Audio Init_CODEC ERROR: %d",err)); 
     } 
 #ifdef BOARD_TYPE_AB03    
     err = Init_FM36_AB03( pAudioCfg->sr, mic_num, 1, 0 ); //Lin from SP1_RX, slot0~1
@@ -259,20 +351,22 @@ unsigned char Setup_Audio( AUDIO_CFG *pAudioCfg )
     err = ReInit_FM36( pAudioCfg->sr ); 
 #endif
     if( err != NO_ERR ) {
-        APP_TRACE_INFO(("\r\nSetup_Audio ReInit_FM36 ERROR: %d\r\n",err)); 
+        APP_TRACE_INFO_T(("Setup_Audio ReInit_FM36 ERROR: %d",err)); 
     }
     data = Check_Watch_Attach_State();
-    if( data ) {
-        APP_TRACE_INFO(("Revert DMIC polarity for W01.\r\n")); 
+    if( data == 1 ) { 
+        APP_TRACE_INFO_T(("No need revert DMIC polarity for W01.")); 
+    } else if(data == 2 ) { 
+        APP_TRACE_INFO_T(("Revert DMIC polarity for W01.")); 
     }
-    err = DMIC_Ploarity_Control( data );
+    err = DMIC_Ploarity_Control( data == 2 );
     if( err != NO_ERR ) {
-        APP_TRACE_INFO(("\r\nDMIC_Ploarity_Control ERROR: %d\r\n",err)); 
+        APP_TRACE_INFO_T(("DMIC_Ploarity_Control ERROR: %d",err)); 
     }
 //    if ( pAudioCfg->lin_ch_mask != 0 ) {
 //        err = Set_AIC3204_DSP_Offset( mic_num );
 //        if( err != NO_ERR ) {
-//            APP_TRACE_INFO(("\r\nSetup_Audio Init AIC3204 ERROR: %d\r\n",err)); 
+//            APP_TRACE_INFO_T(("\r\nSetup_Audio Init AIC3204 ERROR: %d",err)); 
 //        }
 //    }
     
@@ -303,16 +397,16 @@ unsigned char Start_Audio( START_AUDIO start_audio )
 #if OS_CRITICAL_METHOD == 3u
     OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
 #endif 
-    APP_TRACE_INFO(("Start_Audio : type = [%d], padding = [0x%X]\r\n", start_audio.type, start_audio.padding));
+    APP_TRACE_INFO_T(("Start_Audio : type = [%d], padding = [0x%X]", start_audio.type, start_audio.padding));
     UART2_Mixer(3); 
     USART_SendBuf( AUDIO_UART, buf,  sizeof(buf) );    
     err = USART_Read_Timeout( AUDIO_UART, &data, 1, TIMEOUT_AUDIO_COM );  
     if( err != NO_ERR ) { 
-        APP_TRACE_INFO(("\r\nStart_Audio ERROR: Timeout : %d\r\n",err));
+        APP_TRACE_INFO_T(("Start_Audio ERROR: Timeout : %d",err));
         return err;
     }
     if( data != NO_ERR ) {
-        APP_TRACE_INFO(("\r\nStart_Audio ERROR: Data : %d\r\n ",data)); 
+        APP_TRACE_INFO_T(("Start_Audio ERROR: Data : %d\r\n ",data)); 
         return data; 
     } else {
         OS_ENTER_CRITICAL(); 
@@ -350,22 +444,22 @@ unsigned char Stop_Audio( void )
 #if OS_CRITICAL_METHOD == 3u
     OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
 #endif 
-    APP_TRACE_INFO(("Stop_Audio\r\n"));
+    APP_TRACE_INFO_T(("Stop_Audio"));
     UART2_Mixer(3); 
     USART_SendBuf( AUDIO_UART, buf,  sizeof(buf)) ;    
     err = USART_Read_Timeout( AUDIO_UART, &data, 1, TIMEOUT_AUDIO_COM); 
     if( err != NO_ERR ) { 
-        APP_TRACE_INFO(("\r\nStop_Audio ERROR: timeout\r\n")); 
+        APP_TRACE_INFO_T(("Stop_Audio ERROR: timeout")); 
         return err;
     }
     if( data != NO_ERR ) {
-        APP_TRACE_INFO(("\r\nStop_Audio ERROR: %d\r\n ",data)); 
+        APP_TRACE_INFO_T(("Stop_Audio ERROR: %d\r\n ",data)); 
         return data; 
     } 
    
     err = Init_CODEC( 0 );
     if( err != NO_ERR ) {
-        APP_TRACE_INFO(("\r\nStop_Audio Power Down CODEC ERROR: %d\r\n",err)); 
+        APP_TRACE_INFO_T(("Stop_Audio Power Down CODEC ERROR: %d",err)); 
     }
     
     OS_ENTER_CRITICAL(); 
@@ -405,16 +499,16 @@ unsigned char Reset_Audio( void )
     unsigned char data  = 0xFF;    
     unsigned char buf[] = { CMD_DATA_SYNC1, CMD_DATA_SYNC2, RULER_CMD_RESET_AUDIO };
     
-    APP_TRACE_INFO(("Reset_Audio\r\n"));
+    APP_TRACE_INFO_T(("Reset_Audio"));
     UART2_Mixer(3); 
     USART_SendBuf( AUDIO_UART, buf,  sizeof(buf)) ;    
     err = USART_Read_Timeout( AUDIO_UART, &data, 1, TIMEOUT_AUDIO_COM); 
     if( err != NO_ERR ) { 
-        APP_TRACE_INFO(("\r\nReset_Audio ERROR: timeout\r\n")); 
+        APP_TRACE_INFO_T(("Reset_Audio ERROR: timeout")); 
         return err;
     }
     if( data != NO_ERR ) {
-        APP_TRACE_INFO(("\r\nReset_Audio ERROR: %d\r\n ",data)); 
+        APP_TRACE_INFO_T(("Reset_Audio ERROR: %d\r\n ",data)); 
         return data; 
     } 
      
@@ -443,10 +537,10 @@ unsigned char Get_Audio_Version( void )
     USART_SendBuf( AUDIO_UART, buf,  sizeof(buf)) ;    
     err = USART_Read_Timeout( AUDIO_UART, &Audio_Version, sizeof(Audio_Version), TIMEOUT_AUDIO_COM); 
     if( err != NO_ERR ) { 
-        APP_TRACE_INFO(("\r\nGet_Audio_Version ERROR: timeout\r\n")); 
+        APP_TRACE_INFO_T(("Get_Audio_Version ERROR: timeout")); 
         return err;        
     } else {        
-        APP_TRACE_INFO(("\r\nUSB Audio FW Version: %s\r\n ",Audio_Version));
+        APP_TRACE_INFO_T(("USB Audio FW Version: %s ",Audio_Version));
     }     
     return 0 ;   
 }
@@ -493,16 +587,16 @@ unsigned char Init_Ruler( unsigned char ruler_slot_id ) //0 ~ 3
     if( OS_ERR_NONE == err ) {
         OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
         if( OS_ERR_TIMEOUT == err ) {
-            APP_TRACE_INFO(("Init ruler[%d] timeout!\r\n",ruler_slot_id));            
+            APP_TRACE_INFO_T(("Init ruler[%d] timeout!",ruler_slot_id));            
         } else {
             err = Ruler_CMD_Result; //exe result from GACK
             if(OS_ERR_NONE != err ){
-                APP_TRACE_INFO(("Init_Ruler[%d] err = %d\r\n",ruler_slot_id,err));
+                APP_TRACE_INFO_T(("Init_Ruler[%d] err = %d",ruler_slot_id,err));
             }
         }
         
     } else {
-        APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));        
+        APP_TRACE_INFO_T(("Ruler[%d] pcSendDateToBuf failed: %d",ruler_slot_id,err));        
     }    
     OSSemPost( UART_MUX_Sem_lock );    
     return err ;    
@@ -551,18 +645,18 @@ unsigned char Setup_Ruler( unsigned char ruler_slot_id ) //0 ~ 3
     if( OS_ERR_NONE == err ) {
         OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
         if( OS_ERR_TIMEOUT == err ) {
-            APP_TRACE_INFO(("Setup_Ruler[%d] timeout\r\n",ruler_slot_id));
+            APP_TRACE_INFO_T(("Setup_Ruler[%d] timeout",ruler_slot_id));
         } else {            
             Ruler_Setup_Sync_Data = pEBuf_Data->data[0] ;
-            APP_TRACE_INFO(("Get Ruler_Setup_Sync_Data : 0x%X\r\n",Ruler_Setup_Sync_Data));
+            APP_TRACE_INFO_T(("Get Ruler_Setup_Sync_Data : 0x%X",Ruler_Setup_Sync_Data));
             err = Ruler_CMD_Result; //exe result from GACK
             if(OS_ERR_NONE != err ){
-                APP_TRACE_INFO(("Setup_Ruler[%d] err = %d\r\n",ruler_slot_id,err));
+                APP_TRACE_INFO_T(("Setup_Ruler[%d] err = %d",ruler_slot_id,err));
             }
         }
         
     } else {
-        APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));
+        APP_TRACE_INFO_T(("Ruler[%d] pcSendDateToBuf failed: %d",ruler_slot_id,err));
     }    
     OSSemPost( UART_MUX_Sem_lock );    
     return err ;    
@@ -610,17 +704,17 @@ unsigned char Get_Ruler_Type(  unsigned char ruler_slot_id )
     if( OS_ERR_NONE == err ) {
         OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
         if( OS_ERR_TIMEOUT == err ) {
-            APP_TRACE_INFO(("Read_Ruler_Type[%d] timeout\r\n",ruler_slot_id));
+            APP_TRACE_INFO_T(("Read_Ruler_Type[%d] timeout",ruler_slot_id));
         } else {
             Global_Ruler_Type[ruler_slot_id] =  pEBuf_Data->data[0] ;
             err = Ruler_CMD_Result; //exe result from GACK 
             if(OS_ERR_NONE != err ){
-                APP_TRACE_INFO(("Get_Ruler_Type[%d] err = %d\r\n",ruler_slot_id,err));
+                APP_TRACE_INFO_T(("Get_Ruler_Type[%d] err = %d",ruler_slot_id,err));
             }
         }          
         
     } else {
-        APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));        
+        APP_TRACE_INFO_T(("Ruler[%d] pcSendDateToBuf failed: %d",ruler_slot_id,err));        
     }       
     OSSemPost( UART_MUX_Sem_lock );    
     return err ;    
@@ -669,17 +763,17 @@ unsigned char Read_Ruler_Status( unsigned char ruler_slot_id, unsigned short *st
     if( OS_ERR_NONE == err ) {
         OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
         if( OS_ERR_TIMEOUT == err ) {
-            APP_TRACE_INFO(("Read_Ruler_Status[%d] timeout\r\n",ruler_slot_id));
+            APP_TRACE_INFO_T(("Read_Ruler_Status[%d] timeout",ruler_slot_id));
         } else {
             *status_data = (pEBuf_Data->data[1] << 8) + pEBuf_Data->data[0] ;       
             err = Ruler_CMD_Result; //exe result from GACK
             if(OS_ERR_NONE != err ){
-                APP_TRACE_INFO(("Read_Ruler_Status[%d] err = %d\r\n",ruler_slot_id,err));
+                APP_TRACE_INFO_T(("Read_Ruler_Status[%d] err = %d",ruler_slot_id,err));
             } 
         }   
         
     } else {
-        APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));
+        APP_TRACE_INFO_T(("Ruler[%d] pcSendDateToBuf failed: %d",ruler_slot_id,err));
     }        
     OSSemPost( UART_MUX_Sem_lock );    
     return err ;    
@@ -725,16 +819,16 @@ unsigned char Read_Ruler_Info( unsigned char ruler_slot_id )
     if( OS_ERR_NONE == err ) {
         OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
         if( OS_ERR_TIMEOUT == err ) {
-            APP_TRACE_INFO(("Read_Ruler_Info[%d] timeout\r\n",ruler_slot_id));
+            APP_TRACE_INFO_T(("Read_Ruler_Info[%d] timeout",ruler_slot_id));
         } else {
             err = Ruler_CMD_Result;
             if(OS_ERR_NONE != err ){
-                APP_TRACE_INFO(("Read_Ruler_Info[%d] err = %d\r\n",ruler_slot_id,err));
+                APP_TRACE_INFO_T(("Read_Ruler_Info[%d] err = %d",ruler_slot_id,err));
             }
         }
         
     } else {
-        APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));
+        APP_TRACE_INFO_T(("Ruler[%d] pcSendDateToBuf failed: %d",ruler_slot_id,err));
     }    
     OSSemPost( UART_MUX_Sem_lock );    
     return err ;    
@@ -801,16 +895,16 @@ unsigned char Write_Ruler_Info( unsigned char ruler_slot_id )
     if( OS_ERR_NONE == err ) {
         OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
         if( OS_ERR_TIMEOUT == err ) {
-            APP_TRACE_INFO(("Write_Ruler_Info[%d] timeout\r\n",ruler_slot_id));
+            APP_TRACE_INFO_T(("Write_Ruler_Info[%d] timeout",ruler_slot_id));
         } else {
             err = Ruler_CMD_Result; //exe result from GACK
             if(OS_ERR_NONE != err ){
-                APP_TRACE_INFO(("Write_Ruler_Info[%d] err = %d\r\n",ruler_slot_id,err));
+                APP_TRACE_INFO_T(("Write_Ruler_Info[%d] err = %d",ruler_slot_id,err));
             }
         }
         
     } else {
-        APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));
+        APP_TRACE_INFO_T(("Ruler[%d] pcSendDateToBuf failed: %d",ruler_slot_id,err));
     }
     OSSemPost( UART_MUX_Sem_lock );
     
@@ -860,16 +954,16 @@ unsigned char Read_Mic_Cali_Data(unsigned char ruler_slot_id, unsigned char mic_
     if( OS_ERR_NONE == err ) {
         OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
         if( OS_ERR_TIMEOUT == err ) {
-            APP_TRACE_INFO(("Read_Mic_Cali_Data[%d] timeout\r\n",ruler_slot_id));
+            APP_TRACE_INFO_T(("Read_Mic_Cali_Data[%d] timeout",ruler_slot_id));
         } else {
             err = Ruler_CMD_Result; 
             if(OS_ERR_NONE != err ){
-                APP_TRACE_INFO(("Read_Mic_Cali_Data[%d] err = %d\r\n",ruler_slot_id,err));
+                APP_TRACE_INFO_T(("Read_Mic_Cali_Data[%d] err = %d",ruler_slot_id,err));
             }
         }
         
     } else {
-        APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));
+        APP_TRACE_INFO_T(("Ruler[%d] pcSendDateToBuf failed: %d",ruler_slot_id,err));
     }      
     OSSemPost( UART_MUX_Sem_lock );    
     return err ;    
@@ -938,15 +1032,15 @@ unsigned char Write_Mic_Cali_Data(unsigned char ruler_slot_id, unsigned char mic
     if( OS_ERR_NONE == err ) {
         OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
         if( OS_ERR_TIMEOUT == err ) {
-            APP_TRACE_INFO(("Write_Mic_Cali_Data[%d][%d] timeout\r\n",ruler_slot_id, mic_id));
+            APP_TRACE_INFO_T(("Write_Mic_Cali_Data[%d][%d] timeout",ruler_slot_id, mic_id));
         } else {
             err = Ruler_CMD_Result; //exe result from GACK
             if(OS_ERR_NONE != err ){
-                APP_TRACE_INFO(("Write_Mic_Cali_Data[%d] err = %d\r\n",ruler_slot_id,err));
+                APP_TRACE_INFO_T(("Write_Mic_Cali_Data[%d] err = %d",ruler_slot_id,err));
             }
         }
     } else {
-        APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));
+        APP_TRACE_INFO_T(("Ruler[%d] pcSendDateToBuf failed: %d",ruler_slot_id,err));
     }
     OSSemPost( UART_MUX_Sem_lock );
     
@@ -1002,11 +1096,11 @@ unsigned char Update_Mic_Mask( unsigned char ruler_slot_id, unsigned int mic_mas
     if( OS_ERR_NONE == err ) {
         OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
         if( OS_ERR_TIMEOUT == err ) {
-            APP_TRACE_INFO(("Update_Mic_Mask for Ruler[%d] timeout\r\n",ruler_slot_id));
+            APP_TRACE_INFO_T(("Update_Mic_Mask for Ruler[%d] timeout",ruler_slot_id));
         }
         
     } else {
-        APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));
+        APP_TRACE_INFO_T(("Ruler[%d] pcSendDateToBuf failed: %d",ruler_slot_id,err));
     }
     OSSemPost( UART_MUX_Sem_lock );    
     return err ;    
@@ -1044,7 +1138,7 @@ unsigned char Ruler_Active_Control( unsigned char active_state )
             Global_Mic_Mask[ruler_id] == 0 ) {      
             continue;       
         } 
-        APP_TRACE_INFO(("Ruler[%d]_Active_Control : [%d]\r\n",ruler_id,active_state));      
+        APP_TRACE_INFO_T(("Ruler[%d]_Active_Control : [%d]",ruler_id,active_state));      
         OSSemPend( UART_MUX_Sem_lock, 0, &err );
         if( Global_Ruler_Index != ruler_id ) {
             Check_UART_Mixer_Ready();
@@ -1057,16 +1151,16 @@ unsigned char Ruler_Active_Control( unsigned char active_state )
         if( OS_ERR_NONE == err ) {
             OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
             if( OS_ERR_TIMEOUT == err ) {
-                APP_TRACE_INFO(("Ruler[%d]_Active_Control timeout\r\n",ruler_id));
+                APP_TRACE_INFO_T(("Ruler[%d]_Active_Control timeout",ruler_id));
             } else {
                 err = Ruler_CMD_Result; //exe result from GACK
                 if(OS_ERR_NONE != err ){
-                    APP_TRACE_INFO(("Ruler[%d]_Active_Control err = %d\r\n",ruler_id,err));
+                    APP_TRACE_INFO_T(("Ruler[%d]_Active_Control err = %d",ruler_id,err));
                 }
             }
             
         } else {
-            APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_id,err));
+            APP_TRACE_INFO_T(("Ruler[%d] pcSendDateToBuf failed: %d",ruler_id,err));
         }    
         OSSemPost( UART_MUX_Sem_lock );
         if( err != NO_ERR ) {
@@ -1119,19 +1213,19 @@ unsigned char Get_Ruler_Version( unsigned char ruler_slot_id )
     if( OS_ERR_NONE == err ) {
         OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
         if( OS_ERR_TIMEOUT == err ) {
-            APP_TRACE_INFO(("Get_Ruler_Version[%d] timeout\r\n",ruler_slot_id));
+            APP_TRACE_INFO_T(("Get_Ruler_Version[%d] timeout",ruler_slot_id));
         } else {
             err = Ruler_CMD_Result;
             if(OS_ERR_NONE != err ){
-                APP_TRACE_INFO(("Get_Ruler_Version[%d] err = %d\r\n",ruler_slot_id,err));
+                APP_TRACE_INFO_T(("Get_Ruler_Version[%d] err = %d",ruler_slot_id,err));
             }
         }
         if(err == OS_ERR_NONE ) {
-            APP_TRACE_INFO(("Ruler[%d] FW Version: %s\r\n",ruler_slot_id, pEBuf_Data->data)); 
+            APP_TRACE_INFO_T(("Ruler[%d] FW Version: %s",ruler_slot_id, pEBuf_Data->data)); 
         }
         
     } else {
-        APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));
+        APP_TRACE_INFO_T(("Ruler[%d] pcSendDateToBuf failed: %d",ruler_slot_id,err));
     }    
     OSSemPost( UART_MUX_Sem_lock );    
     return err ;        
@@ -1159,7 +1253,7 @@ unsigned char FLASHD_Write_Safe( unsigned int address, const void *pBuffer,  uns
 {
     unsigned char err;
     if( address < AT91C_IFLASH + AT91C_IFLASH_CODE_SIZE ) {
-        APP_TRACE_INFO(("ERROR: this operation wanna flush code area!\r\n"));  
+        APP_TRACE_INFO_T(("ERROR: this operation wanna flush code area!"));  
         return FW_BIN_SAVE_ADDR_ERR;
     }
     err = FLASHD_Write(  address, pBuffer, size );
@@ -1211,7 +1305,7 @@ unsigned char Write_Flash_State( FLASH_INFO   *pFlash_Info )
     pFlash_Info->s_w_counter++ ;
     err = FLASHD_Write_Safe( FLASH_ADDR_FW_STATE, pFlash_Info, AT91C_IFLASH_PAGE_SIZE); 
     if(err != NO_ERR ) {                     
-        APP_TRACE_INFO(("ERROR: Write flash state failed!\r\n"));  
+        APP_TRACE_INFO_T(("ERROR: Write flash state failed!"));  
     }
     
     return err;
@@ -1248,22 +1342,22 @@ unsigned char Save_Ruler_FW( unsigned int cmd, unsigned char *pBin, unsigned cha
      
     switch( cmd ) {
         case FW_DOWNLAD_CMD_START :
-            APP_TRACE_INFO(("Start loading ruler bin file to AB01 flash ... \r\n"));
+            APP_TRACE_INFO_T(("Start loading ruler bin file to AB01 flash ... "));
             flash_addr = FLASH_ADDR_FW_BIN;                
             flash_info.f_w_state = FW_DOWNLAD_STATE_UNFINISHED ;
             flash_info.bin_size  = 0;
         break;   
         case FW_DOWNLAD_CMD_DOING :
-            APP_TRACE_INFO(("> ")); 
+            APP_TRACE_INFO_T(("> ")); 
             if( flash_info.f_w_state != FW_DOWNLAD_STATE_UNFINISHED ) {
-                APP_TRACE_INFO(("ERROR: flash state not match!\r\n"));
+                APP_TRACE_INFO_T(("ERROR: flash state not match!"));
                 err  =  FW_BIN_STATE_0_ERR;                
             } 
         break;
         case FW_DOWNLAD_CMD_DONE :
-            APP_TRACE_INFO((">\r\n")); 
+            APP_TRACE_INFO_T((">")); 
             if( flash_info.f_w_state != FW_DOWNLAD_STATE_UNFINISHED ) {
-                APP_TRACE_INFO(("ERROR: flash state not match!\r\n"));
+                APP_TRACE_INFO_T(("ERROR: flash state not match!"));
                 err  =  FW_BIN_STATE_1_ERR;
                 break;
             }
@@ -1272,7 +1366,7 @@ unsigned char Save_Ruler_FW( unsigned int cmd, unsigned char *pBin, unsigned cha
          break;
          
          default:
-            APP_TRACE_INFO(("ERROR:  Save ruler FW bad cmd!\r\n"));
+            APP_TRACE_INFO_T(("ERROR:  Save ruler FW bad cmd!"));
             err = FW_BIN_SAVE_CMD_ERR;    
          break;
         
@@ -1285,7 +1379,7 @@ unsigned char Save_Ruler_FW( unsigned int cmd, unsigned char *pBin, unsigned cha
     err = FLASHD_Write_Safe( flash_addr, pBin, size ); 
     Buzzer_OnOff(0); 
     if(err != NO_ERR ) {                     
-        APP_TRACE_INFO(("ERROR: Write MCU flash failed!\r\n"));
+        APP_TRACE_INFO_T(("ERROR: Write MCU flash failed!"));
         return err;
     }
     flash_addr += size;
@@ -1294,7 +1388,7 @@ unsigned char Save_Ruler_FW( unsigned int cmd, unsigned char *pBin, unsigned cha
     if( cmd != FW_DOWNLAD_CMD_DOING ) {        
         err = Write_Flash_State( &flash_info ); 
         if( err == NO_ERR && cmd == FW_DOWNLAD_CMD_DONE ) { 
-              APP_TRACE_INFO(("Bin file[%d Btyes] saved successfully!\r\n",flash_info.bin_size));     
+              APP_TRACE_INFO_T(("Bin file[%d Btyes] saved successfully!",flash_info.bin_size));     
         }   
     } 
     return err;  
@@ -1330,11 +1424,11 @@ unsigned char Update_Ruler_FW( unsigned char ruler_slot_id )
     pFlash_Info = (FLASH_INFO *)FLASH_ADDR_FW_STATE ;
         
     if( pFlash_Info->f_w_state != FW_DOWNLAD_STATE_FINISHED ) {
-        APP_TRACE_INFO(("ERROR: FW bin file missed!\r\n"));        
+        APP_TRACE_INFO_T(("ERROR: FW bin file missed!"));        
         return FW_BIN_STATE_ERR;
     }
     
-    APP_TRACE_INFO(("Start updating ruler[%d] firmware to \"%s\" version ...\r\n",ruler_slot_id,pFlash_Info->bin_name)); 
+    APP_TRACE_INFO_T(("Start updating ruler[%d] firmware to \"%s\" version ...",ruler_slot_id,pFlash_Info->bin_name)); 
     memset(Buf,'d',sizeof(Buf)); //send 'd' to start download  
     Ruler_Power_Switch(0);   //power off ruler  
     OSTimeDly(200);   
@@ -1366,9 +1460,9 @@ unsigned char Update_Ruler_FW( unsigned char ruler_slot_id )
         }         
     }
     if( OS_ERR_NONE != err ) {
-        APP_TRACE_INFO(("\r\nFailed to init ruler bootloader. Err Code = [0x%X]\r\n", err));        
+        APP_TRACE_INFO_T(("Failed to init ruler bootloader. Err Code = [0x%X]", err));        
     } else {
-        APP_TRACE_INFO(("\r\nUpdate ruler[%d] firmware successfully!\r\n", ruler_slot_id));   
+        APP_TRACE_INFO_T(("Update ruler[%d] firmware successfully!", ruler_slot_id));   
     }
     Port_Detect_Enable(1); //enable ruler detect
     UART_Init(RULER_UART,  ISR_Ruler_UART,  115200 );  //Init Ruler back to interuption mode
@@ -1390,18 +1484,18 @@ unsigned char Update_Ruler_FW( unsigned char ruler_slot_id )
 //    pFlash_Info = (FLASH_INFO *)FLASH_ADDR_FW_STATE ;
 //        
 //    if( pFlash_Info->f_w_state != FW_DOWNLAD_STATE_FINISHED ) {
-//        APP_TRACE_INFO(("ERROR: FW bin file missed!\r\n"));        
+//        APP_TRACE_INFO_T(("ERROR: FW bin file missed!"));        
 //        return FW_BIN_STATE_ERR;
 //    }
 //    
-//    APP_TRACE_INFO(("Start updating MCU FW to [%s] on ruler[%d]...\r\n",pFlash_Info->bin_name,ruler_slot_id)); 
+//    APP_TRACE_INFO_T(("Start updating MCU FW to [%s] on ruler[%d]...",pFlash_Info->bin_name,ruler_slot_id)); 
 //    
 //    UART_Init(RULER_UART,  NULL,  115200 );    //Init Ruler as no ISR  
 //    
 //    UART1_Mixer( ruler_slot_id );
 //    Check_UART_Mixer_Ready();
 //    if( USART_Start_Ruler_Bootloader() ) {  
-//        APP_TRACE_INFO(("Failed to init ruler bootloader!\r\n"));     
+//        APP_TRACE_INFO_T(("Failed to init ruler bootloader!"));     
 //    }
 //    
 //    err = Xmodem_Transmit( (unsigned char *)flash_addr, pFlash_Info->bin_size);      
@@ -1438,24 +1532,24 @@ unsigned char Toggle_Mic(  TOGGLE_MIC *pdata )
     OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
 #endif 
     fpga_mask = 0;
+    APP_TRACE_INFO_T(("Toggle Ruler[%d]-Mic[%d] : %d  : ", pdata->ruler_id, pdata->mic_id, pdata->on_off )); 
     //check ruler connection state 
     if( Global_Ruler_State[pdata->ruler_id] < RULER_STATE_CONFIGURED ) {      
         return RULER_STATE_ERR ;         
     }  
-    APP_TRACE_INFO(("Toggle Ruler[%d]-Mic[%d] : %d  : ", pdata->ruler_id, pdata->mic_id, pdata->on_off )); 
-    OS_ENTER_CRITICAL(); 
+      OS_ENTER_CRITICAL(); 
     mic_mask = Global_Mic_Mask[pdata->ruler_id];
     OS_EXIT_CRITICAL();  
     mic_mask &= ~( 1<<(pdata->mic_id));
     mic_mask |=  (pdata->on_off&0x01)<<( pdata->mic_id);
     err = Update_Mic_Mask( pdata->ruler_id, mic_mask );
-    APP_TRACE_INFO((" %s [0x%X]\r\n", err == OS_ERR_NONE ? "OK" : "FAIL" , err )); 
+    APP_TRACE_INFO((" %s [0x%X]", err == OS_ERR_NONE ? "OK" : "FAIL" , err )); 
     if( OS_ERR_NONE != err ) {        
         return err;    
     }
     OS_ENTER_CRITICAL(); 
     Global_Mic_Mask[pdata->ruler_id] = mic_mask; 
-    //APP_TRACE_INFO(("Update Ruler[%d] Mic_Mask:  %d\r\n",pdata->ruler_id,Global_Mic_Mask[pdata->ruler_id]));   
+    //APP_TRACE_INFO_T(("Update Ruler[%d] Mic_Mask:  %d",pdata->ruler_id,Global_Mic_Mask[pdata->ruler_id]));   
     if( mic_mask == 0 ) {      
         Global_Ruler_State[pdata->ruler_id] = RULER_STATE_CONFIGURED;         
     } else {
@@ -1463,12 +1557,18 @@ unsigned char Toggle_Mic(  TOGGLE_MIC *pdata )
     }
     OS_EXIT_CRITICAL();
     if( RULER_TYPE_MASK( Global_Ruler_Type[pdata->ruler_id] ) == RULER_TYPE_RULER ) { //ruler
-        for( id = 0; id < 4; id++ ) {
-            fpga_mask += (Global_Mic_Mask[id]&0xFF) << (id<<3);
+        if( Global_Ruler_Type[pdata->ruler_id] == RULER_TYPE_W01 ) { //fix W01 mic revert bug       
+            Watch_Mic_Revert( &mic_mask );        
+            fpga_mask = mic_mask << ((pdata->ruler_id)<<3);            
+        } else {
+            for( id = 0; id < 4; id++ ) {
+                fpga_mask += (Global_Mic_Mask[id]&0xFF) << (id<<3);
+            }    
         }
     } else { //handset
        fpga_mask = 0x3F << ((pdata->ruler_id)<<3);
-    }
+       
+    }     
     Init_FPGA(fpga_mask);
     return err;  
 }
@@ -1491,40 +1591,40 @@ unsigned char Set_Volume(  SET_VOLUME *pdata )
 {  
     unsigned char  err ;
     
-    APP_TRACE_INFO(( "Set Volume :: " ));
+    APP_TRACE_INFO_T(( "Set Volume :: " ));
     if( pdata->mic == SET_VOLUME_MUTE ) {
         APP_TRACE_INFO(( "Mute MIC :  " ));
     } else {
-        APP_TRACE_INFO(( "Mic_Gain = %d dB :  ", pdata->mic )); 
+        APP_TRACE_INFO(( "Mic_Gain = %2d dB :  ", pdata->mic )); 
     }
     
     if( pdata->lout == SET_VOLUME_MUTE ) {
         APP_TRACE_INFO(( "Mute LOUT :  " ));
     } else {
-        APP_TRACE_INFO(( "LOUT_Gain = -%d.%d dB :  ", pdata->lout/10, pdata->lout%10 )); 
+        APP_TRACE_INFO(( "LOUT_Gain = -%2d.%1d dB :  ", pdata->lout/10, pdata->lout%10 )); 
     }
     
     if( pdata->spk == SET_VOLUME_MUTE ) {
         APP_TRACE_INFO(( "Mute SPK :  " ));
     } else {
-        APP_TRACE_INFO(( "SPK_Gain = -%d.%d dB :  ", pdata->spk/10, pdata->spk%10 )); 
+        APP_TRACE_INFO(( "SPK_Gain = -%2d.%1d dB :  ", pdata->spk/10, pdata->spk%10 )); 
     }
     
-    //APP_TRACE_INFO(("Set Volume : Mic_Gain[%d]dB, LOUT_Gain[-%d.%d]dB, SPKOUT_Gain[-%d.%d]dB : ", 
+    //APP_TRACE_INFO_T(("Set Volume : Mic_Gain[%d]dB, LOUT_Gain[-%d.%d]dB, SPKOUT_Gain[-%d.%d]dB : ", 
     //                     pdata->mic, pdata->lout/10, pdata->lout%10, pdata->spk/10, pdata->spk%10 )); 
-    //APP_TRACE_INFO(("\r\n%6.6f, %6.6f\r\n",2.31,0.005));
+    //APP_TRACE_INFO_T(("\r\n%6.6f, %6.6f",2.31,0.005));
     err = DMIC_PGA_Control( pdata->mic ); 
-    //APP_TRACE_INFO((" %s [0x%X]\r\n", err == OS_ERR_NONE ? "OK" : "FAIL" , err )); 
+    //APP_TRACE_INFO_T((" %s [0x%X]", err == OS_ERR_NONE ? "OK" : "FAIL" , err )); 
     if( OS_ERR_NONE != err ) {  
-        APP_TRACE_INFO(( "FAIL [0x%X]\r\n", err )); 
+        APP_TRACE_INFO(( "FAIL [0x%X]", err )); 
         return err;    
     }
     err = CODEC_Set_Volume( pdata->spk, pdata->lout );
     if( OS_ERR_NONE != err ) {    
-        APP_TRACE_INFO(( "FAIL [0x%X]\r\n", err )); 
+        APP_TRACE_INFO(( "FAIL [0x%X]", err )); 
         return err;    
     }
-    APP_TRACE_INFO(( "OK\r\n" )); 
+    APP_TRACE_INFO(( "OK" )); 
     return err;  
 }
 
@@ -1656,20 +1756,20 @@ void AB_POST( void )
 {
     unsigned char  err;
     
-    APP_TRACE_INFO(("\r\nStart Audio Bridge POST :\r\n"));    
+    APP_TRACE_INFO_T(("Start Audio Bridge POST :"));    
     Enable_FPGA();
 
-    APP_TRACE_INFO(("\r\n1. CODEC... \r\n"));
+    APP_TRACE_INFO_T(("1. CODEC... "));
     err = Init_CODEC( SAMPLE_RATE_DEF );    
     if( err != NO_ERR ) {
         Global_Bridge_POST = POST_ERR_CODEC;
-        APP_TRACE_INFO(("\r\n---Error : %d\r\n",err));
+        APP_TRACE_INFO_T(("---Error : %d\r\n",err));
         return ;
     } else {
-        APP_TRACE_INFO(("\r\n---OK\r\n"));
+        APP_TRACE_INFO_T(("---OK\r\n"));
     }
     
-    APP_TRACE_INFO(("\r\n2. FM36 DSP... \r\n"));
+    APP_TRACE_INFO_T(("2. FM36 DSP... "));
 #ifdef BOARD_TYPE_AB03     
     err = Init_FM36_AB03( SAMPLE_RATE_DEF, 0, 1, 0 ); //Lin from SP1.Slot0
     //err = Init_FM36( SAMPLE_RATE_DEF );
@@ -1678,32 +1778,32 @@ void AB_POST( void )
 #endif
     if( err != NO_ERR ) {
         Global_Bridge_POST = POST_ERR_FM36;
-        APP_TRACE_INFO(("\r\n---Error : %d\r\n",err));
+        APP_TRACE_INFO_T(("---Error : %d\r\n",err));
         return ;
     } else {
-        APP_TRACE_INFO(("\r\n---OK\r\n"));
+        APP_TRACE_INFO_T(("---OK\r\n"));
     }  
     
-    APP_TRACE_INFO(("\r\n3. AUDIO MCU... \r\n"));
+    APP_TRACE_INFO_T(("3. AUDIO MCU... "));
     err = Get_Audio_Version();
     if( err != NO_ERR ) {
         Global_Bridge_POST = POST_ERR_AUDIO;
-        APP_TRACE_INFO(("\r\n---Error : %d\r\n",err));
+        APP_TRACE_INFO_T(("---Error : %d\r\n",err));
         return ;
     } else {
-        APP_TRACE_INFO(("\r\n---OK\r\n"));
+        APP_TRACE_INFO_T(("---OK\r\n"));
     }    
    
     
     
-//    APP_TRACE_INFO(("\r\n4. external CODEC... \r\n"));
+//    APP_TRACE_INFO_T(("\r\n4. external CODEC... "));
 //    err = Init_CODEC_AIC3204( SAMPLE_RATE_DEF );    
 //    if( err != NO_ERR ) {
 //        Global_Bridge_POST = POST_ERR_CODEC;
-//        APP_TRACE_INFO(("\r\n---Error : %d\r\n",err));
+//        APP_TRACE_INFO(("\r\n---Error : %d",err));
 //        return ;
 //    } else {
-//        APP_TRACE_INFO(("\r\n---OK\r\n"));
+//        APP_TRACE_INFO(("\r\n---OK"));
 //    }
     
     //Disable_FPGA(); 
@@ -1712,7 +1812,7 @@ void AB_POST( void )
     err = Init_CODEC( 0 );
     if( err != NO_ERR ) {
         Global_Bridge_POST = POST_ERR_CODEC ;
-        APP_TRACE_INFO(("\r\nPower Down CODEC ERROR: %d\r\n",err)); 
+        APP_TRACE_INFO_T(("Power Down CODEC ERROR: %d",err)); 
     }
     
 }
@@ -1736,7 +1836,7 @@ unsigned char Ruler_POST( unsigned char ruler_id )
     unsigned char  err;
     unsigned short result;   
     
-    APP_TRACE_INFO(("\r\nRuler[%d] POST status check... \r\n",ruler_id)); 
+    APP_TRACE_INFO_T(("Ruler[%d] POST status check... ",ruler_id)); 
 
     err = Read_Ruler_Status( ruler_id, &result);
     if( err == RULER_STATE_ERR ) { //no ruler attached
@@ -1747,14 +1847,15 @@ unsigned char Ruler_POST( unsigned char ruler_id )
     }
     if( result != 0 ) {
         if( result != 0x8000 ) {        
-            APP_TRACE_INFO(("\r\n---Error Ruler[%d]: %d-0x%X\r\n",ruler_id,err,result));
+            APP_TRACE_INFO_T(("---Error Ruler[%d]: %d-0x%X\r\n",ruler_id,err,result));
             return 1; 
         } else {
-            APP_TRACE_INFO(("\r\n---WARNING Ruler[%d]: Mic calibration data NOT Initialized!\r\n",ruler_id));  
+            APP_TRACE_INFO_T(("---WARNING Ruler[%d]: Mic calibration data NOT Initialized!\r\n",ruler_id));  
         }
-    } 
-    APP_TRACE_INFO(("\r\n---OK\r\n"));  
-         
+    } else {
+        APP_TRACE_INFO_T(("---OK\r\n"));  
+    }
+    
     return err;
 }
 
@@ -1772,7 +1873,7 @@ unsigned char Ruler_POST( unsigned char ruler_id )
 */
 void simple_test_use( void )
 {      
-    APP_TRACE_INFO(("\r\nHi,man. Simple play/rec test triggered...\r\n"));   
+    APP_TRACE_INFO_T(("\r\nHi,man. Simple play/rec test triggered..."));   
     
 #if 0  
     
@@ -1831,16 +1932,16 @@ unsigned char Ruler_Setup_Sync( unsigned char ruler_slot_id )
     if( OS_ERR_NONE == err ) {
         OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
         if( OS_ERR_TIMEOUT == err ) {
-            APP_TRACE_INFO(("Ruler_Setup_Sync[%d] timeout\r\n",ruler_slot_id));
+            APP_TRACE_INFO_T(("Ruler_Setup_Sync[%d] timeout",ruler_slot_id));
         } else {
             err = Ruler_CMD_Result; //exe result from GACK
             if(OS_ERR_NONE != err ){
-                APP_TRACE_INFO(("Ruler_Setup_Sync[%d] err = %d\r\n",ruler_slot_id,err));
+                APP_TRACE_INFO_T(("Ruler_Setup_Sync[%d] err = %d",ruler_slot_id,err));
             }
         }
         
     } else {
-        APP_TRACE_INFO(("Ruler[%d] pcSendDateToBuf failed: %d\r\n",ruler_slot_id,err));
+        APP_TRACE_INFO_T(("Ruler[%d] pcSendDateToBuf failed: %d",ruler_slot_id,err));
     }    
     OSSemPost( UART_MUX_Sem_lock );    
     return err ;    

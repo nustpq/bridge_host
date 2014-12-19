@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        15/Dec/2014  17:49:59
+# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        19/Dec/2014  13:31:07
 # Copyright 1999-2014 IAR Systems AB.
 #
 #    Cpu mode     =  arm
@@ -91,7 +91,7 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\BSP\bsp.c
      44          /*
      45          *********************************      Version Declaration       ****************************************
      46          */
-     47          const CPU_CHAR fw_version[]  = "[FW:H:V0.4.6]"; //fixed size string
+     47          const CPU_CHAR fw_version[]  = "[FW:H:V0.4.8]"; //fixed size string
      48          
      49          #ifdef  BOARD_TYPE_AB01
      50          const CPU_CHAR hw_version[]  = "[HW:V1.0]"; 
@@ -2304,151 +2304,186 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\BSP\bsp.c
    2257          
    2258          /*
    2259          *********************************************************************************************************
-   2260          *                                         Head_Info()
+   2260          *                                         Time_Stamp()
    2261          *
-   2262          * Description : Print Head information
+   2262          * Description : Print run time stamp
    2263          *
    2264          * Argument(s) : none.
    2265          *
    2266          * Return(s)   : none.
    2267          *
-   2268          * Caller(s)   : App_TaskUserIF()
+   2268          * Caller(s)   : none.
    2269          *
    2270          * Note(s)     : none.
    2271          *********************************************************************************************************
    2272          */
-   2273          void Head_Info ( void )
-   2274          { 
-   2275              FLASH_INFO flash_info;
-   2276              Read_Flash_State(&flash_info);
-   2277              APP_TRACE_INFO(("\r\n\r\n")); 
-   2278              APP_TRACE_INFO(("-----------------------------------------------------------\r\n"));
-   2279              APP_TRACE_INFO(("----                    Fortemedia                    -----\r\n"));
-   2280              APP_TRACE_INFO(("----         iSAM Test Bench Audio Bridge Board       -----\r\n"));
-   2281              APP_TRACE_INFO(("----   %20s-%s             -----\r\n", hw_model, fw_version));
-   2282              APP_TRACE_INFO(("----   Compile date:  %12s, %8s, by PQ   -----\r\n", __DATE__, __TIME__));
-   2283              APP_TRACE_INFO(("-----------------------------------------------------------\r\n"));
-   2284              APP_TRACE_INFO(("\r\n"));                
-   2285              //APP_TRACE_INFO(("------------------------------------------------------------------------------------------------------------------------------------\r\n"));  
-   2286              APP_TRACE_INFO(("Micrium uC/OS-II on the Atmel AT91SAM7A3. Version : V%d.%d \r\n",(OSVersion()/ 100),(OSVersion() % 100)  ));
-   2287              APP_TRACE_INFO(("CPU Usage = %d%%, CPU Speed = %3d MHz, Tick_Per_Second = %6d ticks/sec  \r\n", OSCPUUsage,  (BSP_CPU_ClkFreq() / 1000000L),OS_TICKS_PER_SEC ));
-   2288              APP_TRACE_INFO(("#Ticks = %8d, #CtxSw = %8d \r\n", OSTime, OSCtxSwCtr )); 
-   2289              Get_Run_Time();
-   2290              APP_TRACE_INFO(("\r\n"));  
-   2291              APP_TRACE_INFO(("-------------------------------------------------   GLOBAL VARIABLES STATUS   ------------------------------------------------------\r\n")); 
-   2292              APP_TRACE_INFO(("MEM_Part_MsgUART :         %2d / %2d   of the memory partiation used\r\n", pMEM_Part_MsgUART->OSMemNBlks - pMEM_Part_MsgUART->OSMemNFree,  pMEM_Part_MsgUART->OSMemNBlks)); 
-   2293              APP_TRACE_INFO(("Tx_ReSend_Happens:         %7d   times happened\r\n", Tx_ReSend_Happens ));
-   2294              APP_TRACE_INFO(("Tx_ReSend_Happens_Ruler:   %7d   times happened\r\n", Tx_ReSend_Happens_Ruler ));
-   2295              APP_TRACE_INFO(("TWI_Sem_lock:              %7d   ( default 1 )\r\n", TWI_Sem_lock->OSEventCnt ));   
-   2296              APP_TRACE_INFO(("TWI_Sem_done:              %7d   ( default 0 )\r\n", TWI_Sem_done->OSEventCnt ));
-   2297              APP_TRACE_INFO(("UART_MUX_Sem_lock:         %7d   ( default 1 )\r\n", UART_MUX_Sem_lock->OSEventCnt ));
-   2298              APP_TRACE_INFO(("Done_Sem_RulerUART:        %7d   ( default 0 )\r\n", Done_Sem_RulerUART->OSEventCnt ));
-   2299              APP_TRACE_INFO(("Global_Ruler_State[3..0]:        [%d - %d - %d - %d]\r\n", Global_Ruler_State[3],Global_Ruler_State[2],Global_Ruler_State[1],Global_Ruler_State[0] ));
-   2300              APP_TRACE_INFO(("Global_Ruler_Type[3..0] :        [%X - %X - %X - %X]\r\n", Global_Ruler_Type[3],Global_Ruler_Type[2],Global_Ruler_Type[1],Global_Ruler_Type[0] ));
-   2301              APP_TRACE_INFO(("Global_Mic_Mask[3..0][] :        [%X - %X - %X - %X]\r\n", Global_Mic_Mask[3],Global_Mic_Mask[2],Global_Mic_Mask[1],Global_Mic_Mask[0] ));
-   2302              APP_TRACE_INFO(("Flash Write Cycle:       State_Page = %d cycles,  FW_Bin_Page = %d cycles\r\n", flash_info.s_w_counter,flash_info.f_w_counter ));
-   2303              APP_TRACE_INFO(("Ruler FW Bin File:       \"%s\" (%d Bytes), [0x%0X, %s]\r\n", (flash_info.f_w_state == FW_DOWNLAD_STATE_FINISHED ? flash_info.bin_name : " -- "), flash_info.bin_size, flash_info.f_w_state,(flash_info.f_w_state == FW_DOWNLAD_STATE_FINISHED ? "OK" : "Error")));
-   2304              APP_TRACE_INFO(("Test Counter:            test_counter1, 2, 3, 4  =  %4d,%4d,%4d,%4d\r\n",  test_counter1, test_counter2,test_counter3, test_counter4));
-   2305              APP_TRACE_INFO(("Test Counter:  UART_WriteStart Failed :  %4d  times\r\n",   test_counter5));
-   2306              APP_TRACE_INFO(("\r\n"));
-   2307              Get_Task_Info ();
-   2308              //APP_TRACE_INFO(("\r\n")); 
-   2309          
-   2310          }
-   2311          
-   2312          
-   2313          
-   2314          /*
-   2315          *********************************************************************************************************
-   2316          *                                         PDM_Pattern_Gen()
-   2317          *
-   2318          * Description : Debug_Send_PDM_Pattern_ for CP2240
-   2319          *
-   2320          * Argument(s) : none.
-   2321          *
-   2322          * Return(s)   : none.
-   2323          *
-   2324          * Caller(s)   : App_TaskUserIF()
-   2325          *
-   2326          * Note(s)     : none.
-   2327          *********************************************************************************************************
-   2328          */
-   2329           
-   2330          //#define PDM_DAT         0   //PA26
-   2331          //#define PDM_CLK         1   //PA27
-   2332          //#define PATTERN_DATA    0xD4
-   2333          //#define IDLE_DATA       0xCC
-   2334          //#define PATTERN_WIDTH   1 // 1bytes
-   2335          //#define REPEAT_TIMES    150
-   2336          //
-   2337          //
-   2338          //
-   2339          //void __ramfunc PDM_Out( unsigned int data, unsigned int times )
-   2340          //{
-   2341          //   
-   2342          //    unsigned int i, j ; 
-   2343          //    
-   2344          //    Pin PinsPDM[]   = {GPIO_PA26, GPIO_PA27}; //faster
-   2345          //    
-   2346          //    PinsPDM[PDM_DAT].pio->PIO_OER = PinsPDM[PDM_DAT].mask; //set pin as output
-   2347          //    PinsPDM[PDM_CLK].pio->PIO_OER = PinsPDM[PDM_CLK].mask;
-   2348          //    PinsPDM[PDM_DAT].pio->PIO_PPUER = PinsPDM[PDM_DAT].mask; //set pull up 
-   2349          //    PinsPDM[PDM_CLK].pio->PIO_PPUER = PinsPDM[PDM_CLK].mask;
-   2350          //
-   2351          //    
-   2352          //    PinsPDM[PDM_DAT].pio->PIO_CODR = PinsPDM[PDM_DAT].mask;
-   2353          //    PinsPDM[PDM_CLK].pio->PIO_CODR = PinsPDM[PDM_CLK].mask;
-   2354          //    
-   2355          //    for( i = 0; i < times; i++ ) {
-   2356          //    
-   2357          //        for( j = 0; j < (8*PATTERN_WIDTH) ; j++)  {
-   2358          //              
-   2359          //              PinsPDM[PDM_CLK].pio->PIO_CODR = PinsPDM[PDM_CLK].mask;
-   2360          //              if( (data<<j)&0x80 ) {              
-   2361          //                 PinsPDM[PDM_DAT].pio->PIO_SODR = PinsPDM[PDM_DAT].mask;
-   2362          //              } else {                 
-   2363          //                 PinsPDM[PDM_DAT].pio->PIO_CODR = PinsPDM[PDM_DAT].mask;
-   2364          //              }      
-   2365          //              PinsPDM[PDM_CLK].pio->PIO_SODR = PinsPDM[PDM_CLK].mask;
-   2366          //          
-   2367          //               __asm ("NOP");
-   2368          //               __asm ("NOP");
-   2369          //               __asm ("NOP");
-   2370          //               __asm ("NOP");
-   2371          //               __asm ("NOP");
-   2372          //               __asm ("NOP");
-   2373          //             
-   2374          //        }
-   2375          //  
-   2376          //    }
-   2377          //    
-   2378          //   PinsPDM[PDM_DAT].pio->PIO_ODR = PinsPDM[PDM_DAT].mask; //set pin  as input
-   2379          //   PinsPDM[PDM_CLK].pio->PIO_ODR = PinsPDM[PDM_CLK].mask;
-   2380          //   PinsPDM[PDM_DAT].pio->PIO_PPUDR = PinsPDM[PDM_DAT].mask; //disable pull up 
-   2381          //   PinsPDM[PDM_CLK].pio->PIO_PPUDR = PinsPDM[PDM_CLK].mask;
-   2382          //   
-   2383          //}
-   2384          //
+   2273          void Time_Stamp( void )
+   2274          {  
+   2275              
+   2276              INT32U time   ;
+   2277              INT8U  sec ;
+   2278              INT8U  min ;
+   2279              INT8U  hour ;
+   2280              INT16U  msec ;
+   2281              
+   2282              time = OSTime ;
+   2283              msec = time % 1000L ;
+   2284              time = time / 1000L ;
+   2285              sec  = time % 60 ;
+   2286              min  = time / 60 %60 ;
+   2287              hour = time / 3600 % 24 ;
+   2288              
+   2289              APP_TRACE_INFO(("\r\n[%d:%02d:%02d.%03d] ", hour,min, sec, msec )); 
+   2290           
+   2291          }
+   2292          
+   2293          /*
+   2294          *********************************************************************************************************
+   2295          *                                         Head_Info()
+   2296          *
+   2297          * Description : Print Head information
+   2298          *
+   2299          * Argument(s) : none.
+   2300          *
+   2301          * Return(s)   : none.
+   2302          *
+   2303          * Caller(s)   : App_TaskUserIF()
+   2304          *
+   2305          * Note(s)     : none.
+   2306          *********************************************************************************************************
+   2307          */
+   2308          void Head_Info ( void )
+   2309          { 
+   2310              FLASH_INFO flash_info;
+   2311              Read_Flash_State(&flash_info);
+   2312              APP_TRACE_INFO(("\r\n\r\n")); 
+   2313              APP_TRACE_INFO(("-----------------------------------------------------------\r\n"));
+   2314              APP_TRACE_INFO(("----                    Fortemedia                    -----\r\n"));
+   2315              APP_TRACE_INFO(("----         iSAM Test Bench Audio Bridge Board       -----\r\n"));
+   2316              APP_TRACE_INFO(("----   %20s-%s             -----\r\n", hw_model, fw_version));
+   2317              APP_TRACE_INFO(("----   Compile date:  %12s, %8s, by PQ   -----\r\n", __DATE__, __TIME__));
+   2318              APP_TRACE_INFO(("-----------------------------------------------------------\r\n"));
+   2319              APP_TRACE_INFO(("\r\n"));                
+   2320              //APP_TRACE_INFO(("------------------------------------------------------------------------------------------------------------------------------------\r\n"));  
+   2321              APP_TRACE_INFO(("Micrium uC/OS-II on the Atmel AT91SAM7A3. Version : V%d.%d \r\n",(OSVersion()/ 100),(OSVersion() % 100)  ));
+   2322              APP_TRACE_INFO(("CPU Usage = %d%%, CPU Speed = %3d MHz, Tick_Per_Second = %6d ticks/sec  \r\n", OSCPUUsage,  (BSP_CPU_ClkFreq() / 1000000L),OS_TICKS_PER_SEC ));
+   2323              APP_TRACE_INFO(("#Ticks = %8d, #CtxSw = %8d \r\n", OSTime, OSCtxSwCtr )); 
+   2324              Get_Run_Time();
+   2325              APP_TRACE_INFO(("\r\n"));  
+   2326              APP_TRACE_INFO(("-------------------------------------------------   GLOBAL VARIABLES STATUS   ------------------------------------------------------\r\n")); 
+   2327              APP_TRACE_INFO(("MEM_Part_MsgUART :         %2d / %2d   of the memory partiation used\r\n", pMEM_Part_MsgUART->OSMemNBlks - pMEM_Part_MsgUART->OSMemNFree,  pMEM_Part_MsgUART->OSMemNBlks)); 
+   2328              APP_TRACE_INFO(("Tx_ReSend_Happens:         %7d   times happened\r\n", Tx_ReSend_Happens ));
+   2329              APP_TRACE_INFO(("Tx_ReSend_Happens_Ruler:   %7d   times happened\r\n", Tx_ReSend_Happens_Ruler ));
+   2330              APP_TRACE_INFO(("TWI_Sem_lock:              %7d   ( default 1 )\r\n", TWI_Sem_lock->OSEventCnt ));   
+   2331              APP_TRACE_INFO(("TWI_Sem_done:              %7d   ( default 0 )\r\n", TWI_Sem_done->OSEventCnt ));
+   2332              APP_TRACE_INFO(("UART_MUX_Sem_lock:         %7d   ( default 1 )\r\n", UART_MUX_Sem_lock->OSEventCnt ));
+   2333              APP_TRACE_INFO(("Done_Sem_RulerUART:        %7d   ( default 0 )\r\n", Done_Sem_RulerUART->OSEventCnt ));
+   2334              APP_TRACE_INFO(("Global_Ruler_State[3..0]:        [%d - %d - %d - %d]\r\n", Global_Ruler_State[3],Global_Ruler_State[2],Global_Ruler_State[1],Global_Ruler_State[0] ));
+   2335              APP_TRACE_INFO(("Global_Ruler_Type[3..0] :        [%X - %X - %X - %X]\r\n", Global_Ruler_Type[3],Global_Ruler_Type[2],Global_Ruler_Type[1],Global_Ruler_Type[0] ));
+   2336              APP_TRACE_INFO(("Global_Mic_Mask[3..0][] :        [%X - %X - %X - %X]\r\n", Global_Mic_Mask[3],Global_Mic_Mask[2],Global_Mic_Mask[1],Global_Mic_Mask[0] ));
+   2337              APP_TRACE_INFO(("Flash Write Cycle:       State_Page = %d cycles,  FW_Bin_Page = %d cycles\r\n", flash_info.s_w_counter,flash_info.f_w_counter ));
+   2338              APP_TRACE_INFO(("Ruler FW Bin File:       \"%s\" (%d Bytes), [0x%0X, %s]\r\n", (flash_info.f_w_state == FW_DOWNLAD_STATE_FINISHED ? flash_info.bin_name : " -- "), flash_info.bin_size, flash_info.f_w_state,(flash_info.f_w_state == FW_DOWNLAD_STATE_FINISHED ? "OK" : "Error")));
+   2339              APP_TRACE_INFO(("Test Counter:            test_counter1, 2, 3, 4  =  %4d,%4d,%4d,%4d\r\n",  test_counter1, test_counter2,test_counter3, test_counter4));
+   2340              APP_TRACE_INFO(("Test Counter:  UART_WriteStart Failed :  %4d  times\r\n",   test_counter5));
+   2341              APP_TRACE_INFO(("\r\n"));
+   2342              Get_Task_Info ();
+   2343              //APP_TRACE_INFO(("\r\n")); 
+   2344          
+   2345          }
+   2346          
+   2347          
+   2348          
+   2349          /*
+   2350          *********************************************************************************************************
+   2351          *                                         PDM_Pattern_Gen()
+   2352          *
+   2353          * Description : Debug_Send_PDM_Pattern_ for CP2240
+   2354          *
+   2355          * Argument(s) : none.
+   2356          *
+   2357          * Return(s)   : none.
+   2358          *
+   2359          * Caller(s)   : App_TaskUserIF()
+   2360          *
+   2361          * Note(s)     : none.
+   2362          *********************************************************************************************************
+   2363          */
+   2364           
+   2365          //#define PDM_DAT         0   //PA26
+   2366          //#define PDM_CLK         1   //PA27
+   2367          //#define PATTERN_DATA    0xD4
+   2368          //#define IDLE_DATA       0xCC
+   2369          //#define PATTERN_WIDTH   1 // 1bytes
+   2370          //#define REPEAT_TIMES    150
+   2371          //
+   2372          //
+   2373          //
+   2374          //void __ramfunc PDM_Out( unsigned int data, unsigned int times )
+   2375          //{
+   2376          //   
+   2377          //    unsigned int i, j ; 
+   2378          //    
+   2379          //    Pin PinsPDM[]   = {GPIO_PA26, GPIO_PA27}; //faster
+   2380          //    
+   2381          //    PinsPDM[PDM_DAT].pio->PIO_OER = PinsPDM[PDM_DAT].mask; //set pin as output
+   2382          //    PinsPDM[PDM_CLK].pio->PIO_OER = PinsPDM[PDM_CLK].mask;
+   2383          //    PinsPDM[PDM_DAT].pio->PIO_PPUER = PinsPDM[PDM_DAT].mask; //set pull up 
+   2384          //    PinsPDM[PDM_CLK].pio->PIO_PPUER = PinsPDM[PDM_CLK].mask;
    2385          //
-   2386          //void   PDM_Pattern_Gen( INT8U type )
-   2387          //{
-   2388          //       
-   2389          //#if OS_CRITICAL_METHOD == 3u                     /* Allocate storage for CPU status register           */
-   2390          //    OS_CPU_SR  cpu_sr = 0u;
-   2391          //#endif
-   2392          //    
-   2393          //  
-   2394          //    OS_ENTER_CRITICAL();
-   2395          //    
-   2396          //    if( type == 0 ) {
-   2397          //        PDM_Out(PATTERN_DATA, REPEAT_TIMES);
-   2398          //    } else {
-   2399          //        PDM_Out(IDLE_DATA, 0xFFFFFFFF );
-   2400          //    }
-   2401          //  
-   2402          //    OS_EXIT_CRITICAL();
-   2403          //  
-   2404          //}
+   2386          //    
+   2387          //    PinsPDM[PDM_DAT].pio->PIO_CODR = PinsPDM[PDM_DAT].mask;
+   2388          //    PinsPDM[PDM_CLK].pio->PIO_CODR = PinsPDM[PDM_CLK].mask;
+   2389          //    
+   2390          //    for( i = 0; i < times; i++ ) {
+   2391          //    
+   2392          //        for( j = 0; j < (8*PATTERN_WIDTH) ; j++)  {
+   2393          //              
+   2394          //              PinsPDM[PDM_CLK].pio->PIO_CODR = PinsPDM[PDM_CLK].mask;
+   2395          //              if( (data<<j)&0x80 ) {              
+   2396          //                 PinsPDM[PDM_DAT].pio->PIO_SODR = PinsPDM[PDM_DAT].mask;
+   2397          //              } else {                 
+   2398          //                 PinsPDM[PDM_DAT].pio->PIO_CODR = PinsPDM[PDM_DAT].mask;
+   2399          //              }      
+   2400          //              PinsPDM[PDM_CLK].pio->PIO_SODR = PinsPDM[PDM_CLK].mask;
+   2401          //          
+   2402          //               __asm ("NOP");
+   2403          //               __asm ("NOP");
+   2404          //               __asm ("NOP");
+   2405          //               __asm ("NOP");
+   2406          //               __asm ("NOP");
+   2407          //               __asm ("NOP");
+   2408          //             
+   2409          //        }
+   2410          //  
+   2411          //    }
+   2412          //    
+   2413          //   PinsPDM[PDM_DAT].pio->PIO_ODR = PinsPDM[PDM_DAT].mask; //set pin  as input
+   2414          //   PinsPDM[PDM_CLK].pio->PIO_ODR = PinsPDM[PDM_CLK].mask;
+   2415          //   PinsPDM[PDM_DAT].pio->PIO_PPUDR = PinsPDM[PDM_DAT].mask; //disable pull up 
+   2416          //   PinsPDM[PDM_CLK].pio->PIO_PPUDR = PinsPDM[PDM_CLK].mask;
+   2417          //   
+   2418          //}
+   2419          //
+   2420          //
+   2421          //void   PDM_Pattern_Gen( INT8U type )
+   2422          //{
+   2423          //       
+   2424          //#if OS_CRITICAL_METHOD == 3u                     /* Allocate storage for CPU status register           */
+   2425          //    OS_CPU_SR  cpu_sr = 0u;
+   2426          //#endif
+   2427          //    
+   2428          //  
+   2429          //    OS_ENTER_CRITICAL();
+   2430          //    
+   2431          //    if( type == 0 ) {
+   2432          //        PDM_Out(PATTERN_DATA, REPEAT_TIMES);
+   2433          //    } else {
+   2434          //        PDM_Out(IDLE_DATA, 0xFFFFFFFF );
+   2435          //    }
+   2436          //  
+   2437          //    OS_EXIT_CRITICAL();
+   2438          //  
+   2439          //}
 
    Maximum stack usage in bytes:
 
@@ -2562,6 +2597,10 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\BSP\bsp.c
        0   LowLevelInitPLL
       16   OS_CPU_ExceptHndlr
         16   -- Indirect call
+      32   Time_Stamp
+        32   -> BSP_Ser_Printf
+        32   -> __aeabi_uidiv
+        32   -> __aeabi_uidivmod
        0   get_os_state
 
 
@@ -2590,9 +2629,9 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\BSP\bsp.c
      136  ?<Constant "---------------------...">_1
       64  ?<Constant "---------------------...">_2
      136  ?<Constant "---------------------...">_3
-      12  ?<Constant "17:49:58">
+      12  ?<Constant "13:31:07">
       76  ?<Constant "CPU Usage = %d%%, CPU...">
-      12  ?<Constant "Dec 15 2014">
+      12  ?<Constant "Dec 19 2014">
       52  ?<Constant "Done_Sem_RulerUART:  ...">
        8  ?<Constant "Error">
       76  ?<Constant "Flash Write Cycle:   ...">
@@ -2614,93 +2653,95 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\BSP\bsp.c
        4  ?<Constant "\b \b">
        2  ?<Constant "\n">
        4  ?<Constant "\r\n">
+      24  ?<Constant "\r\n[%d:%02d:%02d.%03d] ">
        8  ?<Constant "\r\n\r\n">
      136  ?<Constant "| ID  |    Name    | ...">
        8  ?<Constant "|%2d ">
      136  ?<Constant "|--------------------...">
        4  ??DataTable10
-       4  ??DataTable11
        4  ??DataTable12
-       4  ??DataTable12_1
-       4  ??DataTable12_10
-       4  ??DataTable12_11
-       4  ??DataTable12_12
-       4  ??DataTable12_13
-       4  ??DataTable12_14
-       4  ??DataTable12_15
-       4  ??DataTable12_16
-       4  ??DataTable12_17
-       4  ??DataTable12_18
-       4  ??DataTable12_19
-       4  ??DataTable12_2
-       4  ??DataTable12_20
-       4  ??DataTable12_21
-       4  ??DataTable12_22
-       4  ??DataTable12_23
-       4  ??DataTable12_24
-       4  ??DataTable12_25
-       4  ??DataTable12_26
-       4  ??DataTable12_27
-       4  ??DataTable12_28
-       4  ??DataTable12_29
-       4  ??DataTable12_3
-       4  ??DataTable12_30
-       4  ??DataTable12_31
-       4  ??DataTable12_32
-       4  ??DataTable12_33
-       4  ??DataTable12_34
-       4  ??DataTable12_35
-       4  ??DataTable12_36
-       4  ??DataTable12_37
-       4  ??DataTable12_38
-       4  ??DataTable12_39
-       4  ??DataTable12_4
-       4  ??DataTable12_40
-       4  ??DataTable12_41
-       4  ??DataTable12_42
-       4  ??DataTable12_43
-       4  ??DataTable12_44
-       4  ??DataTable12_45
-       4  ??DataTable12_46
-       4  ??DataTable12_47
-       4  ??DataTable12_48
-       4  ??DataTable12_49
-       4  ??DataTable12_5
-       4  ??DataTable12_50
-       4  ??DataTable12_51
-       4  ??DataTable12_52
-       4  ??DataTable12_53
-       4  ??DataTable12_54
-       4  ??DataTable12_55
-       4  ??DataTable12_56
-       4  ??DataTable12_57
-       4  ??DataTable12_58
-       4  ??DataTable12_59
-       4  ??DataTable12_6
-       4  ??DataTable12_60
-       4  ??DataTable12_61
-       4  ??DataTable12_62
-       4  ??DataTable12_63
-       4  ??DataTable12_64
-       4  ??DataTable12_65
-       4  ??DataTable12_66
-       4  ??DataTable12_67
-       4  ??DataTable12_68
-       4  ??DataTable12_69
-       4  ??DataTable12_7
-       4  ??DataTable12_70
-       4  ??DataTable12_71
-       4  ??DataTable12_72
-       4  ??DataTable12_73
-       4  ??DataTable12_74
-       4  ??DataTable12_75
-       4  ??DataTable12_76
-       4  ??DataTable12_77
-       4  ??DataTable12_78
-       4  ??DataTable12_79
-       4  ??DataTable12_8
-       4  ??DataTable12_80
-       4  ??DataTable12_9
+       4  ??DataTable13
+       4  ??DataTable13_1
+       4  ??DataTable13_10
+       4  ??DataTable13_11
+       4  ??DataTable13_12
+       4  ??DataTable13_13
+       4  ??DataTable13_14
+       4  ??DataTable13_15
+       4  ??DataTable13_16
+       4  ??DataTable13_17
+       4  ??DataTable13_18
+       4  ??DataTable13_19
+       4  ??DataTable13_2
+       4  ??DataTable13_20
+       4  ??DataTable13_21
+       4  ??DataTable13_22
+       4  ??DataTable13_23
+       4  ??DataTable13_24
+       4  ??DataTable13_25
+       4  ??DataTable13_26
+       4  ??DataTable13_27
+       4  ??DataTable13_28
+       4  ??DataTable13_29
+       4  ??DataTable13_3
+       4  ??DataTable13_30
+       4  ??DataTable13_31
+       4  ??DataTable13_32
+       4  ??DataTable13_33
+       4  ??DataTable13_34
+       4  ??DataTable13_35
+       4  ??DataTable13_36
+       4  ??DataTable13_37
+       4  ??DataTable13_38
+       4  ??DataTable13_39
+       4  ??DataTable13_4
+       4  ??DataTable13_40
+       4  ??DataTable13_41
+       4  ??DataTable13_42
+       4  ??DataTable13_43
+       4  ??DataTable13_44
+       4  ??DataTable13_45
+       4  ??DataTable13_46
+       4  ??DataTable13_47
+       4  ??DataTable13_48
+       4  ??DataTable13_49
+       4  ??DataTable13_5
+       4  ??DataTable13_50
+       4  ??DataTable13_51
+       4  ??DataTable13_52
+       4  ??DataTable13_53
+       4  ??DataTable13_54
+       4  ??DataTable13_55
+       4  ??DataTable13_56
+       4  ??DataTable13_57
+       4  ??DataTable13_58
+       4  ??DataTable13_59
+       4  ??DataTable13_6
+       4  ??DataTable13_60
+       4  ??DataTable13_61
+       4  ??DataTable13_62
+       4  ??DataTable13_63
+       4  ??DataTable13_64
+       4  ??DataTable13_65
+       4  ??DataTable13_66
+       4  ??DataTable13_67
+       4  ??DataTable13_68
+       4  ??DataTable13_69
+       4  ??DataTable13_7
+       4  ??DataTable13_70
+       4  ??DataTable13_71
+       4  ??DataTable13_72
+       4  ??DataTable13_73
+       4  ??DataTable13_74
+       4  ??DataTable13_75
+       4  ??DataTable13_76
+       4  ??DataTable13_77
+       4  ??DataTable13_78
+       4  ??DataTable13_79
+       4  ??DataTable13_8
+       4  ??DataTable13_80
+       4  ??DataTable13_81
+       4  ??DataTable13_9
        4  ??DataTable4
        4  ??DataTable4_1
        4  ??DataTable6
@@ -2755,6 +2796,7 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\BSP\bsp.c
      196  LowLevelInitPLL
      220  OS_CPU_ExceptHndlr
       12  PinBuzzer
+     172  Time_Stamp
       84  buffer
       16  fw_version
      100  get_os_state
@@ -2765,11 +2807,11 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\BSP\bsp.c
  
     94 bytes in section .bss
     12 bytes in section .data
- 2 260 bytes in section .rodata
- 6 384 bytes in section .text
+ 2 284 bytes in section .rodata
+ 6 560 bytes in section .text
  
- 6 384 bytes of CODE  memory
- 2 260 bytes of CONST memory
+ 6 560 bytes of CODE  memory
+ 2 284 bytes of CONST memory
    106 bytes of DATA  memory
 
 Errors: none

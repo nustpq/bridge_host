@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       15/Dec/2014  17:50:04
+// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       19/Dec/2014  13:30:47
 // Copyright 1999-2014 IAR Systems AB.
 //
 //    Cpu mode     =  arm
@@ -63,6 +63,7 @@
         EXTERN PcCmdTxID_Ruler
         EXTERN Queue_Flush
         EXTERN Ruler_CMD_Result
+        EXTERN Time_Stamp
         EXTERN pMEM_Part_MsgUART
         EXTERN pUART_Rece_Buf
         EXTERN pUART_Send_Buf
@@ -255,7 +256,7 @@ App_TaskNoah_Ruler:
         LDR      R0,??App_TaskNoah_Ruler_1+0x10
         LDR      R0,[R0, #+0]
         BL       OSSemPost
-        MOV      R0,#+5
+        MOV      R0,#+1
         BL       OSTimeDly
 ??App_TaskNoah_Ruler_13:
         ADD      R1,SP,#+12
@@ -330,6 +331,7 @@ App_TaskNoah_Ruler:
         STR      R0,[R1, #+0]
         B        ??App_TaskNoah_Ruler_17
 ??App_TaskNoah_Ruler_16:
+        BL       Time_Stamp
         LDR      R0,??App_TaskNoah_Ruler_1+0x8
         LDRB     R0,[R0, #+0]
         LDR      R1,??App_TaskNoah_Ruler_1+0x14
@@ -373,7 +375,7 @@ App_TaskNoah_Ruler:
         DC32     pUART_Rece_Buf
         DC32     test_counter4
         DC32     test_counter2
-        DC32     `?<Constant "\\r\\nACK: got %X, expect...">`
+        DC32     `?<Constant "\\r\\nACK: Got %X, Expect...">`
         DC32     test_counter3
         DC32     test_counter1
 
@@ -389,18 +391,18 @@ App_TaskNoah_Ruler:
         SECTION_TYPE SHT_PROGBITS, 0
 
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
-`?<Constant "\\r\\nACK: got %X, expect...">`:
+`?<Constant "\\r\\nACK: Got %X, Expect...">`:
         DATA
-        DC8 "\015\012ACK: got %X, expect %X\015\012"
+        DC8 "\015\012ACK: Got %X, Expect %X\015\012"
         DC8 0
 
         END
 // 
 //  32 bytes in section .bss
 //  28 bytes in section .rodata
-// 972 bytes in section .text
+// 976 bytes in section .text
 // 
-// 972 bytes of CODE  memory
+// 976 bytes of CODE  memory
 //  28 bytes of CONST memory
 //  32 bytes of DATA  memory
 //

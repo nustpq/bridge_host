@@ -1,6 +1,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 //
-// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       15/Dec/2014  17:49:59
+// IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM       19/Dec/2014  13:30:42
 // Copyright 1999-2014 IAR Systems AB.
 //
 //    Cpu mode     =  arm
@@ -53,6 +53,7 @@
         EXTERN OSTimeDly
         EXTERN PM_SingleWrite
         EXTERN Pin_Reset_FM36
+        EXTERN Time_Stamp
 
         PUBLIC DMIC_PGA_Control
         PUBLIC DMIC_Ploarity_Control
@@ -892,8 +893,9 @@ Init_FM36_AB03:
         MOV      R0,#+224
         B        ??Init_FM36_AB03_1
 ??Init_FM36_AB03_2:
+        BL       Time_Stamp
         LDRH     R1,[SP, #+0]
-        LDR      R0,??DataTable2_1
+        LDR      R0,??DataTable2_9
         BL       BSP_Ser_Printf
         LDRH     R0,[SP, #+0]
         MOV      R1,#+12
@@ -948,14 +950,14 @@ Init_FM36_AB03:
         ORR      R0,R0,#0xBB00
         STRH     R0,[SP, #+0]
 ??Init_FM36_AB03_10:
-        LDR      R0,??DataTable2_9
+        LDR      R0,??DataTable2_10
         LDRB     R0,[R0, #+0]
         CMP      R0,#+0
         BEQ      ??Init_FM36_AB03_11
         MOV      R0,#+0
-        LDR      R1,??DataTable2_9
+        LDR      R1,??DataTable2_10
         STRB     R0,[R1, #+0]
-        LDR      R0,??DataTable2_10
+        LDR      R0,??DataTable2_11
         LDR      R0,[R0, #+0]
         MOVS     R8,R0
         MOV      R0,#+1
@@ -964,12 +966,12 @@ Init_FM36_AB03:
         CMP      R7,#+75
         BCS      ??Init_FM36_AB03_11
         LSLS     R0,R7,#+2
-        LDR      R1,??DataTable2_10
+        LDR      R1,??DataTable2_11
         ADDS     R0,R0,R1
         BL       Revert_patch_Endien
         MOV      R3,#+0
         LSLS     R0,R7,#+2
-        LDR      R1,??DataTable2_10
+        LDR      R1,??DataTable2_11
         ADDS     R2,R0,R1
         MOVS     R1,R8
         LSL      R1,R1,#+16
@@ -997,11 +999,11 @@ Init_FM36_AB03:
         CMP      R7,#+55
         BCS      ??Init_FM36_AB03_15
         LSLS     R0,R7,#+2
-        LDR      R1,??DataTable2_11
+        LDR      R1,??DataTable2_12
         LDRH     R0,[R0, +R1]
         MOVS     R8,R0
         LSLS     R0,R7,#+2
-        LDR      R1,??DataTable2_11
+        LDR      R1,??DataTable2_12
         ADDS     R0,R0,R1
         LDRH     R0,[R0, #+2]
         MOVS     R9,R0
@@ -1096,6 +1098,10 @@ Init_FM36_AB03:
         ANDS     R0,R0,#0xFF      ;; Zero extend
         B        ??Init_FM36_AB03_1
 ??Init_FM36_AB03_21:
+        BL       Time_Stamp
+        LDRH     R1,[SP, #+2]
+        LDR      R0,??DataTable2_13
+        BL       BSP_Ser_Printf
         MOV      R0,#+100
         BL       OSTimeDly
         MOVS     R2,SP
@@ -1114,8 +1120,9 @@ Init_FM36_AB03:
         ANDS     R0,R0,#0xFF      ;; Zero extend
         B        ??Init_FM36_AB03_1
 ??Init_FM36_AB03_22:
+        BL       Time_Stamp
         LDRH     R1,[SP, #+0]
-        LDR      R0,??DataTable2_6
+        LDR      R0,??DataTable2_14
         BL       BSP_Ser_Printf
         LDRH     R0,[SP, #+0]
         MOV      R1,#+90
@@ -1141,11 +1148,15 @@ Init_FM36_AB03:
         ANDS     R0,R0,#0xFF      ;; Zero extend
         B        ??Init_FM36_AB03_1
 ??Init_FM36_AB03_24:
+        BL       Time_Stamp
+        LDRH     R1,[SP, #+0]
+        LDR      R0,??DataTable2_15
+        BL       BSP_Ser_Printf
         LDRH     R0,[SP, #+0]
         LDRH     R1,[SP, #+2]
         CMP      R0,R1
         BNE      ??Init_FM36_AB03_25
-        LDR      R0,??DataTable2_12
+        LDR      R0,??DataTable2_16
         BL       BSP_Ser_Printf
         MOV      R0,#+226
         B        ??Init_FM36_AB03_1
@@ -1214,24 +1225,48 @@ Init_FM36_AB03:
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
 ??DataTable2_9:
-        DC32     flag_power_lose
+        DC32     `?<Constant "ROM ID = 0x%X">`
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
 ??DataTable2_10:
-        DC32     fm36_patch_code_3
+        DC32     flag_power_lose
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
 ??DataTable2_11:
-        DC32     fm36_para_table_3
+        DC32     fm36_patch_code_3
 
         SECTION `.text`:CODE:NOROOT(2)
         SECTION_TYPE SHT_PROGBITS, 0
         DATA
 ??DataTable2_12:
+        DC32     fm36_para_table_3
+
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable2_13:
+        DC32     `?<Constant "#0x2306 = 0x%X">`
+
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable2_14:
+        DC32     `?<Constant "#0x22FB = 0x%X">`
+
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable2_15:
+        DC32     `?<Constant "0x2306 = 0x%X">`
+
+        SECTION `.text`:CODE:NOROOT(2)
+        SECTION_TYPE SHT_PROGBITS, 0
+        DATA
+??DataTable2_16:
         DC32     `?<Constant "FM36 frame counter st...">`
 
         SECTION `.iar_vfe_header`:DATA:NOALLOC:NOROOT(2)
@@ -1261,6 +1296,30 @@ Init_FM36_AB03:
         DC8 "frame counter stopped !"
 
         SECTION `.rodata`:CONST:REORDER:NOROOT(2)
+`?<Constant "ROM ID = 0x%X">`:
+        DATA
+        DC8 "ROM ID = 0x%X"
+        DC8 0, 0
+
+        SECTION `.rodata`:CONST:REORDER:NOROOT(2)
+`?<Constant "#0x2306 = 0x%X">`:
+        DATA
+        DC8 "#0x2306 = 0x%X"
+        DC8 0
+
+        SECTION `.rodata`:CONST:REORDER:NOROOT(2)
+`?<Constant "#0x22FB = 0x%X">`:
+        DATA
+        DC8 "#0x22FB = 0x%X"
+        DC8 0
+
+        SECTION `.rodata`:CONST:REORDER:NOROOT(2)
+`?<Constant "0x2306 = 0x%X">`:
+        DATA
+        DC8 "0x2306 = 0x%X"
+        DC8 0, 0
+
+        SECTION `.rodata`:CONST:REORDER:NOROOT(2)
 `?<Constant "FM36 frame counter st...">`:
         DATA
         DC8 "FM36 frame counter stopped !"
@@ -1270,11 +1329,11 @@ Init_FM36_AB03:
 // 
 //     8 bytes in section .bss
 // 1 049 bytes in section .data
-//    88 bytes in section .rodata
-// 3 616 bytes in section .text
+//   152 bytes in section .rodata
+// 3 672 bytes in section .text
 // 
-// 3 616 bytes of CODE  memory
-//    88 bytes of CONST memory
+// 3 672 bytes of CODE  memory
+//   152 bytes of CONST memory
 // 1 057 bytes of DATA  memory
 //
 //Errors: none
