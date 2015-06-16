@@ -1,6 +1,6 @@
 ###############################################################################
 #
-# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        19/Dec/2014  13:31:07
+# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        16/Jun/2015  13:55:22
 # Copyright 1999-2014 IAR Systems AB.
 #
 #    Cpu mode     =  arm
@@ -91,7 +91,7 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\BSP\bsp.c
      44          /*
      45          *********************************      Version Declaration       ****************************************
      46          */
-     47          const CPU_CHAR fw_version[]  = "[FW:H:V0.4.8]"; //fixed size string
+     47          const CPU_CHAR fw_version[]  = "[FW:H:V0.4.9]"; //fixed size string
      48          
      49          #ifdef  BOARD_TYPE_AB01
      50          const CPU_CHAR hw_version[]  = "[HW:V1.0]"; 
@@ -2629,15 +2629,15 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\BSP\bsp.c
      136  ?<Constant "---------------------...">_1
       64  ?<Constant "---------------------...">_2
      136  ?<Constant "---------------------...">_3
-      12  ?<Constant "13:31:07">
+      12  ?<Constant "13:55:19">
       76  ?<Constant "CPU Usage = %d%%, CPU...">
-      12  ?<Constant "Dec 19 2014">
       52  ?<Constant "Done_Sem_RulerUART:  ...">
        8  ?<Constant "Error">
       76  ?<Constant "Flash Write Cycle:   ...">
       56  ?<Constant "Global_Mic_Mask[3..0]...">
       56  ?<Constant "Global_Ruler_State[3....">
       56  ?<Constant "Global_Ruler_Type[3.....">
+      12  ?<Constant "Jun 16 2015">
       72  ?<Constant "MEM_Part_MsgUART :   ...">
       64  ?<Constant "Micrium uC/OS-II on t...">
        4  ?<Constant "OK">
