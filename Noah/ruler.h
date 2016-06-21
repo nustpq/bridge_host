@@ -23,22 +23,24 @@
 
 //#define RULER_MASK(mic_mask,ruler_id)    ((mic_mask>>(ruler_id<<3))&0xFF) 
 
+////////////////////////////////////////////////////////////////////////////////
 #define RULER_TYPE_RULER                  0
 #define RULER_TYPE_HANDSET                1
 #define RULER_TYPE_MASK( type )           ( (type>>7) & 0x01 )
 
+///////////////////////////////////////For Ruler(without FPGA inside)
 #define RULER_TYPE_R01                    0x00
 #define RULER_TYPE_R02                    0x01
 #define RULER_TYPE_R03                    0x02
-
 #define RULER_TYPE_TA01                   0x10
 #define RULER_TYPE_TD01                   0x11
-
 #define RULER_TYPE_W01                    0x20
-
+///////////////////////////////////////For Handset(with FPGA inside)
 #define RULER_TYPE_H01                    0x80
 #define RULER_TYPE_H02                    0x81
 #define RULER_TYPE_H03                    0x82
+#define RULER_TYPE_C01                    0x90
+////////////////////////////////////////////////////////////////////////////////
 
 #define RULER_ID_DEFAULT                  0xFF
 

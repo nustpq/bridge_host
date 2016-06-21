@@ -1,50 +1,50 @@
 ###############################################################################
 #
-# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        19/Dec/2014  15:45:04
+# IAR ANSI C/C++ Compiler V7.10.3.6832/W32 for ARM        21/Jun/2016  16:45:27
 # Copyright 1999-2014 IAR Systems AB.
 #
 #    Cpu mode     =  arm
 #    Endian       =  little
-#    Source file  =  E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
+#    Source file  =  F:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
 #    Command line =  
-#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c" -lcN
-#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\" -lb
-#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\" -o
-#        "E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\Obj\" --no_cse
+#        "F:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c" -lcN
+#        "F:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\" -lb
+#        "F:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\" -o
+#        "F:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\Obj\" --no_cse
 #        --no_unroll --no_inline --no_code_motion --no_tbaa --no_clustering
 #        --no_scheduling --debug --endian=little --cpu=ARM7TDMI -e --fpu=None
 #        --dlib_config "C:\Program Files (x86)\IAR Systems\Embedded Workbench
-#        7.0\arm\INC\c\DLib_Config_Full.h" -I "E:\SVN Dir\PQ\iSAM Test
-#        Bench\Bridge_Host_OS\APP\" -I "E:\SVN Dir\PQ\iSAM Test
-#        Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "E:\SVN Dir\PQ\iSAM
-#        Test Bench\Bridge_Host_OS\APP\..\BSP\" -I "E:\SVN Dir\PQ\iSAM Test
-#        Bench\Bridge_Host_OS\APP\..\Driver\" -I "E:\SVN Dir\PQ\iSAM Test
-#        Bench\Bridge_Host_OS\APP\..\Noah\" -I "E:\SVN Dir\PQ\iSAM Test
-#        Bench\Bridge_Host_OS\APP\..\Shell\" -I "E:\SVN Dir\PQ\iSAM Test
-#        Bench\Bridge_Host_OS\APP\..\uCOS-II\Source\" -I "E:\SVN Dir\PQ\iSAM
-#        Test Bench\Bridge_Host_OS\APP\..\uC-CPU\" -I "E:\SVN Dir\PQ\iSAM Test
-#        Bench\Bridge_Host_OS\APP\..\uC-LIB\" -I "E:\SVN Dir\PQ\iSAM Test
-#        Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "E:\SVN Dir\PQ\iSAM
+#        7.0\arm\INC\c\DLib_Config_Full.h" -I "F:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\" -I "F:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "F:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\BSP\" -I "F:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Driver\" -I "F:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Noah\" -I "F:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\Shell\" -I "F:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uCOS-II\Source\" -I "F:\SVN Dir\PQ\iSAM
+#        Test Bench\Bridge_Host_OS\APP\..\uC-CPU\" -I "F:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-LIB\" -I "F:\SVN Dir\PQ\iSAM Test
+#        Bench\Bridge_Host_OS\APP\..\uC-CPU\ARM\IAR\" -I "F:\SVN Dir\PQ\iSAM
 #        Test Bench\Bridge_Host_OS\APP\..\uCOS-II\Ports\ARM\Generic\IAR\" -I
-#        "E:\SVN Dir\PQ\iSAM Test
+#        "F:\SVN Dir\PQ\iSAM Test
 #        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\RS-232\Source\"
-#        -I "E:\SVN Dir\PQ\iSAM Test
+#        -I "F:\SVN Dir\PQ\iSAM Test
 #        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\RS-232\Ports\Atmel\AT91SAM7X\"
-#        -I "E:\SVN Dir\PQ\iSAM Test
+#        -I "F:\SVN Dir\PQ\iSAM Test
 #        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Communication\Generic\Source\"
-#        -I "E:\SVN Dir\PQ\iSAM Test
+#        -I "F:\SVN Dir\PQ\iSAM Test
 #        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Plugins\uCOS-II\" -I
-#        "E:\SVN Dir\PQ\iSAM Test
+#        "F:\SVN Dir\PQ\iSAM Test
 #        Bench\Bridge_Host_OS\APP\..\uC-Probe\Target\Demos\Intro\Source\"
 #        --interwork --cpu_mode arm -On --use_c++_inline
 #    List file    =  
-#        E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\ruler.lst
+#        F:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\List\ruler.lst
 #    Object file  =  
-#        E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\Obj\ruler.o
+#        F:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\APP\FLASH\Obj\ruler.o
 #
 ###############################################################################
 
-E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
+F:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
       1          /*
       2          *********************************************************************************************************
       3          *                               iSAM TEST BENCH AUDIO BRIDGE BOARD APP PACKAGE
@@ -754,398 +754,398 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
     707                      APP_TRACE_INFO_T(("Read_Ruler_Type[%d] timeout",ruler_slot_id));
     708                  } else {
     709                      Global_Ruler_Type[ruler_slot_id] =  pEBuf_Data->data[0] ;
-    710                      err = Ruler_CMD_Result; //exe result from GACK 
-    711                      if(OS_ERR_NONE != err ){
-    712                          APP_TRACE_INFO_T(("Get_Ruler_Type[%d] err = %d",ruler_slot_id,err));
-    713                      }
-    714                  }          
-    715                  
-    716              } else {
-    717                  APP_TRACE_INFO_T(("Ruler[%d] pcSendDateToBuf failed: %d",ruler_slot_id,err));        
-    718              }       
-    719              OSSemPost( UART_MUX_Sem_lock );    
-    720              return err ;    
-    721          }
-    722          
+    710                      if( Global_Ruler_Type[ruler_slot_id]==0x30) {Global_Ruler_Type[ruler_slot_id] = 0x90;} //bugfix
+    711                      err = Ruler_CMD_Result; //exe result from GACK 
+    712                      if(OS_ERR_NONE != err ){
+    713                          APP_TRACE_INFO_T(("Get_Ruler_Type[%d] err = %d",ruler_slot_id,err));
+    714                      }
+    715                  }          
+    716                  
+    717              } else {
+    718                  APP_TRACE_INFO_T(("Ruler[%d] pcSendDateToBuf failed: %d",ruler_slot_id,err));        
+    719              }       
+    720              OSSemPost( UART_MUX_Sem_lock );    
+    721              return err ;    
+    722          }
     723          
-    724          /*
-    725          *********************************************************************************************************
-    726          *                                       Read_Ruler_Status()
-    727          *
-    728          * Description : Get back specified ruler's POST status.
-    729          *             
-    730          * Argument(s) : ruler_slot_id: 0~ 3.
-    731          *               status_data:   pointer to the address that store the read status data 
-    732          * Return(s)   : NO_ERR :   execute successfully
-    733          *               others :   =error code .           
-    734          *
-    735          * Note(s)     : None.
-    736          *********************************************************************************************************
-    737          */
-    738          unsigned char Read_Ruler_Status( unsigned char ruler_slot_id, unsigned short *status_data )
-    739          {    
-    740              unsigned char err ;
-    741              EMB_BUF        *pEBuf_Data; 
-    742              unsigned char buf[] = { RULER_CMD_RAED_RULER_STATUS };
-    743              
-    744          #if OS_CRITICAL_METHOD == 3u
-    745              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
-    746          #endif 
-    747              
-    748              pEBuf_Data  = &Emb_Buf_Data; //Golbal var
-    749              //check ruler connection state 
-    750              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_ATTACHED ) {      
-    751                  return RULER_STATE_ERR ;         
-    752              } 
-    753              OSSemPend( UART_MUX_Sem_lock, 0, &err ); 
-    754              if( Global_Ruler_Index != ruler_slot_id ) {
-    755                  Check_UART_Mixer_Ready();
-    756                  //OS_ENTER_CRITICAL(); 
-    757                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
-    758                  //OS_EXIT_CRITICAL();  
-    759                  UART1_Mixer( ruler_slot_id );
-    760              }
-    761              
-    762              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
-    763              if( OS_ERR_NONE == err ) {
-    764                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
-    765                  if( OS_ERR_TIMEOUT == err ) {
-    766                      APP_TRACE_INFO_T(("Read_Ruler_Status[%d] timeout",ruler_slot_id));
-    767                  } else {
-    768                      *status_data = (pEBuf_Data->data[1] << 8) + pEBuf_Data->data[0] ;       
-    769                      err = Ruler_CMD_Result; //exe result from GACK
-    770                      if(OS_ERR_NONE != err ){
-    771                          APP_TRACE_INFO_T(("Read_Ruler_Status[%d] err = %d",ruler_slot_id,err));
-    772                      } 
-    773                  }   
-    774                  
-    775              } else {
-    776                  APP_TRACE_INFO_T(("Ruler[%d] pcSendDateToBuf failed: %d",ruler_slot_id,err));
-    777              }        
-    778              OSSemPost( UART_MUX_Sem_lock );    
-    779              return err ;    
-    780          }
-    781          
+    724          
+    725          /*
+    726          *********************************************************************************************************
+    727          *                                       Read_Ruler_Status()
+    728          *
+    729          * Description : Get back specified ruler's POST status.
+    730          *             
+    731          * Argument(s) : ruler_slot_id: 0~ 3.
+    732          *               status_data:   pointer to the address that store the read status data 
+    733          * Return(s)   : NO_ERR :   execute successfully
+    734          *               others :   =error code .           
+    735          *
+    736          * Note(s)     : None.
+    737          *********************************************************************************************************
+    738          */
+    739          unsigned char Read_Ruler_Status( unsigned char ruler_slot_id, unsigned short *status_data )
+    740          {    
+    741              unsigned char err ;
+    742              EMB_BUF        *pEBuf_Data; 
+    743              unsigned char buf[] = { RULER_CMD_RAED_RULER_STATUS };
+    744              
+    745          #if OS_CRITICAL_METHOD == 3u
+    746              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
+    747          #endif 
+    748              
+    749              pEBuf_Data  = &Emb_Buf_Data; //Golbal var
+    750              //check ruler connection state 
+    751              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_ATTACHED ) {      
+    752                  return RULER_STATE_ERR ;         
+    753              } 
+    754              OSSemPend( UART_MUX_Sem_lock, 0, &err ); 
+    755              if( Global_Ruler_Index != ruler_slot_id ) {
+    756                  Check_UART_Mixer_Ready();
+    757                  //OS_ENTER_CRITICAL(); 
+    758                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
+    759                  //OS_EXIT_CRITICAL();  
+    760                  UART1_Mixer( ruler_slot_id );
+    761              }
+    762              
+    763              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
+    764              if( OS_ERR_NONE == err ) {
+    765                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
+    766                  if( OS_ERR_TIMEOUT == err ) {
+    767                      APP_TRACE_INFO_T(("Read_Ruler_Status[%d] timeout",ruler_slot_id));
+    768                  } else {
+    769                      *status_data = (pEBuf_Data->data[1] << 8) + pEBuf_Data->data[0] ;       
+    770                      err = Ruler_CMD_Result; //exe result from GACK
+    771                      if(OS_ERR_NONE != err ){
+    772                          APP_TRACE_INFO_T(("Read_Ruler_Status[%d] err = %d",ruler_slot_id,err));
+    773                      } 
+    774                  }   
+    775                  
+    776              } else {
+    777                  APP_TRACE_INFO_T(("Ruler[%d] pcSendDateToBuf failed: %d",ruler_slot_id,err));
+    778              }        
+    779              OSSemPost( UART_MUX_Sem_lock );    
+    780              return err ;    
+    781          }
     782          
-    783          /*
-    784          *********************************************************************************************************
-    785          *                                       Read_Ruler_Info()
-    786          *
-    787          * Description : Get back specified ruler's infomation data.
-    788          *               And the read back data is stored in global varies : Emb_Buf_Data
-    789          * Argument(s) : ruler_slot_id: 0~ 3.
-    790          * Return(s)   : NO_ERR :   execute successfully
-    791          *               others :   =error code . ruler connection error,           
-    792          *
-    793          * Note(s)     : None.
-    794          *********************************************************************************************************
-    795          */
-    796          unsigned char Read_Ruler_Info( unsigned char ruler_slot_id )
-    797          {    
-    798              unsigned char  err ; 
-    799              unsigned char  buf[] = { RULER_CMD_RAED_RULER_INFO }; 
-    800              
-    801          #if OS_CRITICAL_METHOD == 3u
-    802              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
-    803          #endif 
-    804           
-    805              //check ruler connection state 
-    806              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_CONFIGURED ) {      
-    807                  return RULER_STATE_ERR ;         
-    808              }    
-    809              OSSemPend( UART_MUX_Sem_lock, 0, &err );  
-    810              if( Global_Ruler_Index != ruler_slot_id ) {
-    811                  Check_UART_Mixer_Ready();
-    812                  //OS_ENTER_CRITICAL(); 
-    813                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
-    814                  //OS_EXIT_CRITICAL();  
-    815                  UART1_Mixer( ruler_slot_id );
-    816              }
-    817              
-    818              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
-    819              if( OS_ERR_NONE == err ) {
-    820                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
-    821                  if( OS_ERR_TIMEOUT == err ) {
-    822                      APP_TRACE_INFO_T(("Read_Ruler_Info[%d] timeout",ruler_slot_id));
-    823                  } else {
-    824                      err = Ruler_CMD_Result;
-    825                      if(OS_ERR_NONE != err ){
-    826                          APP_TRACE_INFO_T(("Read_Ruler_Info[%d] err = %d",ruler_slot_id,err));
-    827                      }
-    828                  }
-    829                  
-    830              } else {
-    831                  APP_TRACE_INFO_T(("Ruler[%d] pcSendDateToBuf failed: %d",ruler_slot_id,err));
-    832              }    
-    833              OSSemPost( UART_MUX_Sem_lock );    
-    834              return err ;    
-    835          }
-    836          
+    783          
+    784          /*
+    785          *********************************************************************************************************
+    786          *                                       Read_Ruler_Info()
+    787          *
+    788          * Description : Get back specified ruler's infomation data.
+    789          *               And the read back data is stored in global varies : Emb_Buf_Data
+    790          * Argument(s) : ruler_slot_id: 0~ 3.
+    791          * Return(s)   : NO_ERR :   execute successfully
+    792          *               others :   =error code . ruler connection error,           
+    793          *
+    794          * Note(s)     : None.
+    795          *********************************************************************************************************
+    796          */
+    797          unsigned char Read_Ruler_Info( unsigned char ruler_slot_id )
+    798          {    
+    799              unsigned char  err ; 
+    800              unsigned char  buf[] = { RULER_CMD_RAED_RULER_INFO }; 
+    801              
+    802          #if OS_CRITICAL_METHOD == 3u
+    803              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
+    804          #endif 
+    805           
+    806              //check ruler connection state 
+    807              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_CONFIGURED ) {      
+    808                  return RULER_STATE_ERR ;         
+    809              }    
+    810              OSSemPend( UART_MUX_Sem_lock, 0, &err );  
+    811              if( Global_Ruler_Index != ruler_slot_id ) {
+    812                  Check_UART_Mixer_Ready();
+    813                  //OS_ENTER_CRITICAL(); 
+    814                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
+    815                  //OS_EXIT_CRITICAL();  
+    816                  UART1_Mixer( ruler_slot_id );
+    817              }
+    818              
+    819              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
+    820              if( OS_ERR_NONE == err ) {
+    821                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
+    822                  if( OS_ERR_TIMEOUT == err ) {
+    823                      APP_TRACE_INFO_T(("Read_Ruler_Info[%d] timeout",ruler_slot_id));
+    824                  } else {
+    825                      err = Ruler_CMD_Result;
+    826                      if(OS_ERR_NONE != err ){
+    827                          APP_TRACE_INFO_T(("Read_Ruler_Info[%d] err = %d",ruler_slot_id,err));
+    828                      }
+    829                  }
+    830                  
+    831              } else {
+    832                  APP_TRACE_INFO_T(("Ruler[%d] pcSendDateToBuf failed: %d",ruler_slot_id,err));
+    833              }    
+    834              OSSemPost( UART_MUX_Sem_lock );    
+    835              return err ;    
+    836          }
     837          
-    838          /*
-    839          *********************************************************************************************************
-    840          *                                       Write_Ruler_Info()
-    841          *
-    842          * Description : Write infomation data to specified ruler.
-    843          *               And before this function is called, the data to be written need have been stored in global varies : Emb_Buf_Cmd
-    844          * Argument(s) : ruler_slot_id: 0~ 3.
-    845          * Return(s)   : NO_ERR :   execute successfully
-    846          *               others :   =error code .       
-    847          *
-    848          * Note(s)     : None.
-    849          *********************************************************************************************************
-    850          */
-    851          unsigned char Write_Ruler_Info( unsigned char ruler_slot_id )
-    852          {
-    853              unsigned char   err;
-    854              unsigned short  data_length;
-    855              unsigned char   temp;
-    856              unsigned char  *pdata;
-    857              unsigned char   buf[4];  
-    858              EMB_BUF        *pEBuf_Cmd;        
-    859            
-    860           #if OS_CRITICAL_METHOD == 3u
-    861              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
-    862          #endif 
-    863              
-    864              pEBuf_Cmd  = &Emb_Buf_Cmd; //Golbal var
-    865              buf[0] =  RULER_CMD_WRITE_RULER_INFO;
-    866              buf[1] =  EMB_DATA_FRAME;  
-    867              buf[2] = (pEBuf_Cmd->length) & 0xFF;    
-    868              buf[3] = ((pEBuf_Cmd->length)>>8) & 0xFF;     
-    869          
-    870              //check ruler connection state 
-    871              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_CONFIGURED ) {      
-    872                  return RULER_STATE_ERR ;         
-    873              } 
-    874              OSSemPend( UART_MUX_Sem_lock, 0, &err );    
-    875              if( Global_Ruler_Index != ruler_slot_id ) {
-    876                  Check_UART_Mixer_Ready();
-    877                  //OS_ENTER_CRITICAL(); 
-    878                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
-    879                  //OS_EXIT_CRITICAL();  
-    880                  UART1_Mixer( ruler_slot_id );
-    881              }  
-    882              
-    883              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
-    884              if( OS_ERR_NONE != err ) { return err ; }
-    885              pdata = pEBuf_Cmd->data;
-    886              data_length = pEBuf_Cmd->length;
-    887              while( data_length > 0 ){ 
-    888                  temp = data_length > (NOAH_CMD_DATA_MLEN-1) ? (NOAH_CMD_DATA_MLEN-1) : data_length ;  
-    889                  err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, pdata, temp, 0, buf, 1 ) ; 
-    890                  if( OS_ERR_NONE != err ) { break;}
-    891                  OSTimeDly(50); //wait for ruler operation
-    892                  data_length -= temp;
-    893                  pdata += temp;
-    894              }
-    895              if( OS_ERR_NONE == err ) {
-    896                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
-    897                  if( OS_ERR_TIMEOUT == err ) {
-    898                      APP_TRACE_INFO_T(("Write_Ruler_Info[%d] timeout",ruler_slot_id));
-    899                  } else {
-    900                      err = Ruler_CMD_Result; //exe result from GACK
-    901                      if(OS_ERR_NONE != err ){
-    902                          APP_TRACE_INFO_T(("Write_Ruler_Info[%d] err = %d",ruler_slot_id,err));
-    903                      }
-    904                  }
-    905                  
-    906              } else {
-    907                  APP_TRACE_INFO_T(("Ruler[%d] pcSendDateToBuf failed: %d",ruler_slot_id,err));
-    908              }
-    909              OSSemPost( UART_MUX_Sem_lock );
-    910              
-    911              return err ;
-    912              
-    913          }
-    914          
+    838          
+    839          /*
+    840          *********************************************************************************************************
+    841          *                                       Write_Ruler_Info()
+    842          *
+    843          * Description : Write infomation data to specified ruler.
+    844          *               And before this function is called, the data to be written need have been stored in global varies : Emb_Buf_Cmd
+    845          * Argument(s) : ruler_slot_id: 0~ 3.
+    846          * Return(s)   : NO_ERR :   execute successfully
+    847          *               others :   =error code .       
+    848          *
+    849          * Note(s)     : None.
+    850          *********************************************************************************************************
+    851          */
+    852          unsigned char Write_Ruler_Info( unsigned char ruler_slot_id )
+    853          {
+    854              unsigned char   err;
+    855              unsigned short  data_length;
+    856              unsigned char   temp;
+    857              unsigned char  *pdata;
+    858              unsigned char   buf[4];  
+    859              EMB_BUF        *pEBuf_Cmd;        
+    860            
+    861           #if OS_CRITICAL_METHOD == 3u
+    862              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
+    863          #endif 
+    864              
+    865              pEBuf_Cmd  = &Emb_Buf_Cmd; //Golbal var
+    866              buf[0] =  RULER_CMD_WRITE_RULER_INFO;
+    867              buf[1] =  EMB_DATA_FRAME;  
+    868              buf[2] = (pEBuf_Cmd->length) & 0xFF;    
+    869              buf[3] = ((pEBuf_Cmd->length)>>8) & 0xFF;     
+    870          
+    871              //check ruler connection state 
+    872              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_CONFIGURED ) {      
+    873                  return RULER_STATE_ERR ;         
+    874              } 
+    875              OSSemPend( UART_MUX_Sem_lock, 0, &err );    
+    876              if( Global_Ruler_Index != ruler_slot_id ) {
+    877                  Check_UART_Mixer_Ready();
+    878                  //OS_ENTER_CRITICAL(); 
+    879                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
+    880                  //OS_EXIT_CRITICAL();  
+    881                  UART1_Mixer( ruler_slot_id );
+    882              }  
+    883              
+    884              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
+    885              if( OS_ERR_NONE != err ) { return err ; }
+    886              pdata = pEBuf_Cmd->data;
+    887              data_length = pEBuf_Cmd->length;
+    888              while( data_length > 0 ){ 
+    889                  temp = data_length > (NOAH_CMD_DATA_MLEN-1) ? (NOAH_CMD_DATA_MLEN-1) : data_length ;  
+    890                  err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, pdata, temp, 0, buf, 1 ) ; 
+    891                  if( OS_ERR_NONE != err ) { break;}
+    892                  OSTimeDly(50); //wait for ruler operation
+    893                  data_length -= temp;
+    894                  pdata += temp;
+    895              }
+    896              if( OS_ERR_NONE == err ) {
+    897                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
+    898                  if( OS_ERR_TIMEOUT == err ) {
+    899                      APP_TRACE_INFO_T(("Write_Ruler_Info[%d] timeout",ruler_slot_id));
+    900                  } else {
+    901                      err = Ruler_CMD_Result; //exe result from GACK
+    902                      if(OS_ERR_NONE != err ){
+    903                          APP_TRACE_INFO_T(("Write_Ruler_Info[%d] err = %d",ruler_slot_id,err));
+    904                      }
+    905                  }
+    906                  
+    907              } else {
+    908                  APP_TRACE_INFO_T(("Ruler[%d] pcSendDateToBuf failed: %d",ruler_slot_id,err));
+    909              }
+    910              OSSemPost( UART_MUX_Sem_lock );
+    911              
+    912              return err ;
+    913              
+    914          }
     915          
-    916          /*
-    917          *********************************************************************************************************
-    918          *                                       Read_Mic_Cali_Data()
-    919          *
-    920          * Description : Get back specified ruler specified mic's calibration data.
-    921          *               And the read back data is stored in global varies : Emb_Buf_Data
-    922          * Argument(s) : ruler_slot_id : 0~ 3.
-    923          *               mic_id        : 0~ 7
-    924          * Return(s)   : NO_ERR :   execute successfully
-    925          *               others :   =error code .  
-    926          *
-    927          * Note(s)     : None.
-    928          *********************************************************************************************************
-    929          */
-    930          unsigned char Read_Mic_Cali_Data(unsigned char ruler_slot_id, unsigned char mic_id)
-    931          {    
-    932              unsigned char  err ; 
-    933              unsigned char  buf[] = { RULER_CMD_READ_MIC_CALI_DATA, mic_id }; 
-    934              
-    935          #if OS_CRITICAL_METHOD == 3u
-    936              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
-    937          #endif 
-    938           
-    939              //check ruler connection state 
-    940              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_CONFIGURED ) {      
-    941                  return RULER_STATE_ERR ;         
-    942              }   
-    943             
-    944              OSSemPend( UART_MUX_Sem_lock, 0, &err );   
-    945              if( Global_Ruler_Index != ruler_slot_id ) {
-    946                  Check_UART_Mixer_Ready();
-    947                  //OS_ENTER_CRITICAL(); 
-    948                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
-    949                  //OS_EXIT_CRITICAL();  
-    950                  UART1_Mixer( ruler_slot_id );
-    951              }
-    952              
-    953              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
-    954              if( OS_ERR_NONE == err ) {
-    955                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
-    956                  if( OS_ERR_TIMEOUT == err ) {
-    957                      APP_TRACE_INFO_T(("Read_Mic_Cali_Data[%d] timeout",ruler_slot_id));
-    958                  } else {
-    959                      err = Ruler_CMD_Result; 
-    960                      if(OS_ERR_NONE != err ){
-    961                          APP_TRACE_INFO_T(("Read_Mic_Cali_Data[%d] err = %d",ruler_slot_id,err));
-    962                      }
-    963                  }
-    964                  
-    965              } else {
-    966                  APP_TRACE_INFO_T(("Ruler[%d] pcSendDateToBuf failed: %d",ruler_slot_id,err));
-    967              }      
-    968              OSSemPost( UART_MUX_Sem_lock );    
-    969              return err ;    
-    970          }
-    971          
+    916          
+    917          /*
+    918          *********************************************************************************************************
+    919          *                                       Read_Mic_Cali_Data()
+    920          *
+    921          * Description : Get back specified ruler specified mic's calibration data.
+    922          *               And the read back data is stored in global varies : Emb_Buf_Data
+    923          * Argument(s) : ruler_slot_id : 0~ 3.
+    924          *               mic_id        : 0~ 7
+    925          * Return(s)   : NO_ERR :   execute successfully
+    926          *               others :   =error code .  
+    927          *
+    928          * Note(s)     : None.
+    929          *********************************************************************************************************
+    930          */
+    931          unsigned char Read_Mic_Cali_Data(unsigned char ruler_slot_id, unsigned char mic_id)
+    932          {    
+    933              unsigned char  err ; 
+    934              unsigned char  buf[] = { RULER_CMD_READ_MIC_CALI_DATA, mic_id }; 
+    935              
+    936          #if OS_CRITICAL_METHOD == 3u
+    937              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
+    938          #endif 
+    939           
+    940              //check ruler connection state 
+    941              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_CONFIGURED ) {      
+    942                  return RULER_STATE_ERR ;         
+    943              }   
+    944             
+    945              OSSemPend( UART_MUX_Sem_lock, 0, &err );   
+    946              if( Global_Ruler_Index != ruler_slot_id ) {
+    947                  Check_UART_Mixer_Ready();
+    948                  //OS_ENTER_CRITICAL(); 
+    949                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
+    950                  //OS_EXIT_CRITICAL();  
+    951                  UART1_Mixer( ruler_slot_id );
+    952              }
+    953              
+    954              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
+    955              if( OS_ERR_NONE == err ) {
+    956                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
+    957                  if( OS_ERR_TIMEOUT == err ) {
+    958                      APP_TRACE_INFO_T(("Read_Mic_Cali_Data[%d] timeout",ruler_slot_id));
+    959                  } else {
+    960                      err = Ruler_CMD_Result; 
+    961                      if(OS_ERR_NONE != err ){
+    962                          APP_TRACE_INFO_T(("Read_Mic_Cali_Data[%d] err = %d",ruler_slot_id,err));
+    963                      }
+    964                  }
+    965                  
+    966              } else {
+    967                  APP_TRACE_INFO_T(("Ruler[%d] pcSendDateToBuf failed: %d",ruler_slot_id,err));
+    968              }      
+    969              OSSemPost( UART_MUX_Sem_lock );    
+    970              return err ;    
+    971          }
     972          
-    973          /*
-    974          *********************************************************************************************************
-    975          *                                       Write_Mic_Cali_Data()
-    976          *
-    977          * Description : Write calibration data to specified ruler specified mic.
-    978          *               And before this function is called, the data to be written need have been stored in global varies : Emb_Buf_Cmd
-    979          * Argument(s) : ruler_slot_id : 0~ 3.
-    980          *               mic_id        : 0~ 7
-    981          * Return(s)   : NO_ERR :   execute successfully
-    982          *               others :   =error code .    
-    983          *
-    984          * Note(s)     : None.
-    985          *********************************************************************************************************
-    986          */
-    987          unsigned char Write_Mic_Cali_Data(unsigned char ruler_slot_id, unsigned char mic_id)
-    988          {    
-    989              unsigned char   err;
-    990              unsigned short  data_length;
-    991              unsigned char   temp;
-    992              unsigned char  *pdata;
-    993              unsigned char   buf[5];  
-    994              EMB_BUF        *pEBuf_Cmd;        
-    995            
-    996           #if OS_CRITICAL_METHOD == 3u
-    997              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
-    998          #endif 
-    999              
-   1000              pEBuf_Cmd  = &Emb_Buf_Cmd; //Golbal var
-   1001              buf[0] =  RULER_CMD_WRITE_MIC_CALI_DATA; 
-   1002              buf[1] =  mic_id;  
-   1003              buf[2] =  EMB_DATA_FRAME;  
-   1004              buf[3] = (pEBuf_Cmd->length) & 0xFF;    
-   1005              buf[4] = ((pEBuf_Cmd->length)>>8) & 0xFF;     
-   1006          
-   1007              //check ruler connection state 
-   1008              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_CONFIGURED ) {      
-   1009                  return RULER_STATE_ERR ;         
-   1010              } 
-   1011              OSSemPend( UART_MUX_Sem_lock, 0, &err ); 
-   1012              if( Global_Ruler_Index != ruler_slot_id ) {
-   1013                  Check_UART_Mixer_Ready();
-   1014                  //OS_ENTER_CRITICAL(); 
-   1015                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
-   1016                  //OS_EXIT_CRITICAL();  
-   1017                  UART1_Mixer( ruler_slot_id );
-   1018              } 
-   1019              
-   1020              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
-   1021              if( OS_ERR_NONE != err ) { return err ; }
-   1022              pdata = pEBuf_Cmd->data;
-   1023              data_length = pEBuf_Cmd->length;
-   1024              while( data_length > 0 ){ 
-   1025                  temp = data_length > (NOAH_CMD_DATA_MLEN-2) ? (NOAH_CMD_DATA_MLEN-2) : data_length ;  
-   1026                  err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, pdata, temp, 0, buf, 2 ) ; 
-   1027                  if( OS_ERR_NONE != err ) { break;}
-   1028                  OSTimeDly(50); //wait for ruler operation       
-   1029                  data_length -= temp;
-   1030                  pdata += temp;        
-   1031              }
-   1032              if( OS_ERR_NONE == err ) {
-   1033                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
-   1034                  if( OS_ERR_TIMEOUT == err ) {
-   1035                      APP_TRACE_INFO_T(("Write_Mic_Cali_Data[%d][%d] timeout",ruler_slot_id, mic_id));
-   1036                  } else {
-   1037                      err = Ruler_CMD_Result; //exe result from GACK
-   1038                      if(OS_ERR_NONE != err ){
-   1039                          APP_TRACE_INFO_T(("Write_Mic_Cali_Data[%d] err = %d",ruler_slot_id,err));
-   1040                      }
-   1041                  }
-   1042              } else {
-   1043                  APP_TRACE_INFO_T(("Ruler[%d] pcSendDateToBuf failed: %d",ruler_slot_id,err));
-   1044              }
-   1045              OSSemPost( UART_MUX_Sem_lock );
-   1046              
-   1047              return err ;
-   1048              
-   1049          }
-   1050          
+    973          
+    974          /*
+    975          *********************************************************************************************************
+    976          *                                       Write_Mic_Cali_Data()
+    977          *
+    978          * Description : Write calibration data to specified ruler specified mic.
+    979          *               And before this function is called, the data to be written need have been stored in global varies : Emb_Buf_Cmd
+    980          * Argument(s) : ruler_slot_id : 0~ 3.
+    981          *               mic_id        : 0~ 7
+    982          * Return(s)   : NO_ERR :   execute successfully
+    983          *               others :   =error code .    
+    984          *
+    985          * Note(s)     : None.
+    986          *********************************************************************************************************
+    987          */
+    988          unsigned char Write_Mic_Cali_Data(unsigned char ruler_slot_id, unsigned char mic_id)
+    989          {    
+    990              unsigned char   err;
+    991              unsigned short  data_length;
+    992              unsigned char   temp;
+    993              unsigned char  *pdata;
+    994              unsigned char   buf[5];  
+    995              EMB_BUF        *pEBuf_Cmd;        
+    996            
+    997           #if OS_CRITICAL_METHOD == 3u
+    998              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
+    999          #endif 
+   1000              
+   1001              pEBuf_Cmd  = &Emb_Buf_Cmd; //Golbal var
+   1002              buf[0] =  RULER_CMD_WRITE_MIC_CALI_DATA; 
+   1003              buf[1] =  mic_id;  
+   1004              buf[2] =  EMB_DATA_FRAME;  
+   1005              buf[3] = (pEBuf_Cmd->length) & 0xFF;    
+   1006              buf[4] = ((pEBuf_Cmd->length)>>8) & 0xFF;     
+   1007          
+   1008              //check ruler connection state 
+   1009              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_CONFIGURED ) {      
+   1010                  return RULER_STATE_ERR ;         
+   1011              } 
+   1012              OSSemPend( UART_MUX_Sem_lock, 0, &err ); 
+   1013              if( Global_Ruler_Index != ruler_slot_id ) {
+   1014                  Check_UART_Mixer_Ready();
+   1015                  //OS_ENTER_CRITICAL(); 
+   1016                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
+   1017                  //OS_EXIT_CRITICAL();  
+   1018                  UART1_Mixer( ruler_slot_id );
+   1019              } 
+   1020              
+   1021              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, sizeof(buf), 0, NULL, 0 ) ; 
+   1022              if( OS_ERR_NONE != err ) { return err ; }
+   1023              pdata = pEBuf_Cmd->data;
+   1024              data_length = pEBuf_Cmd->length;
+   1025              while( data_length > 0 ){ 
+   1026                  temp = data_length > (NOAH_CMD_DATA_MLEN-2) ? (NOAH_CMD_DATA_MLEN-2) : data_length ;  
+   1027                  err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, pdata, temp, 0, buf, 2 ) ; 
+   1028                  if( OS_ERR_NONE != err ) { break;}
+   1029                  OSTimeDly(50); //wait for ruler operation       
+   1030                  data_length -= temp;
+   1031                  pdata += temp;        
+   1032              }
+   1033              if( OS_ERR_NONE == err ) {
+   1034                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
+   1035                  if( OS_ERR_TIMEOUT == err ) {
+   1036                      APP_TRACE_INFO_T(("Write_Mic_Cali_Data[%d][%d] timeout",ruler_slot_id, mic_id));
+   1037                  } else {
+   1038                      err = Ruler_CMD_Result; //exe result from GACK
+   1039                      if(OS_ERR_NONE != err ){
+   1040                          APP_TRACE_INFO_T(("Write_Mic_Cali_Data[%d] err = %d",ruler_slot_id,err));
+   1041                      }
+   1042                  }
+   1043              } else {
+   1044                  APP_TRACE_INFO_T(("Ruler[%d] pcSendDateToBuf failed: %d",ruler_slot_id,err));
+   1045              }
+   1046              OSSemPost( UART_MUX_Sem_lock );
+   1047              
+   1048              return err ;
+   1049              
+   1050          }
    1051          
-   1052          /*
-   1053          *********************************************************************************************************
-   1054          *                                       Update_Mic_Mask()
-   1055          *
-   1056          * Description : Update specified ruler's all mic's active state.
-   1057          * Argument(s) : ruler_slot_id : 0~ 3.
-   1058          *               mic_mask      : bit[0..31]. 0 - deactive, 1 - active.
-   1059          * Return(s)   : NO_ERR :   execute successfully
-   1060          *               others :   =error code .    
-   1061          *
-   1062          * Note(s)     : Support: Ruler(8Mic) for Ruler
-   1063          *                        Handset(16Mic) for H01/H02/H02A
-   1064          *                        Handset(18Mic) for H03
-   1065          *********************************************************************************************************
-   1066          */
-   1067          unsigned char Update_Mic_Mask( unsigned char ruler_slot_id, unsigned int mic_mask )
-   1068          {    
-   1069              unsigned char err ;
-   1070              unsigned char buf_size_send ;
-   1071              unsigned char buf[] = { RULER_CMD_TOGGLE_MIC, mic_mask&0xFF, (mic_mask>>8)&0xFF,
-   1072                                      (mic_mask>>16)&0xFF,  (mic_mask>>24)&0xFF };
-   1073              
-   1074          #if OS_CRITICAL_METHOD == 3u
-   1075              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
-   1076          #endif 
-   1077              //check ruler connection state 
-   1078              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_CONFIGURED ) {      
-   1079                  return RULER_STATE_ERR ;         
-   1080              }  
-   1081              
-   1082              OSSemPend( UART_MUX_Sem_lock, 0, &err );  
-   1083              if( Global_Ruler_Index != ruler_slot_id ) {
-   1084                  Check_UART_Mixer_Ready();
-   1085                  //OS_ENTER_CRITICAL(); 
-   1086                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
-   1087                  //OS_EXIT_CRITICAL();  
-   1088                  UART1_Mixer( ruler_slot_id );
-   1089              }
-   1090              if( Global_Ruler_Type[ruler_slot_id] == RULER_TYPE_H03 ) {
-   1091                  buf_size_send = 5; //H03 cmd data size = 1+4 for 16> mic
-   1092              } else {
-   1093                  buf_size_send = 3; //Default cmd data size = 1+2 for <16 mic
-   1094              }
-   1095              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, buf_size_send, 0, NULL, 0 ) ; 
-   1096              if( OS_ERR_NONE == err ) {
-   1097                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
-   1098                  if( OS_ERR_TIMEOUT == err ) {
-   1099                      APP_TRACE_INFO_T(("Update_Mic_Mask for Ruler[%d] timeout",ruler_slot_id));
-   1100                  }
-   1101                  
+   1052          
+   1053          /*
+   1054          *********************************************************************************************************
+   1055          *                                       Update_Mic_Mask()
+   1056          *
+   1057          * Description : Update specified ruler's all mic's active state.
+   1058          * Argument(s) : ruler_slot_id : 0~ 3.
+   1059          *               mic_mask      : bit[0..31]. 0 - deactive, 1 - active.
+   1060          * Return(s)   : NO_ERR :   execute successfully
+   1061          *               others :   =error code .    
+   1062          *
+   1063          * Note(s)     : Support: Ruler(8Mic) for Ruler
+   1064          *                        Handset(16Mic) for H01/H02/H02A
+   1065          *                        Handset(18Mic) for H03
+   1066          *********************************************************************************************************
+   1067          */
+   1068          unsigned char Update_Mic_Mask( unsigned char ruler_slot_id, unsigned int mic_mask )
+   1069          {    
+   1070              unsigned char err ;
+   1071              unsigned char buf_size_send ;
+   1072              unsigned char buf[] = { RULER_CMD_TOGGLE_MIC, mic_mask&0xFF, (mic_mask>>8)&0xFF,
+   1073                                      (mic_mask>>16)&0xFF,  (mic_mask>>24)&0xFF };
+   1074              
+   1075          #if OS_CRITICAL_METHOD == 3u
+   1076              //OS_CPU_SR  cpu_sr = 0u;                                 /* Storage for CPU status register         */
+   1077          #endif 
+   1078              //check ruler connection state 
+   1079              if( Global_Ruler_State[ruler_slot_id] < RULER_STATE_CONFIGURED ) {      
+   1080                  return RULER_STATE_ERR ;         
+   1081              }  
+   1082              
+   1083              OSSemPend( UART_MUX_Sem_lock, 0, &err );  
+   1084              if( Global_Ruler_Index != ruler_slot_id ) {
+   1085                  Check_UART_Mixer_Ready();
+   1086                  //OS_ENTER_CRITICAL(); 
+   1087                  Global_Ruler_Index = ruler_slot_id ; //for ruler status switch in TX/RX/Noah 
+   1088                  //OS_EXIT_CRITICAL();  
+   1089                  UART1_Mixer( ruler_slot_id );
+   1090              }
+   1091              if( Global_Ruler_Type[ruler_slot_id] == RULER_TYPE_H03 || Global_Ruler_Type[ruler_slot_id] == RULER_TYPE_C01 ) {
+   1092                  buf_size_send = 5; //H03 cmd data size = 1+4 for 16> mic
+   1093              } else {
+   1094                  buf_size_send = 3; //Default cmd data size = 1+2 for <16 mic
+   1095              }
+   1096              err = pcSendDateToBuf( EVENT_MsgQ_Noah2RulerUART, FRAM_TYPE_DATA, buf, buf_size_send, 0, NULL, 0 ) ; 
+   1097              if( OS_ERR_NONE == err ) {
+   1098                  OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
+   1099                  if( OS_ERR_TIMEOUT == err ) {
+   1100                      APP_TRACE_INFO_T(("Update_Mic_Mask for Ruler[%d] timeout",ruler_slot_id));
+   1101                  }       
    1102              } else {
    1103                  APP_TRACE_INFO_T(("Ruler[%d] pcSendDateToBuf failed: %d",ruler_slot_id,err));
    1104              }
@@ -2352,6 +2352,7 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
        4  ??DataTable11
        4  ??DataTable11_1
        4  ??DataTable11_2
+       4  ??DataTable11_3
        4  ??DataTable12
        4  ??DataTable12_1
        4  ??DataTable12_2
@@ -2379,6 +2380,7 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
        4  ??DataTable14_3
        4  ??DataTable14_4
        4  ??DataTable14_5
+       4  ??DataTable14_6
        4  ??DataTable15
        4  ??DataTable15_1
        4  ??DataTable15_2
@@ -2388,7 +2390,6 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
        4  ??DataTable15_6
        4  ??DataTable15_7
        4  ??DataTable15_8
-       4  ??DataTable15_9
        4  ??DataTable16
        4  ??DataTable16_1
        4  ??DataTable16_2
@@ -2405,7 +2406,6 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
        4  ??DataTable17_3
        4  ??DataTable17_4
        4  ??DataTable17_5
-       4  ??DataTable17_6
        4  ??DataTable18
        4  ??DataTable18_1
        4  ??DataTable18_2
@@ -2424,23 +2424,23 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
        4  ??DataTable22_4
        4  ??DataTable23
        4  ??DataTable23_1
+       4  ??DataTable23_2
        4  ??DataTable24
        4  ??DataTable24_1
        4  ??DataTable25
        4  ??DataTable25_1
-       4  ??DataTable25_2
        4  ??DataTable26
        4  ??DataTable26_1
        4  ??DataTable26_2
        4  ??DataTable26_3
        4  ??DataTable26_4
        4  ??DataTable26_5
+       4  ??DataTable26_6
        4  ??DataTable27
        4  ??DataTable27_1
        4  ??DataTable27_2
        4  ??DataTable27_3
        4  ??DataTable27_4
-       4  ??DataTable27_5
        4  ??DataTable28
        4  ??DataTable28_1
        4  ??DataTable29
@@ -2506,7 +2506,7 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
      176  Check_Watch_Mic_Mask_State
       80  FLASHD_Write_Safe
      140  Get_Audio_Version
-     380  Get_Ruler_Type
+     424  Get_Ruler_Type
      396  Get_Ruler_Version
        1  Global_Bridge_POST
       16  Global_Mic_Mask
@@ -2535,7 +2535,7 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
      328  Start_Audio
      324  Stop_Audio
      524  Toggle_Mic
-     388  Update_Mic_Mask
+     412  Update_Mic_Mask
      580  Update_Ruler_FW
      188  Watch_Mic_Revert
       84  Write_Flash_State
@@ -2550,9 +2550,9 @@ E:\SVN Dir\PQ\iSAM Test Bench\Bridge_Host_OS\Noah\ruler.c
      52 bytes in section .bss
       4 bytes in section .data
   3 080 bytes in section .rodata
- 11 888 bytes in section .text
+ 11 956 bytes in section .text
  
- 11 888 bytes of CODE  memory
+ 11 956 bytes of CODE  memory
   3 080 bytes of CONST memory
      56 bytes of DATA  memory
 

@@ -707,6 +707,7 @@ unsigned char Get_Ruler_Type(  unsigned char ruler_slot_id )
             APP_TRACE_INFO_T(("Read_Ruler_Type[%d] timeout",ruler_slot_id));
         } else {
             Global_Ruler_Type[ruler_slot_id] =  pEBuf_Data->data[0] ;
+            if( Global_Ruler_Type[ruler_slot_id]==0x30) {Global_Ruler_Type[ruler_slot_id] = 0x90;} //bugfix
             err = Ruler_CMD_Result; //exe result from GACK 
             if(OS_ERR_NONE != err ){
                 APP_TRACE_INFO_T(("Get_Ruler_Type[%d] err = %d",ruler_slot_id,err));
@@ -1087,7 +1088,7 @@ unsigned char Update_Mic_Mask( unsigned char ruler_slot_id, unsigned int mic_mas
         //OS_EXIT_CRITICAL();  
         UART1_Mixer( ruler_slot_id );
     }
-    if( Global_Ruler_Type[ruler_slot_id] == RULER_TYPE_H03 ) {
+    if( Global_Ruler_Type[ruler_slot_id] == RULER_TYPE_H03 || Global_Ruler_Type[ruler_slot_id] == RULER_TYPE_C01 ) {
         buf_size_send = 5; //H03 cmd data size = 1+4 for 16> mic
     } else {
         buf_size_send = 3; //Default cmd data size = 1+2 for <16 mic
@@ -1097,8 +1098,7 @@ unsigned char Update_Mic_Mask( unsigned char ruler_slot_id, unsigned int mic_mas
         OSSemPend( Done_Sem_RulerUART, TIMEOUT_RULER_COM, &err );  
         if( OS_ERR_TIMEOUT == err ) {
             APP_TRACE_INFO_T(("Update_Mic_Mask for Ruler[%d] timeout",ruler_slot_id));
-        }
-        
+        }       
     } else {
         APP_TRACE_INFO_T(("Ruler[%d] pcSendDateToBuf failed: %d",ruler_slot_id,err));
     }
