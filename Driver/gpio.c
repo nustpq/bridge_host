@@ -342,10 +342,13 @@ void Init_FPGA( unsigned int channels )
 {
    
     unsigned int i ;
-    APP_TRACE_DBG(("Init FPGA...[0x%0X] \r\n",channels));
+    
+    APP_TRACE_DBG(("\r\nInit FPGA...[0x%0X] \r\n",channels));
+    
     PIO_Set(&pinsGpios[20]); //cs 
     PIO_Set(&pinsGpios[21]); //data 
     PIO_Set(&pinsGpios[22]); //clock
+    
     for ( i = 0; i < 32; i++ ) {        
        PIO_Clear(&pinsGpios[20]); //cs, delay compensation
        PIO_Clear(&pinsGpios[22]); //clock       

@@ -44,7 +44,7 @@
 /*
 *********************************      Version Declaration       ****************************************
 */
-const CPU_CHAR fw_version[]  = "[FW:H:V0.4.7]"; //fixed size string
+const CPU_CHAR fw_version[]  = "[FW:H:V0.6]"; //fixed size string
 
 #ifdef  BOARD_TYPE_AB01
 const CPU_CHAR hw_version[]  = "[HW:V1.0]"; 
@@ -2254,6 +2254,41 @@ void Get_Run_Time( void )
     
 }
 
+
+/*
+*********************************************************************************************************
+*                                         Time_Stamp()
+*
+* Description : Print run time stamp
+*
+* Argument(s) : none.
+*
+* Return(s)   : none.
+*
+* Caller(s)   : none.
+*
+* Note(s)     : none.
+*********************************************************************************************************
+*/
+void Time_Stamp( void )
+{  
+    
+    INT32U time   ;
+    INT8U  sec ;
+    INT8U  min ;
+    INT8U  hour ;
+    INT16U  msec ;
+    
+    time = OSTime ;
+    msec = time % 1000L ;
+    time = time / 1000L ;
+    sec  = time % 60 ;
+    min  = time / 60 %60 ;
+    hour = time / 3600 % 24 ;
+    
+    APP_TRACE_INFO(("\r\n[%d:%02d:%02d.%03d] ", hour,min, sec, msec )); 
+ 
+}
 
 /*
 *********************************************************************************************************

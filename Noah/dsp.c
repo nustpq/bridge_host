@@ -268,85 +268,97 @@ unsigned char Set_Mic_Volume( unsigned float vol )
 
 
 
-////////////////////////    for FM36-600C on AB03      ////////////////////////
+////////////////////////    for FM36-600C on AB03  NEW(support SP1 GAIN)    ////////////////////////
 
 static unsigned int fm36_patch_code_3[] = 
 {
-    0x003F00,  
-    0x3C0065,  
-    0x43700A,  
-    0x377201,  
-    0x17F05E,  
-    0x6800A5,  
-    0x22629F,  
-    0x3C0045,  
-    0x43730A,  
-    0x377261,  
-    0x17F0BE,  
-    0x6800A5,  
-    0x22629F,  
-    0x44000A,  
-    0x19E78F,  
-    0x81012A,  
-    0x877200,  
-    0x6800A1,  
-    0x977200,  
-    0x81013A,  
-    0x877220,  
-    0x6800A1,  
-    0x977220,  
-    0x81014A,  
-    0x877240,  
-    0x6800A1,  
-    0x977240,  
-    0x81011A,  
-    0x19BFCF,  
-    0x877210,  
-    0x6000A1,  
-    0x977210,  
-    0x9101DA,  
-    0x877230,  
-    0x6000A1,  
-    0x977230,  
-    0x9101EA,  
-    0x877250,  
-    0x6000A1,  
-    0x977250,  
-    0x9101FA,  
-    0x862450,  
-    0x19C27F,  
-    0x8A2C72,  
-    0x7000AA,  
-    0x877260,  
-    0x6800A1,  
-    0x977260,  
-    0x8A2C82,  
-    0x7000AA,  
-    0x877280,  
-    0x6800A1,  
-    0x977280,  
-    0x810BF1,  
-    0x1831DF,  
-    0x43F005,  
-    0x3C0025,  
-    0x3A2D50,  
-    0x3B72A2,  
-    0x1DC53F,  
-    0x43F005,  
-    0x19C8CF,  
-    0x877270,  
-    0x340088,  
-    0x6000A1,  
-    0x8B72A0,  
-    0x7800A2,  
-    0x977270,  
-    0x877290,  
-    0x6000A1,  
-    0x8B72B0,  
-    0x7800A2,  
-    0x977290,  
-    0x862550,  
-    0x19A30F
+    0x003F00,
+    0x3C0065,
+    0x43700A,
+    0x377201,
+    0x17F05E,
+    0x6800A5,
+    0x22629F,
+    0x3C0045,
+    0x43730A,
+    0x377261,
+    0x17F0BE,
+    0x6800A5,
+    0x22629F,
+    0x44000A,
+    0x19E78F,
+    0x81012A,
+    0x877200,
+    0x6800A1,
+    0x977200,
+    0x81013A,
+    0x877220,
+    0x6800A1,
+    0x977220,
+    0x81014A,
+    0x877240,
+    0x6800A1,
+    0x977240,
+    0x81011A,
+    0x19BFCF,
+    0x877210,
+    0x6000A1,
+    0x977210,
+    0x9101DA,
+    0x877230,
+    0x6000A1,
+    0x977230,
+    0x9101EA,
+    0x877250,
+    0x6000A1,
+    0x977250,
+    0x9101FA,
+    0x862450,
+    0x19C27F,
+    0x8A2C72,
+    0x7000AA,
+    0x877260,
+    0x6800A1,
+    0x977260,
+    0x8A2C82,
+    0x7000AA,
+    0x877280,
+    0x6800A1,
+    0x977280,
+    0x810BF1,
+    0x1831DF,
+    0x43F005,
+    0x3C0025,
+    0x3A2D50,
+    0x3B72A2,
+    0x1DC53F,
+    0x43F005,
+    0x19C8CF,
+    0x877270,
+    0x340088,
+    0x6000A1,
+    0x8B72A0,
+    0x7800A2,
+    0x977270,
+    0x877290,
+    0x6000A1,
+    0x8B72B0,
+    0x7800A2,
+    0x977290,
+    0x862550,
+    0x19A30F,
+    0x81018A,
+    0x822E77,
+    0x1DD26F,
+    0x91018F,
+    0x0D00AF,
+    0x199CDF,
+    0x81019A,
+    0x822E77,
+    0x1DD26F,
+    0x91019F,
+    0x0D00AF,
+    0x199E8F
 
 };
 
@@ -365,7 +377,11 @@ static unsigned short int fm36_para_table_3[][2] =
   {0x3FA4, 0x9C8B},
   {0x3FB4, 0x3F36},
   {0x3FA5, 0x9A2F},
-  {0x3FB5, 0x3F3D},    
+  {0x3FB5, 0x3F3D},
+  {0x3FA6, 0x99CC},
+  {0x3FB6, 0x3F4A},
+  {0x3FA7, 0x99E7},
+  {0x3FB7, 0x3F50},    
 
   //////////////////////////////////////////////////////////////
   
@@ -457,6 +473,7 @@ static unsigned short int fm36_para_table_3[][2] =
   {0x2287, 0x0005}, 
   
   {0x22EB, 0x0006}, 
+  {0x22E7, 0x0800},  //add Aux_in gain cotrol: 0x22E7 =0x100 means unit gain.
   
   {0x22FB, 0 }, 
   
@@ -528,6 +545,21 @@ unsigned char DMIC_PGA_Control( unsigned short gain )
     
 }
 
+unsigned char DMIC_Ploarity_Control( bool mic_revert_en ) 
+{
+    unsigned char  err  ;
+    unsigned short data = 0 ; 
+    
+    if( mic_revert_en ) {
+        data = 1;
+    } 
+    
+    err = DM_SingleWrite( FM36_I2C_ADDR, 0x3F99, data ) ;
+    if( OS_ERR_NONE != err ) {
+        return FM36_WR_DM_ERR;;
+    }    
+    
+}
 
 //Setup External Lin data input source
 //From : SP0_RX, SP1_RX
@@ -568,11 +600,11 @@ static unsigned char Config_SP0_Out( unsigned char mic_num )
     unsigned char err ;
   
     //select output data source slot
-    err = DM_SingleWrite( FM36_I2C_ADDR, 0x22C1 + mic_num, 0x1018 ) ;
+    err = DM_SingleWrite( FM36_I2C_ADDR, 0x22C1 + mic_num, 0x1023 ) ;
     if( OS_ERR_NONE != err ) {
         return FM36_WR_DM_ERR;;
     }       
-    err = DM_SingleWrite( FM36_I2C_ADDR, 0x22C2 + mic_num, 0x1019 ) ;
+    err = DM_SingleWrite( FM36_I2C_ADDR, 0x22C2 + mic_num, 0x1024 ) ;
     if( OS_ERR_NONE != err ) {
         return FM36_WR_DM_ERR;;
     }     
@@ -835,7 +867,7 @@ unsigned char Init_FM36_AB03( unsigned short sr, unsigned char mic_num, unsigned
         err = FM36_RD_CM_ERR;
         return FM36_RD_CM_ERR ;
     }
-    APP_TRACE_INFO(("ROM ID = 0x%X\r\n", temp));
+    APP_TRACE_INFO_T(("ROM ID = 0x%X", temp));
     
     if( temp != FM36_ROM_ID_2 ) { 
         return FM36_CHECK_ROMID_ERR; //dsp type error
@@ -911,14 +943,14 @@ unsigned char Init_FM36_AB03( unsigned short sr, unsigned char mic_num, unsigned
         err = FM36_RD_DM_ERR;
         return err ;
     }
-    APP_TRACE_DBG(("0x2306 = 0x%X\r\n", temp2));
+    APP_TRACE_INFO_T(("#0x2306 = 0x%X", temp2));
     OSTimeDly(100);
     err = DM_LegacyRead( FM36_I2C_ADDR, 0x22FB,(unsigned char *)&temp ) ;
     if( OS_ERR_NONE != err ) {
         err = FM36_RD_DM_ERR;
         return err ;
     }
-    APP_TRACE_INFO(("0x22FB = 0x%X\r\n", temp));
+    APP_TRACE_INFO_T(("#0x22FB = 0x%X", temp));
     if( temp != 0x5A5A ) {   
         return FM36_CHECK_FLAG_ERR;
     }
@@ -927,7 +959,7 @@ unsigned char Init_FM36_AB03( unsigned short sr, unsigned char mic_num, unsigned
         err = FM36_RD_DM_ERR;
         return err ;
     }
-    APP_TRACE_DBG(("0x2306 = 0x%X\r\n", temp));
+    APP_TRACE_INFO_T(("0x2306 = 0x%X", temp));
     if( temp == temp2 ) {
         APP_TRACE_INFO(("FM36 frame counter stopped !"));
         return FM36_CHECK_COUNTER_ERR;

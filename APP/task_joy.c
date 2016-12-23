@@ -80,8 +80,8 @@ void  App_TaskJoy (void *p_arg)
             } 
             
             if(i >= 100 ) {// trigger reset             
-                APP_TRACE_INFO((">>User reset pin triggered... \r\n" ));
-                APP_TRACE_INFO((">>That's all folks !\r\n\r\n>> Rebooting...\r\n"));                             
+                APP_TRACE_INFO_T((">>User reset pin triggered... \r\n" ));
+                APP_TRACE_INFO_T((">>That's all folks !\r\n\r\n>> Rebooting...\r\n"));                             
                 Beep(3); 
                 //PDM_Pattern_Gen(1); //Generate idle PDM data for CP2240 
                 Pin_Reset_Audio_MCU(); //reset audio

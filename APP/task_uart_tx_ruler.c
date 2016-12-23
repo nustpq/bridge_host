@@ -69,17 +69,15 @@ void App_TaskUART_Tx_Ruler( void *p_arg )
 
     pTaskMsgIN  = NULL;
     pPcCmd      = NULL;	
-	sum         = 0;
-    errCode     = UNKOW_ERR_RPT ;     
-    
+    sum         = 0;
+    errCode     = UNKOW_ERR_RPT ;        
      
-	while (DEF_TRUE) { 
-
-        // Noah to Uart transmit
-        pTaskMsgIN   = (INT8U *)OSQPend( EVENT_MsgQ_Noah2RulerUART, 0, &errCode );
+    while (DEF_TRUE) { 
         
-        if( pTaskMsgIN != NULL && OS_ERR_NONE == errCode )   {  
-          
+        // Noah to Uart transmit
+        pTaskMsgIN   = (INT8U *)OSQPend( EVENT_MsgQ_Noah2RulerUART, 0, &errCode );        
+        if( pTaskMsgIN != NULL && OS_ERR_NONE == errCode )   {      
+            
             pPcCmd  = (NOAH_CMD *)pTaskMsgIN ;             
             if( GET_FRAME_TYPE(pPcCmd->head) == FRAM_TYPE_DATA  ) {  //data frame
                 
@@ -129,19 +127,24 @@ void App_TaskUART_Tx_Ruler( void *p_arg )
                     ////Queue_Write( (void*)pUART_Send_Buf[RULER_UART] ,  RULER_ID_DEFAULT); //ruler_id 
                     Queue_WriteBuf( pTaskMsgIN,(void*)pUART_Send_Buf[RULER_UART], 2 );
                     //OSQAccept( EVENT_MsgQ_Noah2RulerUART, &errCode ); //delete message from queue                    
-                    UART_WriteStart( RULER_UART ); //send data                     
- 
-                    if( GET_FRAME_TYPE(pPcCmd->head) == FRAM_TYPE_ACK ) {
-                        APP_TRACE_DBG(("\r\n>>ACK"));
-                    } else if ( GET_FRAME_TYPE(pPcCmd->head) == FRAM_TYPE_NAK ) {
-                        APP_TRACE_DBG(("\r\n>>NAK"));
-                    } else if ( GET_FRAME_TYPE(pPcCmd->head) == FRAM_TYPE_EST ) {
-                        APP_TRACE_DBG(("\r\n>>EST"));
-                    } else if ( GET_FRAME_TYPE(pPcCmd->head) == FRAM_TYPE_ESTA ) {
-                        APP_TRACE_DBG(("\r\n>>ESTA"));
-                    } else {
-                        APP_TRACE_DBG(("\r\n>>Err"));
-                    }   
+                    UART_WriteStart( RULER_UART ); //send data   
+//                    if( GET_FRAME_TYPE(pPcCmd->head) == FRAM_TYPE_ACK ) {
+//                        APP_TRACE_INFO(("\r\n>>ACK"));
+//                    } else if ( GET_FRAME_TYPE(pPcCmd->head) == FRAM_TYPE_NAK ) {
+//                        APP_TRACE_INFO(("\r\n>>NAK"));
+//                    } else if ( GET_FRAME_TYPE(pPcCmd->head) == FRAM_TYPE_EST ) {
+//                        APP_TRACE_INFO(("\r\n>>EST"));
+//                    } else if ( GET_FRAME_TYPE(pPcCmd->head) == FRAM_TYPE_ESTA ) {
+//                        APP_TRACE_INFO(("\r\n>>ESTA"));
+//                    } else {
+//                        APP_TRACE_INFO(("\r\n>>Err"));
+//                    }                     
+                    if ( GET_FRAME_TYPE(pPcCmd->head) == FRAM_TYPE_EST ) {
+                        OSSemPend(ACK_Sem_RulerUART, 1000, &errCode);//pending 1000ms for ACK back    
+                        if( OS_ERR_NONE != errCode ) { 
+                            APP_TRACE_INFO_T(("ERROR£ºSend EST to Ruler[%d] failed.\r\n",Global_Ruler_Index)); 
+                        }
+                    }
                     APP_TRACE_DBG((" [ %2X %2X ]", *pTaskMsgIN, *(pTaskMsgIN+1)));  
                     
                     OSMemPut( pMEM_Part_MsgUART, pTaskMsgIN );    //release mem 
@@ -151,9 +154,6 @@ void App_TaskUART_Tx_Ruler( void *p_arg )
         
         ////OSTimeDly(5);		                                     	
 	}
-       
-    
-    
     
 }
 

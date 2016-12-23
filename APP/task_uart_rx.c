@@ -52,19 +52,19 @@ volatile CPU_INT08U  Global_Idle_Ready = 0 ; //flag check if no command from PC 
 */
 void App_TaskUART_Rx( void *p_arg )
 {     
-	(void)p_arg; 
+    (void)p_arg; 
     
     CPU_INT08U       temp ;	
     CPU_INT08U       counter ;	
     CPU_INT08U       idle_counter ;	    
-	CMDREAD          CMD_Read_PC ;
+    CMDREAD          CMD_Read_PC ;
     CMDREAD          CMD_Read_Ruler ;
     
     Init_CMD_Read( &CMD_Read_PC, EVENT_MsgQ_PCUART2Noah ) ;
     Init_CMD_Read( &CMD_Read_Ruler, EVENT_MsgQ_RulerUART2Noah ) ;
     idle_counter = 0;
     
-	while (DEF_TRUE) {               
+    while (DEF_TRUE) {               
    
         counter = Queue_NData( (void*) pUART_Rece_Buf[PC_UART] ) ;  
         //APP_TRACE_DBG((" %4d ",counter)) ;  
@@ -82,19 +82,19 @@ void App_TaskUART_Rx( void *p_arg )
             Queue_Read( &temp, pUART_Rece_Buf[PC_UART] );            
             Noah_CMD_Read( &CMD_Read_PC, temp ) ;
             
-		}           
+	}           
         
         counter = Queue_NData( (void*) pUART_Rece_Buf[RULER_UART] ) ;          
         while( counter-- ) {              
             Queue_Read( &temp, pUART_Rece_Buf[RULER_UART] );            
             Noah_CMD_Read( &CMD_Read_Ruler, temp ) ;
             
-		} 
+	} 
                 
         OSTimeDly(5); // note : UART1_RECE_QUEUE_LENGTH = 1024B; 115200/10/1000 =  11.52;
   
                     
-	}
+    }
     
 }
 

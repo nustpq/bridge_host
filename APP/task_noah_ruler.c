@@ -133,9 +133,9 @@ void App_TaskNoah_Ruler( void *p_arg )
                     PcCmdRxID_Ruler[Global_Ruler_Index] = 0xC0 ; // ? why 0x40: make sure there can be many same setup frame
                     PcCmdTxID_Ruler[Global_Ruler_Index] = 0x00 ; //  
                     
-                    OSSemPost( ACK_Sem_RulerUART ); 
+                    OSSemPost( ACK_Sem_RulerUART );                 
                     OSSemPost( Done_Sem_RulerUART ); //end the resend pending--                     
-                    OSTimeDly(5); //wait for the TX buffer is empty 
+                    OSTimeDly(1); //wait for the TX buffer is empty 
                     
                     //Reset all UART CMD related buffer and release mem 
                     do{  //reset mem used by  EVENT_MsgQ_RulerUART2Noah                    
@@ -164,7 +164,7 @@ void App_TaskNoah_Ruler( void *p_arg )
                         OSSemPost( ACK_Sem_RulerUART );                        
                         test_counter2++;
                     } else {
-                        APP_TRACE_INFO(("\r\nACK: got %X, expect %X\r\n",rxID,PcCmdTxID_Ruler[Global_Ruler_Index] )); 
+                        APP_TRACE_INFO_T(("\r\nACK: Got %X, Expect %X\r\n",rxID,PcCmdTxID_Ruler[Global_Ruler_Index] )); 
                     }
                     APP_TRACE_DBG(("ACK")); 
                     test_counter3++;       

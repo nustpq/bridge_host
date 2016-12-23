@@ -913,7 +913,10 @@ CPU_INT08U  AB_Status_Change_Report (void)
         return err;
     }
     
+    APP_TRACE_INFO_T(("AB_Status_Change_Report!")); 
+
     err = pcSendDateToBuf( EVENT_MsgQ_Noah2PCUART, FRAM_TYPE_DATA, pEBuf->data, pEBuf->length, 0, NULL, 0 ) ;   
+   
     
     return err;
   

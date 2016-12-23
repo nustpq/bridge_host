@@ -387,6 +387,7 @@ extern const CPU_CHAR hw_model[];
 extern void Head_Info( void );
 extern void Beep( INT32U beep_cycles);
 extern volatile CPU_INT08U  Flag_Reset_Pin_Trigger;
+extern void Time_Stamp( void );
 //extern void PDM_Pattern_Gen( INT8U type );
 
 
